@@ -153,3 +153,9 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Zone Fill Area now tolerates tiny touch-drawing gaps instead of requiring mathematically perfect wall joins.
 - Fill detection splits unsplit T-junctions during calculation, so resized/moved rooms still fill correctly.
 - Small geometry repairs are temporary for fill detection only; the user's actual building walls are not moved.
+
+## Version 0.18
+- Rotating a room/group now rotates symbol orientation as well as symbol position.
+- Symbol rotation is saved per symbol and preserved in office exports.
+- Single symbols can be rotated from Object Properties.
+- Existing drafts remain compatible; symbols without a saved angle default to 0 degrees.
