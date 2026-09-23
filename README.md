@@ -61,3 +61,10 @@ There is no login, subscription, internet permission, camera permission or analy
 - **Group is now an explicit action:** use **Box select**, then press **Group** in the bottom toolbar (or **Make group** in the selection bar). **Ungroup** is equally visible.
 - **Select / Move** lets you tap and drag one wall section, door, room label, note or zone shape. Tapping any member of a saved group selects and moves the whole group as one object.
 - **Grid off / Grid on** is available in the top bar. The grid is a screen-only drawing aid and is deliberately excluded from the exported office PNG.
+
+## Version 0.6 — grouped Zone and Building Layout menus
+
+- The bottom toolbar is simplified into two main drawing menus: **Zone** and **Building layout**.
+- **Zone** shows the currently selected/created zone and contains **Box** and **Outline** for coloured zone areas, plus **Create zone** and the existing zone list.
+- **Building layout** contains **Wall, Pen, Door, Box, Outline and Room label**. Its Box and Outline tools create black wall segments rather than zone areas, so they work with Delete, Select / Move and Group.
+- Both menus open upward from the bottom toolbar and remember the last drawing tool used. Common edit controls remain directly accessible.
