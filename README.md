@@ -54,3 +54,10 @@ There is no login, subscription, internet permission, camera permission or analy
 - Existing straight walls are split into junction pieces when an older draft is loaded, improving delete behaviour on previous sketches.
 - **Group / Move** lets you drag a selection box around a room, press **Group selected**, then move the whole grouped room together. Tapping any item in a saved group selects that group again; **Ungroup** separates it.
 - Doors created in a grouped wall inherit the same group so the wall pieces and door move together.
+
+## Version 0.5 — clean doors, explicit groups, object move and grid
+
+- **Door geometry is cleaner:** the swing arc now starts exactly on the opposite edge of the wall opening, so both ends of the door connect cleanly to the straight wall line.
+- **Group is now an explicit action:** use **Box select**, then press **Group** in the bottom toolbar (or **Make group** in the selection bar). **Ungroup** is equally visible.
+- **Select / Move** lets you tap and drag one wall section, door, room label, note or zone shape. Tapping any member of a saved group selects and moves the whole group as one object.
+- **Grid off / Grid on** is available in the top bar. The grid is a screen-only drawing aid and is deliberately excluded from the exported office PNG.
