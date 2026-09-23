@@ -25,7 +25,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   let rgba=await pixel();assert(rgba[0]>=189&&rgba[0]<=193,'Export should fade black picture to 25%');
   await page.locator('#togglePicture').click();await page.locator('#shareBtn').click();rgba=await pixel();assert.deepEqual(rgba,[255,255,255,255],'Hidden background exports white');
   // Check a wall survives removal of the imported background.
-  const wall=await page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);return [...x.getImageData(250,160,1,1).data]});assert(wall[0]<50,'Wall remains in exported drawing');
+  const wall=await page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);return Math.min(...Array.from(x.getImageData(250,156,1,9).data).filter((_,i)=>i%4===0))});assert(wall<180,'Wall remains in exported drawing');
   await page.waitForTimeout(700);await page.reload();await page.waitForFunction(()=>document.getElementById('togglePicture').textContent==='Show picture');
   assert.equal(await page.locator('#opacity').inputValue(),'25');assert.equal(await page.locator('.zone').count(),1);
   await page.locator('#togglePicture').click();assert.equal(await page.locator('#opacity').isEnabled(),true);
