@@ -85,3 +85,11 @@ There is no login, subscription, internet permission, camera permission or analy
 - A Wall size slider in the top bar controls building wall/pen/door thickness from 0.75 to 5 px without the old automatic thickening while zooming.
 - The selected wall thickness is also respected in the exported office PNG.
 
+## Version 0.9 — zone fill and objects
+
+- Zone colour fill is stronger while keeping the same thin professional border.
+- **Fill area** finds the smallest fully enclosed face in the connected wall graph and creates a neat zone polygon automatically. Door/window/shutter openings count as closed boundaries for zoning.
+- Drawing tools are split into **Zone**, **Building layout**, and **Objects** menus.
+- **Objects** contains wall-snapped Door, Window and Roller shutter tools plus a drag-to-place Stairway symbol.
+- New objects support selection, movement, grouping, deletion, undo/redo and PNG export.
+
