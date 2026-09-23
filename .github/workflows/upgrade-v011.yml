@@ -1,0 +1,90 @@
+name: Upgrade Zone Sketch v0.11
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-v011.yml'
+      - '.github/upgrade_v011.py'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.11 upgrade
+        run: python .github/upgrade_v011.py
+
+      - name: Check JavaScript syntax, UI wiring and synced copies
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          files = [Path('index.html'), Path('ZoneSketch.html'), Path('app/src/main/assets/index.html')]
+          texts = [p.read_text() for p in files]
+          assert texts[0] == texts[1] == texts[2], 'App copies are not identical'
+          s = texts[0]
+          markers = [
+              'id="floorMenuBtn"', 'id="floorMenu"', 'id="exportAllFloors"',
+              'id="symbolMenuBtn"', 'id="symbolMenu"', 'data-symbol="panel"',
+              'data-symbol="mcp"', 'data-symbol="smoke"', 'data-symbol="heat"',
+              'data-symbol="sounder"', 'data-symbol="you"',
+              'data-room-name="Office"', 'data-room-name="Plant room"',
+              'id="duplicateSelected"', 'id="rotateSelected"', 'id="mirrorSelected"',
+              'id="detailMenuBtn"', 'data-detail-tool="pinNote"', 'data-detail-tool="pinPhoto"',
+              'id="pinPhotoFile"', 'function duplicateSelection()',
+              'function exportAllFloorsCanvas()', 'function renderFloorCanvas(',
+              "symbols:[]", "pins:[]"
+          ]
+          for marker in markers:
+              assert marker in s, marker
+          ids = re.findall(r'\bid="([^"]+)"', s)
+          dupes = sorted({x for x in ids if ids.count(x) > 1})
+          assert not dupes, f'duplicate HTML ids: {dupes}'
+          idset = set(ids)
+          refs = set(re.findall(r"\$\('([^']+)'\)", s))
+          missing = sorted(refs - idset)
+          assert not missing, f'JS references missing HTML ids: {missing}'
+          js = s.split('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/zone-sketch-v011.js').write_text(js)
+          PY
+          node --check /tmp/zone-sketch-v011.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Commit upgraded source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html app/src/main/assets/index.html README.md
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+          else
+            git commit -m 'Upgrade Zone Sketch to v0.11 onsite productivity tools'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZoneSketch-v0.11-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
