@@ -77,3 +77,11 @@ There is no login, subscription, internet permission, camera permission or analy
 - The grid uses fixed plan-space spacing, so it stays anchored to the drawing while zooming.
 - Room labels are sized from plan-space scale instead of a separate clamped zoom scale, so they remain visually attached to the plan.
 
+## Version 0.8 — detail drawing controls
+
+- Undo and redo are duplicated in the top-right so they remain easy to reach while drawing.
+- Door placement now uses the finger side of the wall to choose the swing direction, with a live orange opening and swing preview before release.
+- Blank plans use a 3200 × 2000 working canvas (four times the previous pixel area), and maximum zoom is increased from 8× to 32× for intricate rooms and corners.
+- A Wall size slider in the top bar controls building wall/pen/door thickness from 0.75 to 5 px without the old automatic thickening while zooming.
+- The selected wall thickness is also respected in the exported office PNG.
+
