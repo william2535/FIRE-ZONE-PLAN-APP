@@ -1,0 +1,76 @@
+name: Hotfix Zone Sketch v0.15
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/hotfix-v015.yml'
+      - '.github/hotfix_v015.py'
+
+permissions:
+  contents: write
+
+jobs:
+  hotfix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.15 hotfix
+        run: python .github/hotfix_v015.py
+
+      - name: Check JavaScript and interaction isolation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          files=[Path('index.html'),Path('ZoneSketch.html'),Path('app/src/main/assets/index.html')]
+          texts=[p.read_text() for p in files]
+          assert texts[0]==texts[1]==texts[2], 'App copies differ'
+          s=texts[0]
+          ids=re.findall(r'\bid="([^"]+)"',s)
+          dupes=sorted({i for i in ids if ids.count(i)>1})
+          assert not dupes, f'Duplicate ids: {dupes}'
+          js=s.split('<script>',1)[1].split('</script>',1)[0]
+          Path('/tmp/v015-hotfix.js').write_text(js)
+          assert "if(navMode&&drawing?.mode==='navPan'){drawing=null;return}" in js
+          assert "if(state.locks[k]){selection=[];drawing=null;syncSelectionBar()}" in js
+          assert "if(state.layers[k]===false){selection=[];drawing=null;syncSelectionBar()}" in js
+          print('Interaction isolation regression checks passed')
+          PY
+          node --check /tmp/v015-hotfix.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Commit hotfixed source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html app/src/main/assets/index.html README.md
+          if git diff --cached --quiet; then
+            echo 'No hotfix source changes to commit.'
+          else
+            git commit -m 'Hotfix v0.15 move mode isolation'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZoneSketch-v0.15-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
