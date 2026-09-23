@@ -1,0 +1,47 @@
+name: Upgrade Zone Sketch v0.5
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-v05.yml'
+      - '.github/upgrade_v05.py'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.5 upgrade
+        run: python .github/upgrade_v05.py
+
+      - name: Check JavaScript syntax and synced copies
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          files = [Path('index.html'), Path('ZoneSketch.html'), Path('app/src/main/assets/index.html')]
+          texts = [p.read_text() for p in files]
+          assert texts[0] == texts[1] == texts[2], 'App copies are not identical'
+          js = texts[0].split('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/zone-sketch-v05.js').write_text(js)
+          assert 'id="gridBtn"' in texts[0]
+          assert 'data-tool="select"' in texts[0]
+          assert 'id="makeGroup"' in texts[0]
+          PY
+          node --check /tmp/zone-sketch-v05.js
+
+      - name: Commit upgraded source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html app/src/main/assets/index.html README.md
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+          else
+            git commit -m 'Upgrade Zone Sketch to v0.5'
+            git push
+          fi
