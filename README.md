@@ -148,3 +148,8 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Current-floor and whole-building device counts, also included in office exports.
 
 - v0.15 safety fix: Move-mode pointer-up isolation and clearing selections when layers/locks are activated.
+
+## Version 0.17
+- Zone Fill Area now tolerates tiny touch-drawing gaps instead of requiring mathematically perfect wall joins.
+- Fill detection splits unsplit T-junctions during calculation, so resized/moved rooms still fill correctly.
+- Small geometry repairs are temporary for fill detection only; the user's actual building walls are not moved.
