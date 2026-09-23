@@ -110,3 +110,14 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Pin photographs or dictated notes to a location for office follow-up.
 - Export all floors together with a site-wide zone index and editable project backup.
 - Large-button survey mode with favourites, Undo and Fit always visible.
+
+## Version 0.11 — faster onsite workflow
+
+- Floor selection now uses the same compact dropdown/popover style as Zone, Building, Objects and Symbols instead of a native floor select popup.
+- Symbol favourites: Panel, MCP, Smoke, Heat, Sounder and You are here. Symbols are tap-to-repeat until another tool is selected.
+- Quick room-name stamps for Office, Store, Corridor, WC, Plant room and custom names.
+- Box-selected rooms/objects can be duplicated, rotated 90 degrees or mirrored; duplicates are kept together for immediate moving.
+- Pinned notes and compressed pinned site photos stay at exact plan positions and are listed (with photo thumbnails) in office exports.
+- Send all floors creates one combined building-pack PNG containing every floor plus a building-wide zone index.
+- New objects remain floor-local, autosaved, undoable, groupable, selectable and movable.
+
