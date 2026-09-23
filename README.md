@@ -121,3 +121,11 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Send all floors creates one combined building-pack PNG containing every floor plus a building-wide zone index.
 - New objects remain floor-local, autosaved, undoable, groupable, selectable and movable.
 
+
+
+## Version 0.12
+
+- Selected rooms/groups can be resized by dragging blue corner handles. Quick room labels and favourite symbols scale with the selection.
+- Bottom toolbar is ordered into Draw, Edit, View and History sections for faster onsite use.
+- Grid spacing is adjustable and an optional Snap mode aligns new drawing points, stamps and selection movement to the grid.
+- Favourite symbols have a colour palette; the selected colour is stored on each placed symbol and is preserved in exports.
