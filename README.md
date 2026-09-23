@@ -146,3 +146,5 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Background, Building and Zone locks.
 - View-only Layers menu for background, building, zones, symbols, labels, notes/pins and grid.
 - Current-floor and whole-building device counts, also included in office exports.
+
+- v0.15 safety fix: Move-mode pointer-up isolation and clearing selections when layers/locks are activated.
