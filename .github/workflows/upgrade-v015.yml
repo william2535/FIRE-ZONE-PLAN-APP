@@ -1,0 +1,87 @@
+name: Upgrade Zone Sketch v0.15
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-v015.yml'
+      - '.github/upgrade_v015.py'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.15 upgrade
+        run: python .github/upgrade_v015.py
+
+      - name: Check JavaScript, synced copies and precision controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          files=[Path('index.html'),Path('ZoneSketch.html'),Path('app/src/main/assets/index.html')]
+          texts=[p.read_text() for p in files]
+          assert texts[0]==texts[1]==texts[2], 'App copies are not identical'
+          s=texts[0]
+          required=[
+            'id="moveModeTop"','id="moveModeBottom"','id="locksMenu"','id="layersMenu"',
+            'id="countsMenu"','id="propertyModal"','id="propertiesSelected"',
+            'data-menu-tool="trim"','function trimExtendAt','function renderDeviceCounts',
+            'function renderLayersMenu','function renderLockMenu','function setMoveMode'
+          ]
+          for marker in required:
+            assert marker in s, f'Missing v0.15 marker: {marker}'
+          ids=re.findall(r'\bid="([^"]+)"',s)
+          dupes=sorted({x for x in ids if ids.count(x)>1})
+          assert not dupes, f'Duplicate HTML ids: {dupes}'
+          js=s.split('<script>',1)[1].split('</script>',1)[0]
+          Path('/tmp/zone-sketch-v015.js').write_text(js)
+          # Regression/static guards for the requested interaction split.
+          assert "if(navMode){if(pointers.size===2)" in js
+          assert "drawing={mode:'navPan'" in js
+          assert "if(navMode&&drawing?.mode==='navPan')" in js
+          assert "if(pointers.size>1)return" in js
+          assert "if(!refVisible(ref)||isRefLocked(ref))continue" in js
+          print('v0.15 static regression checks passed')
+          PY
+          node --check /tmp/zone-sketch-v015.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Commit upgraded source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html app/src/main/assets/index.html README.md
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+          else
+            git commit -m 'Upgrade Zone Sketch to v0.15 precision editing'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZoneSketch-v0.15-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
