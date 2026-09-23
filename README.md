@@ -68,3 +68,12 @@ There is no login, subscription, internet permission, camera permission or analy
 - **Zone** shows the currently selected/created zone and contains **Box** and **Outline** for coloured zone areas, plus **Create zone** and the existing zone list.
 - **Building layout** contains **Wall, Pen, Door, Box, Outline and Room label**. Its Box and Outline tools create black wall segments rather than zone areas, so they work with Delete, Select / Move and Group.
 - Both menus open upward from the bottom toolbar and remember the last drawing tool used. Common edit controls remain directly accessible.
+
+## Version 0.7 — drawing polish
+
+- Building wall boxes/outlines now merge overlapping or near-overlapping horizontal/vertical wall runs into one clean line, then re-split them at real junctions so precise delete still works.
+- Zone badges such as **Z1** are removed from the drawing; zone identification remains in the side index and exported zone key.
+- Zone areas now use a restrained translucent fill and thin boundary instead of a heavy coloured border.
+- The grid uses fixed plan-space spacing, so it stays anchored to the drawing while zooming.
+- Room labels are sized from plan-space scale instead of a separate clamped zoom scale, so they remain visually attached to the plan.
+
