@@ -32,3 +32,10 @@ There is no login, subscription, internet permission, camera permission or analy
 - Image plans only; PDF import, perspective straightening and a multi-project library are later additions.
 - Zone outlines are manual. The PNG is for the CAD team to verify and redraw.
 - No measured scale or fire design compliance calculations.
+
+## Version 0.2 — tracing and blank plans
+
+- **Picture opacity** fades an imported image while keeping wall lines, zones and notes solid. The same opacity applies to PNG export.
+- **Hide picture** removes the image from both the canvas and export while keeping your drawing. **Show picture** restores it.
+- **New blank** / **Start blank canvas** starts a white 1600 × 1000 page without an import. Share the existing draft before replacing it.
+- **Wall line** draws individual straight segments and snaps nearly horizontal/vertical lines. **Pen** draws freehand. Both support undo and redo and autosave with the draft.
