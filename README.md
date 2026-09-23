@@ -129,3 +129,11 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Bottom toolbar is ordered into Draw, Edit, View and History sections for faster onsite use.
 - Grid spacing is adjustable and an optional Snap mode aligns new drawing points, stamps and selection movement to the grid.
 - Favourite symbols have a colour palette; the selected colour is stored on each placed symbol and is preserved in exports.
+
+
+## Version 0.13 — stable corner resize + quick delete
+
+- Delete is duplicated beside Undo / Redo in the top-right for faster onsite editing.
+- Corner resize now recalculates every frame from the original selection snapshot, preventing cumulative shrink/jump behaviour.
+- The opposite corner stays fixed while resizing a room or group.
+- A 24-screen-pixel minimum prevents a selected corridor/room collapsing into an unusably tiny shape.
