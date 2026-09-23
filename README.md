@@ -137,3 +137,12 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Corner resize now recalculates every frame from the original selection snapshot, preventing cumulative shrink/jump behaviour.
 - The opposite corner stays fixed while resizing a room or group.
 - A 24-screen-pixel minimum prevents a selected corridor/room collapsing into an unusably tiny shape.
+
+
+## Version 0.15
+- Global Move mode: ON pans/zooms without editing; OFF edits without canvas panning.
+- Trim / Extend wall tool.
+- Object Properties for selected items.
+- Background, Building and Zone locks.
+- View-only Layers menu for background, building, zones, symbols, labels, notes/pins and grid.
+- Current-floor and whole-building device counts, also included in office exports.
