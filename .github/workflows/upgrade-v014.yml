@@ -1,0 +1,75 @@
+name: Upgrade Zone Sketch v0.14
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-v014.yml'
+      - '.github/upgrade_v014.py'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.14 upgrade
+        run: python .github/upgrade_v014.py
+
+      - name: Check JavaScript, synced copies and zones panel wiring
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          files = [Path('index.html'), Path('ZoneSketch.html'), Path('app/src/main/assets/index.html')]
+          texts = [p.read_text() for p in files]
+          assert texts[0] == texts[1] == texts[2], 'App copies are not identical'
+          s = texts[0]
+          for marker in ['id="zonesPanelBtn"', 'id="closeZones"', 'id="workspace"', 'function syncZonesPanel', 'workspace.zonesClosed']:
+              assert marker in s, f'Missing zones-panel marker: {marker}'
+          ids = re.findall(r'\bid="([^"]+)"', s)
+          dupes = sorted({x for x in ids if ids.count(x) > 1})
+          assert not dupes, f'Duplicate HTML ids: {dupes}'
+          js = s.split('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/zone-sketch-v014.js').write_text(js)
+          PY
+          node --check /tmp/zone-sketch-v014.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Commit upgraded source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+          else
+            git commit -m 'Add collapsible Zones panel in Zone Sketch v0.14'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZoneSketch-v0.14-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
