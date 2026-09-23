@@ -1,0 +1,108 @@
+name: Upgrade Zone Sketch v0.13
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-v013.yml'
+      - '.github/upgrade_v013.py'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.13 upgrade
+        run: python .github/upgrade_v013.py
+
+      - name: Check JavaScript, synced copies and resize regression
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          files = [Path('index.html'), Path('ZoneSketch.html'), Path('app/src/main/assets/index.html')]
+          texts = [p.read_text() for p in files]
+          assert texts[0] == texts[1] == texts[2], 'App copies are not identical'
+          s = texts[0]
+          assert s.count('id="deleteTop"') == 1, 'Top delete button missing/duplicated'
+
+          ids = re.findall(r'\bid="([^"]+)"', s)
+          dupes = sorted({x for x in ids if ids.count(x) > 1})
+          assert not dupes, f'Duplicate HTML ids: {dupes}'
+
+          js = s.split('<script>', 1)[1].split('</script>', 1)[0]
+          Path('/tmp/zone-sketch-v013.js').write_text(js)
+
+          start = js.index('function resizeSelectionFromHandle')
+          end = js.index('function refSelected', start)
+          resize_fn = js[start:end]
+          assert 'src=snap.orig' in resize_fn, 'Resize must use pointer-down snapshot'
+          assert 'mapObjectPoints(snap.ref.type,o,fn)' not in resize_fn, 'Cumulative resize bug still present'
+          assert '24/(img.width*v.s)' in resize_fn, 'Minimum screen-space resize guard missing'
+
+          harness = r'''
+          let img={width:3200,height:2000};
+          function transform(){return {s:1}}
+          function snapGridPoint(p){return p}
+          function clamp(v,a=0,b=1){return Math.max(a,Math.min(b,v))}
+          let objects={};
+          function getObj(ref){return objects[ref.id]}
+          ''' + resize_fn + r'''
+          function close(a,b,eps=1e-9){return Math.abs(a-b)<eps}
+          const orig={points:[{x:.2,y:.2},{x:.6,y:.5}]};
+          objects.w=JSON.parse(JSON.stringify(orig));
+          const d={bounds:{x1:.2,y1:.2,x2:.6,y2:.5},handle:'se',snap:[{ref:{type:'walls',id:'w'},orig:JSON.parse(JSON.stringify(orig))}]};
+          resizeSelectionFromHandle(d,{x:.8,y:.7});
+          if(!close(objects.w.points[0].x,.2)||!close(objects.w.points[0].y,.2)||!close(objects.w.points[1].x,.8)||!close(objects.w.points[1].y,.7)) throw new Error('SE resize failed fixed NW anchor');
+          resizeSelectionFromHandle(d,{x:.7,y:.6});
+          if(!close(objects.w.points[0].x,.2)||!close(objects.w.points[0].y,.2)||!close(objects.w.points[1].x,.7)||!close(objects.w.points[1].y,.6)) throw new Error('Resize compounded instead of recalculating from original');
+          objects.w=JSON.parse(JSON.stringify(orig));
+          const d2={bounds:{x1:.2,y1:.2,x2:.6,y2:.5},handle:'nw',snap:[{ref:{type:'walls',id:'w'},orig:JSON.parse(JSON.stringify(orig))}]};
+          resizeSelectionFromHandle(d2,{x:.1,y:.1});
+          if(!close(objects.w.points[0].x,.1)||!close(objects.w.points[0].y,.1)||!close(objects.w.points[1].x,.6)||!close(objects.w.points[1].y,.5)) throw new Error('NW resize failed fixed SE anchor');
+          console.log('Resize regression passed');
+          '''
+          Path('/tmp/resize-regression.js').write_text(harness)
+          PY
+          node --check /tmp/zone-sketch-v013.js
+          node /tmp/resize-regression.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Commit upgraded source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html app/src/main/assets/index.html README.md
+          if git diff --cached --quiet; then
+            echo 'No source changes to commit.'
+          else
+            git commit -m 'Fix Zone Sketch v0.13 corner resize and add top delete'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZoneSketch-v0.13-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
