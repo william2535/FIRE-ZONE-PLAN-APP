@@ -39,3 +39,11 @@ There is no login, subscription, internet permission, camera permission or analy
 - **Hide picture** removes the image from both the canvas and export while keeping your drawing. **Show picture** restores it.
 - **New blank** / **Start blank canvas** starts a white 1600 × 1000 page without an import. Share the existing draft before replacing it.
 - **Wall line** draws individual straight segments and snaps nearly horizontal/vertical lines. **Pen** draws freehand. Both support undo and redo and autosave with the draft.
+
+## Version 0.3 — doors, room labels and precise delete
+
+- **Door**: drag from the hinge to the door edge to add a simple swing symbol for the office/CAD redraw.
+- **Room label**: tap a room and type its name; labels stay readable over a faded plan and are included in PNG export.
+- **Delete**: tap a wall/pen stroke, zone area, door, note or room label to remove only that item. **Undo** immediately restores accidental deletions.
+- Existing Version 0.2 drafts remain compatible; new door and room-label data is simply added when used.
+
