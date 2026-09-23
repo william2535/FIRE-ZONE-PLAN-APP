@@ -47,3 +47,10 @@ There is no login, subscription, internet permission, camera permission or analy
 - **Delete**: tap a wall/pen stroke, zone area, door, note or room label to remove only that item. **Undo** immediately restores accidental deletions.
 - Existing Version 0.2 drafts remain compatible; new door and room-label data is simply added when used.
 
+## Version 0.4 — snapped doors, wall junctions and groups
+
+- **Door placement now locks to an existing wall.** Drag along the wall and only the exact opening is highlighted in orange. Releasing cuts that section from the wall and snaps the door into the opening; the door no longer slides around under your finger or paints a larger white gap over the wall.
+- **Wall lines snap and split at corners/intersections.** A wall that continues past a T-junction becomes separate pieces at the junction, so **Delete** removes only the tapped protruding section instead of the whole wall run.
+- Existing straight walls are split into junction pieces when an older draft is loaded, improving delete behaviour on previous sketches.
+- **Group / Move** lets you drag a selection box around a room, press **Group selected**, then move the whole grouped room together. Tapping any item in a saved group selects that group again; **Ungroup** separates it.
+- Doors created in a grouped wall inherit the same group so the wall pieces and door move together.
