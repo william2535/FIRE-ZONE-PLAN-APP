@@ -16,9 +16,9 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   await page.waitForFunction(()=>document.getElementById('empty').hidden);
   const xy=async(x,y,w=800,h=500)=>page.locator('#canvas').evaluate((c,{x,y,w,h})=>{const b=c.getBoundingClientRect(),s=Math.min((b.width-48)/w,(b.height-48)/h);return {x:b.x+b.width/2+(x-.5)*w*s,y:b.y+b.height/2+(y-.5)*h*s}},{x,y,w,h});
   const drag=async(a,b)=>{await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:12});await page.mouse.up()};
-  await page.locator('[data-tool="wall"]').click();await drag(await xy(.1,.15),await xy(.75,.15));
-  await page.locator('#addZone').click();await page.locator('#zoneName').fill('Offices');await page.locator('#saveZone').click();
-  await page.locator('[data-tool="rect"]').click();await drag(await xy(.1,.2),await xy(.45,.5));
+  await page.locator('#layoutMenuBtn').click();await page.locator('[data-menu-tool="wall"]').click();await drag(await xy(.1,.15),await xy(.75,.15));
+  await page.locator('#zoneMenuBtn').click();await page.locator('#zoneCreate').click();await page.locator('#zoneName').fill('Offices');await page.locator('#saveZone').click();
+  await page.locator('#zoneMenuBtn').click();await page.locator('[data-menu-tool="rect"]').click();await drag(await xy(.1,.2),await xy(.45,.5));
   await page.locator('#opacity').fill('25');
   await page.locator('#shareBtn').click();
   const pixel=async()=>page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const ctx=c.getContext('2d');ctx.drawImage(i,0,0);return [...ctx.getImageData(690,485,1,1).data]});
@@ -33,7 +33,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   await page.locator('[data-tool="pan"]').click();await drag(await xy(.5,.5),await xy(.55,.55));
   await page.locator('#blankBtn').click();await page.waitForTimeout(200);assert.equal(await page.locator('#backgroundBar').isVisible(),false);
   await drag(await xy(.1,.2,1600,1000),await xy(.8,.2,1600,1000));
-  await page.locator('[data-tool="pen"]').click();await drag(await xy(.3,.35,1600,1000),await xy(.6,.6,1600,1000));
+  await page.locator('#layoutMenuBtn').click();await page.locator('[data-menu-tool="pen"]').click();await drag(await xy(.3,.35,1600,1000),await xy(.6,.6,1600,1000));
   await page.locator('#undo').click();await page.locator('#redo').click();
   await page.locator('#shareBtn').click();assert(await page.evaluate(()=>window.exported.data.startsWith('data:image/png')));
   await page.waitForTimeout(700);await page.reload();await page.waitForFunction(()=>document.getElementById('empty').hidden);

@@ -93,3 +93,20 @@ There is no login, subscription, internet permission, camera permission or analy
 - **Objects** contains wall-snapped Door, Window and Roller shutter tools plus a drag-to-place Stairway symbol.
 - New objects support selection, movement, grouping, deletion, undo/redo and PNG export.
 
+
+
+## v0.10 — multiple floors
+
+Use the Floor selector to switch drawings. Add Ground, First, Second, Third, Fourth, Basement, Mezzanine or a custom floor. Each floor keeps its own zones, image, opacity, objects and notes. Existing drafts migrate to Ground floor. Rename or delete a floor; Undo restores deletion. Blank this floor and Import plan affect only the selected floor. New starts a whole new site.
+
+Copy current building layout when adding a floor to reuse walls, openings, stairs and room labels, without copying zone assignments, notes or the background photo. Send to office exports the selected floor, with its name in the title and filename; switch floors to export the next drawing.
+
+### Ideas for faster onsite work (not yet implemented)
+
+- Favourite symbol stamps: fire panel, repeater, MCP, smoke, heat, sounder, beacon and you-are-here marker, with a clear symbol key.
+- Repeat placement: keep a symbol selected and tap several locations; optional sequential device labels.
+- Room-name shortcuts: Office, Store, Corridor, WC and Plant room, plus recently used names.
+- Duplicate a selected room or group, with rotate and mirror controls.
+- Pin photographs or dictated notes to a location for office follow-up.
+- Export all floors together with a site-wide zone index and editable project backup.
+- Large-button survey mode with favourites, Undo and Fit always visible.

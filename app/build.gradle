@@ -1,17 +1,16 @@
 plugins { id 'com.android.application' }
-
 android {
-    namespace 'com.zonesketch.app'
-    compileSdk 35
-    defaultConfig {
-        applicationId 'com.zonesketch.app'
-        minSdk 26
-        targetSdk 34
-        versionCode 2
-        versionName '0.2'
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
+ namespace 'com.zonesketch.app'
+ compileSdk 35
+ defaultConfig {
+ applicationId 'com.zonesketch.app'
+ minSdk 26
+ targetSdk 34
+ versionCode 10
+ versionName '0.10'
+ }
+ compileOptions {
+ sourceCompatibility JavaVersion.VERSION_17
+ targetCompatibility JavaVersion.VERSION_17
+ }
 }

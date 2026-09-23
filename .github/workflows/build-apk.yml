@@ -24,6 +24,7 @@ jobs:
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
           node tests/browser.cjs
+          node tests/floors.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: Browser-previews
