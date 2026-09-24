@@ -1,0 +1,136 @@
+name: Release On Site Zone Planner v0.32
+
+on:
+  push:
+    paths:
+      - '.github/upgrade_v032.py'
+      - '.github/workflows/release-v032.yml'
+      - 'tests/zone-fill-v032.cjs'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.32 fill-only zones upgrade
+        run: python .github/upgrade_v032.py
+
+      - name: Prepare legacy browser tests for bundled app assets
+        run: python .github/prepare_static_test_servers.py
+
+      - name: Verify v0.32 source
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 32" app/build.gradle
+          grep -q "versionName '0.32'" app/build.gradle
+          grep -q 'v0.32 — zones are translucent fill only' index.html
+          grep -q 'function snapZoneCorner' index.html
+          grep -q 'v0.31 — restore the collapsible Zones sidebar' index.html
+          ! grep -q '#zoneSide{display:none!important}' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v032.js').write_text('\n'.join(scripts))
+          ids=re.findall(r'\bid="([^"]+)"',t)
+          dup=sorted({x for x in ids if ids.count(x)>1})
+          assert not dup, f'duplicate ids: {dup}'
+          shape=re.search(r'function shape\(c,pts,color,num,line=1\.4,fill=true\)\{.*?\}',t)
+          assert shape and '.stroke(' not in shape.group(0) and '.stroke()' not in shape.group(0), 'zone shape renderer must not stroke'
+          assert "selection[0].type==='shapes'" in t
+          assert "ctx.strokeStyle=tool==='layoutPoly'?'#172333':(z?.color||'#ee3333')" not in t
+          print('v0.32 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v032.js
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Run full browser regression suite
+        run: |
+          node tests/zone-fill-v032.cjs
+          node tests/zone-sidebar-v031.cjs
+          node tests/web-lock-v028.cjs
+          node tests/plan-tools-v027.cjs
+          node tests/drawing-tools-v026.cjs
+          node tests/note-size.cjs
+          node tests/favourites.cjs
+          node tests/survey-mode.cjs
+          node tests/projects.cjs
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build v0.32 Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Update README and public v0.32 download
+        shell: bash
+        run: |
+          if ! grep -q 'Version 0.32' README.md; then
+            cat >> README.md <<'EOF'
+
+          ## Version 0.32 — cleaner zone fills
+          - Removes coloured perimeter outlines from completed zones, previews and exported plans.
+          - Keeps the light transparent zone colour fill so building walls stay visually dominant.
+          - A single selected zone shows resize handles without drawing another full box around it.
+          - Keeps the restored Zones sidebar and wall-aware Zone Box snapping from v0.31/v0.30.
+          EOF
+          fi
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.32.apk
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('download.html')
+          t=p.read_text().replace('v0.31','v0.32').replace('Zone-Sketch-by-Will-v0.31.apk','Zone-Sketch-by-Will-v0.32.apk')
+          p.write_text(t)
+          PY
+
+      - name: Commit v0.32 source and public APK
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle README.md download.html downloads/Zone-Sketch-by-Will-v0.32.apk
+          if ! git diff --cached --quiet; then
+            git commit -m 'Release On Site Zone Planner v0.32 cleaner zone fills'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.32-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.32-Test-Previews
+          path: test-results/
+          if-no-files-found: warn
