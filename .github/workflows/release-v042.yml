@@ -111,3 +111,4 @@ jobs:
 # rerun: Survey grid steps initialize before any startup render
 # rerun: touch regression waits for Survey mode activation
 # rerun: Survey pinch is measured relative to preserved canvas scale
+# rerun: grid regression closes popup without stamping a detector
