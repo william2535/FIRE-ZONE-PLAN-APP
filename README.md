@@ -319,3 +319,7 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Pinch uses a fixed image-space anchor; viewport resizing preserves scale and centre at high zoom. Remaining fingers after a pinch cannot place items.
 - Canvas (…) menu adds space around the current floor, rotates the floor/background 90° clockwise, and sets grid spacing. Rotation and expansion are undoable and saved in the project.
 - Phone Survey controls use a compact three-column layout.
+
+## Version 0.39.1 — Separate navigation and device-only surveys
+- Zone Plan retains explicit Move ON/OFF controls. Only Survey supports two-finger navigation while placing devices.
+- Survey shares the live building layout but locks all non-device objects against selection, moving and deletion. Room/note creation is hidden; floor rotation and expansion are restricted to Zone Plan.
