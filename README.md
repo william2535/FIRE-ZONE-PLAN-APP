@@ -257,3 +257,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Uses the dynamic viewport height so the workspace follows the visible browser area more reliably.
 - Canvas touch movement is explicitly prevented from becoming page scrolling/rubber-banding.
 - Menus, project lists and modal panels keep their own contained scrolling when content genuinely needs to scroll.
+
+## Version 0.29 — zones panel visibility hotfix
+- Keeps zone cards fully visible after the v0.28 locked-viewport change.
+- Gives the zones list guaranteed usable space on shorter browser windows.
+- Hides the long help copy automatically when vertical space is tight so it cannot crowd out the zones.
+- On phones, zones use a stable-height horizontal strip instead of being vertically clipped.
