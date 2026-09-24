@@ -2,7 +2,7 @@ const { chromium }=require('playwright');
 const fs=require('fs'), http=require('http'), assert=require('node:assert/strict');
 (async()=>{
  const html=fs.readFileSync('index.html');
- const server=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html');res.end(html)}).listen(0,'127.0.0.1');
+ const server=http.createServer((req,res)=>{const path=(req.url||'/').split('?')[0],file=path==='/'?'index.html':path.slice(1);try{const data=fs.readFileSync(file);res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.pdf')?'application/pdf':'text/html');res.end(data)}catch(e){res.statusCode=404;res.end('not found')}}).listen(0,'127.0.0.1');
  await new Promise(ok=>server.once('listening',ok));
  const browser=await chromium.launch({headless:true});
  try{

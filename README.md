@@ -243,3 +243,11 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Join wall gap moves one wall endpoint directly onto another.
 - Split wall creates a new editable junction/section with one tap.
 - New drawing tools can be added to Favourite Tools.
+
+## Version 0.27 — plan import and tracing cleanup
+- Import PDF floor-plan pages directly as a background, with page choice for multi-page PDFs.
+- PDF rendering is bundled locally so Android can open PDFs without an internet connection.
+- Background cleanup adds brightness, contrast and black-and-white controls plus a plan preset.
+- Four-corner perspective straighten corrects photographed plans before tracing.
+- Rotate imported plans by 90 degrees before drawing.
+- Snapping now shows endpoint, midpoint and wall snap markers plus alignment guides.
