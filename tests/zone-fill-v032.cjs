@@ -16,7 +16,8 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),pat
     assert(shapeSource,'zone shape renderer should exist');
     assert(!shapeSource.includes('.stroke(')&&!shapeSource.includes('.stroke()'),'Zone renderer must be fill-only with no perimeter stroke');
     assert(html.includes("selection[0].type==='shapes'"),'single-zone selection should suppress the full selection rectangle');
-    assert(html.includes("if(tool==='poly'){const z=state.zones.find"),'fill-only polygon zone preview should be present');
+    assert(html.includes("if(!navMode&&tool==='poly'&&poly.length>=3&&selected)zonePaint.push"),'fill-only polygon zone preview should be included in the combined zone layer');
+    assert(html.includes('drawZoneLayer(ctx,zonePaint,state.zones,map,.14)'),'zone previews and existing fills should use the shared translucent layer');
     assert(!html.includes("ctx.strokeStyle=tool==='layoutPoly'?'#172333':(z?.color||'#ee3333')"),'old coloured zone outline preview must be removed');
 
     const p=await browser.newPage({viewport:{width:1180,height:900}});
@@ -46,6 +47,6 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),pat
     fs.mkdirSync('test-results',{recursive:true});
     await p.screenshot({path:'test-results/v032-fill-only-zones.png',fullPage:true});
     assert.deepEqual(errors,[],'No browser runtime errors');
-    console.log('PASS v0.32: zones are translucent fill-only with no coloured perimeter stroke');
+    console.log('PASS v0.32 compatibility: zones remain translucent fill-only with no coloured perimeter stroke');
   }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
