@@ -1,4 +1,4 @@
-# Zone Sketch — site draft for the office
+# Zone Sketch by Will — site draft for the office
 
 A small offline Android app for walking a site and marking fire-alarm zone areas on a floor-plan image. It is a **working draft for an office CAD redraw**, not a finished customer chart or a substitute for checking the current fire strategy.
 
@@ -14,7 +14,7 @@ The current draft autosaves on this tablet. **New** replaces that saved draft. S
 
 ## Build the APK with GitHub
 
-Upload the contents of this folder as the root of a new GitHub repository (including `.github/workflows/build-apk.yml`) and commit to `main`. Open **Actions → Build Android APK → latest run → ZoneSketch-APK**. Download the artifact ZIP; the `app-debug.apk` inside is installable on Android 8 or newer. If Actions is disabled in the repo, enable it under the repository Actions settings, then use **Run workflow**.
+Upload the contents of this folder as the root of a new GitHub repository (including `.github/workflows/build-apk.yml`) and commit to `main`. Open **Actions → Build Android APK → latest run → Zone-Sketch-by-Will-APK**. Download the artifact ZIP; the `app-debug.apk` inside is installable on Android 8 or newer. If Actions is disabled in the repo, enable it under the repository Actions settings, then use **Run workflow**.
 
 This is a debug-signed APK for personal testing. Updates built from the same GitHub runner may use a different debug key and require uninstalling the old APK; uninstalling clears the saved draft, so send it first. A stable release signature and multiple saved site projects can be added after field testing.
 
@@ -25,7 +25,8 @@ There is no login, subscription, internet permission, camera permission or analy
 - `app/src/main/assets/index.html`: the entire drawing interface.
 - `app/src/main/java/com/zonesketch/app/`: Android image picker and PNG sharing.
 - `.github/workflows/build-apk.yml`: APK build workflow.
-- `ZoneSketch.html`: standalone browser preview of the interface.
+- `Zone-Sketch-by-Will.html`: branded standalone browser preview of the interface.
+- `ZoneSketch.html`: compatibility copy kept in sync for older tooling.
 
 ## Known first-version limits
 
@@ -183,3 +184,11 @@ Validation: browser regression tests, multi-floor persistence/migration tests, a
 - Browser, standalone HTML and Android WebView copies are kept identical.
 - Android app version bumped to 0.20 for the public tester release.
 - Release workflow runs the full browser regression suite plus dedicated v0.20 geometry/mobile tests before building the APK.
+
+
+## Version 0.21 — Zone Sketch by Will branding
+- Public-facing product name is **Zone Sketch by Will** across the browser app, Android launcher, public tester page and Android share UI.
+- APK, PNG, PDF and editable-backup filenames include **Zone-Sketch-by-Will** so shared copies are immediately recognisable.
+- Office exports and building packs carry **Zone Sketch by Will** branding.
+- New editable backups identify themselves as `ZoneSketchByWill`; older `ZoneSketch` backups remain supported.
+- Android package ID and browser storage identifiers intentionally remain unchanged so existing installs and saved drafts continue to work.

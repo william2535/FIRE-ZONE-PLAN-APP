@@ -53,7 +53,7 @@ public final class MainActivity extends Activity {
             String html = bytes.toString(StandardCharsets.UTF_8.name());
             // An HTTPS base origin gives IndexedDB a stable, private origin. No network permission is requested.
             web.loadDataWithBaseURL("https://zonesketch.local/", html, "text/html", "UTF-8", null);
-        } catch (Exception e) { Toast.makeText(this, "Could not load Zone Sketch", Toast.LENGTH_LONG).show(); }
+        } catch (Exception e) { Toast.makeText(this, "Could not load Zone Sketch by Will", Toast.LENGTH_LONG).show(); }
     }
 
     @Override protected void onActivityResult(int code, int result, Intent data) {
@@ -92,7 +92,7 @@ public final class MainActivity extends Activity {
                         send.setClipData(ClipData.newUri(getContentResolver(), filename, uri));
                         send.putExtra(Intent.EXTRA_SUBJECT, filename);
                         send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        startActivity(Intent.createChooser(send, "Send Zone Sketch file"));
+                        startActivity(Intent.createChooser(send, "Send Zone Sketch by Will file"));
                     } catch (Exception e) { Toast.makeText(MainActivity.this, "No app available to share this file", Toast.LENGTH_LONG).show(); }
                 });
             } catch (Exception e) {
