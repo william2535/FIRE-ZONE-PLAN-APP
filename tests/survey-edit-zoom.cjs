@@ -15,7 +15,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  let s=(await read()).state.symbols[0];assert.equal(s.color,'#2675db');assert.equal(s.reference,'L1-043');assert.equal(s.scale,.1);
  q=await devicePoint();await p.mouse.move(q.x,q.y);await p.mouse.down();await p.mouse.move(q.x+40,q.y+20,{steps:6});await p.mouse.up();let moved=(await read()).state.symbols[0];assert(moved.x>s.x);assert(moved.y>s.y);
  await p.locator('#surveyUndo').click();assert.equal((await read()).state.symbols[0].x,s.x);await p.locator('#surveyRedo').click();assert.equal((await read()).state.symbols[0].x,moved.x);
- await p.locator('#surveyMove').click();b=await p.locator('#canvas').boundingBox();await p.mouse.move(b.x+b.width*.5,b.y+b.height*.5);await p.mouse.down();await p.mouse.move(b.x+b.width*.5+30,b.y+b.height*.5+20);await p.mouse.up();
+ await p.evaluate(()=>document.querySelector('#moveModeTop').click());b=await p.locator('#canvas').boundingBox();await p.mouse.move(b.x+b.width*.5,b.y+b.height*.5);await p.mouse.down();await p.mouse.move(b.x+b.width*.5+30,b.y+b.height*.5+20);await p.mouse.up();
  const before=await read();await p.locator('#viewZoom').fill('1');await p.locator('#viewZoom').dispatchEvent('input');let after=await read();assert.equal(after.zoom,2);assert(Math.abs(after.pan.x-before.pan.x*2)<.001);assert(Math.abs(after.pan.y-before.pan.y*2)<.001);assert.equal(await p.locator('#viewZoomValue').textContent(),'200%');
  // A symmetric off-centre pinch must anchor the same plan point to its midpoint.
  const pinchBefore=await read();b=await p.locator('#canvas').boundingBox();const mx=b.x+b.width*.4,my=b.y+b.height*.4;

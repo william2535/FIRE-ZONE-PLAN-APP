@@ -313,3 +313,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Device symbols use solid colour with automatic black/white contrast for their labels.
 - PNG exports default to 2× rendering for crisp text and symbols, with Standard available for smaller files. Large exports are capped at 24 megapixels / 8192 pixels per side. Imported photos retain their original detail.
 - Current-floor changes are synchronised before PNG export.
+
+## Version 0.39 — Touch navigation and canvas space
+- Two fingers pan/zoom while drawing; one finger places devices. Survey mode opens ready to place devices, with Grid and Snap controls.
+- Pinch uses a fixed image-space anchor; viewport resizing preserves scale and centre at high zoom. Remaining fingers after a pinch cannot place items.
+- Canvas (…) menu adds space around the current floor, rotates the floor/background 90° clockwise, and sets grid spacing. Rotation and expansion are undoable and saved in the project.
+- Phone Survey controls use a compact three-column layout.
