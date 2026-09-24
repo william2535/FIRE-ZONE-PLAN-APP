@@ -263,3 +263,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Gives the zones list guaranteed usable space on shorter browser windows.
 - Hides the long help copy automatically when vertical space is tight so it cannot crowd out the zones.
 - On phones, zones use a stable-height horizontal strip instead of being vertically clipped.
+
+## Version 0.30 — full canvas and wall-snapping zones
+- Removes the permanent Zones side/bottom barrier so the drawing canvas uses the full workspace.
+- Zones are still created, selected and edited from the bottom Zone menu.
+- Zone Box now snaps its dragged corners/edges to nearby building wall endpoints and wall lines.
+- Keeps the locked Safari/web viewport behaviour from v0.28.
