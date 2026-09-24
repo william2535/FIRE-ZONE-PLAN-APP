@@ -1,0 +1,95 @@
+name: Release On Site Zone Planner v0.45
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v045.yml'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v0.45 Circuit Builder zoom and drag changes
+        run: python .github/fix_v045_circuit_zoom_drag.py
+      - name: Verify v0.45 source
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 46" app/build.gradle
+          grep -q "versionName '0.45'" app/build.gradle
+          grep -q 'cbZoomIn' index.html
+          grep -q 'cbBeginPinch' index.html
+          grep -q 'cbGameRouteColor' index.html
+          grep -q 'cbCaptureDragTarget' index.html
+          grep -q 'v0.45' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v045.js').write_text('\n'.join(scripts))
+          assert "return cbSequenceReady(c,[...c.sequence,...extra])?'#239b57':'#df3f36'" in t
+          assert "cbDrag.previewLegs.push" in t
+          assert "$('cbZoomFit').onclick=()=>cbResetView(true)" in t
+          print('v0.45 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v045.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run Circuit Builder and touch regressions
+        run: |
+          node tests/circuit-builder-v043.cjs
+          node tests/circuit-builder-v045.cjs
+          node tests/canvas-touch-v042.cjs
+          node tests/survey-edit-zoom.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build v0.45 Android APK
+        run: gradle --no-daemon assembleDebug
+      - name: Update public v0.45 download
+        run: |
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.45.apk
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('download.html')
+          t=p.read_text()
+          t=re.sub(r'v0\.\d+(?:\.\d+)?', 'v0.45', t)
+          t=re.sub(r'downloads/Zone-Sketch-by-Will-v[0-9.]+\.apk', 'downloads/Zone-Sketch-by-Will-v0.45.apk', t)
+          p.write_text(t)
+          PY
+      - name: Commit v0.45 source and public APK
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle download.html downloads/Zone-Sketch-by-Will-v0.45.apk
+          git commit -m 'Release On Site Zone Planner v0.45 Circuit Builder zoom and drag' || exit 0
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/zone-sketch-v045.apk
+          git stash push --include-untracked -m 'v0.45 runner build state' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          mkdir -p app/build/outputs/apk/debug
+          cp /tmp/zone-sketch-v045.apk app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.45-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
