@@ -22,6 +22,8 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),pat
     const p=await browser.newPage({viewport:{width:1180,height:900}});
     p.on('pageerror',e=>errors.push(e.message));
     await p.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
+    await p.locator('#homeNew').waitFor({state:'visible'});
+    await p.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
     await p.locator('#homeNew').click();
     await p.locator('#projectsHome').waitFor({state:'hidden'});
     await p.waitForTimeout(180);
