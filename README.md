@@ -308,3 +308,8 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - A persistent centre-anchored zoom slider, percentage and Fit control work in both modes. Pan-mode pinch zoom now anchors to the fingers instead of jumping around the canvas centre.
 - Added Survey Redo and clearer Pan naming.
 - Editing a 0.10× device preserves its small size.
+
+## Version 0.38 — Filled symbols and sharp PNGs
+- Device symbols use solid colour with automatic black/white contrast for their labels.
+- PNG exports default to 2× rendering for crisp text and symbols, with Standard available for smaller files. Large exports are capped at 24 megapixels / 8192 pixels per side. Imported photos retain their original detail.
+- Current-floor changes are synchronised before PNG export.
