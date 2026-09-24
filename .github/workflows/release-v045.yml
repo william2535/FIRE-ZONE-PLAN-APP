@@ -13,7 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply v0.45 Circuit Builder zoom and drag changes
-        run: python .github/fix_v045_circuit_zoom_drag.py
+        run: |
+          python .github/fix_v045_circuit_zoom_drag.py
+          python .github/fix_v045_pointer_residue.py
       - name: Verify v0.45 source
         shell: bash
         run: |
@@ -36,6 +38,7 @@ jobs:
           assert "return cbSequenceReady(c,[...c.sequence,...extra])?'#239b57':'#df3f36'" in t
           assert "cbDrag.previewLegs.push" in t
           assert "$('cbZoomFit').onclick=()=>cbResetView(true)" in t
+          assert "Release directly over the next device to lock the cable" not in t
           print('v0.45 static checks passed')
           PY
           node --check /tmp/zonesketch-v045.js
