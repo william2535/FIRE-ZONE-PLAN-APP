@@ -39,7 +39,7 @@ rep(
 rep(
 "'tool:layoutRect':{label:'Room',kind:'tool',value:'layoutRect'},'tool:layoutEllipse':{label:'Round room',kind:'tool',value:'layoutEllipse'},'tool:door':",
 "'tool:layoutRect':{label:'Room',kind:'tool',value:'layoutRect'},'tool:layoutEllipse':{label:'Round room',kind:'tool',value:'layoutEllipse'},'tool:corridor':{label:'Corridor',kind:'tool',value:'corridor'},'tool:layoutL':{label:'L-room',kind:'tool',value:'layoutL'},'tool:wallEnds':{label:'Wall ends',kind:'tool',value:'wallEnds'},'tool:joinWalls':{label:'Join walls',kind:'tool',value:'joinWalls'},'tool:splitWall':{label:'Split wall',kind:'tool',value:'splitWall'},'tool:door':",
-favourite catalogue')
+'favourite catalogue')
 
 # State used by two-tap Join Wall.
 rep('navMode=false,tapStart=null;','navMode=false,tapStart=null,joinPending=null;','join state')
@@ -54,27 +54,27 @@ text=text.replace(needle,needle+extra,1)
 rep(
 "if(tool==='trim'){trimExtendAt(e.clientX,e.clientY);return}if(tool==='pen')",
 "if(tool==='joinWalls'){joinWallTap(e.clientX,e.clientY);return}if(tool==='splitWall'){splitWallAt(e.clientX,e.clientY);return}if(tool==='wallEnds'){const hit=nearestWallEnd(e.clientX,e.clientY,32);if(!hit){setHint('Tap a blue wall-end handle');setTimeout(hint,1000);return}drawing={mode:'wallEnd',wallId:hit.wall.id,end:hit.end,orig:{...hit.wall.points[hit.end]},startClient:{x:e.clientX,y:e.clientY},moved:false};return}if(tool==='trim'){trimExtendAt(e.clientX,e.clientY);return}if(tool==='pen')",
-pointer down manual tools')
+'pointer down manual tools')
 rep(
 "if(tool==='layoutRect'||tool==='layoutEllipse'){const p=inputPoint(e.clientX,e.clientY);drawing={start:p,now:p};return}",
 "if(tool==='layoutRect'||tool==='layoutEllipse'||tool==='corridor'||tool==='layoutL'){const p=inputPoint(e.clientX,e.clientY);drawing={start:p,now:p};return}",
-pointer down drag rooms')
+'pointer down drag rooms')
 
 # Pointer move: wall endpoint drag and new room previews.
 rep(
 "}else if(tool==='pen'&&drawing){drawing.points.push(point(e.clientX,e.clientY));draw()}",
 "}else if(tool==='wallEnds'&&drawing?.mode==='wallEnd'){const w=state.walls.find(x=>x.id===drawing.wallId);if(!w)return;if(!drawing.moved&&Math.hypot(e.clientX-drawing.startClient.x,e.clientY-drawing.startClient.y)>3){push();drawing.moved=true}if(drawing.moved){w.points[drawing.end]=snapWallEndPoint(inputPoint(e.clientX,e.clientY),w.id);draw()}}else if(tool==='pen'&&drawing){drawing.points.push(point(e.clientX,e.clientY));draw()}",
-pointer move wall ends')
+'pointer move wall ends')
 rep(
 "else if((tool==='rect'||tool==='layoutRect'||tool==='layoutEllipse'||tool==='stairs')&&drawing){drawing.now=inputPoint(e.clientX,e.clientY);draw()}",
 "else if((tool==='rect'||tool==='layoutRect'||tool==='layoutEllipse'||tool==='corridor'||tool==='layoutL'||tool==='stairs')&&drawing){drawing.now=inputPoint(e.clientX,e.clientY);draw()}",
-pointer move drag rooms')
+'pointer move drag rooms')
 
 # Pointer up wall-end completion.
 rep(
 "if(toolLockReason(tool)){drawing=null;return}if(['symbol'",
 "if(toolLockReason(tool)){drawing=null;return}if(tool==='wallEnds'&&drawing?.mode==='wallEnd'){const moved=drawing.moved;drawing=null;if(moved){splitExistingWalls();changed();setHint('Wall end moved · nearby junctions snap automatically');setTimeout(hint,900)}else draw();return}if(['symbol'",
-pointer up wall end')
+'pointer up wall end')
 
 # Corridor / L room final creation before circular room branch.
 marker="else if(tool==='layoutEllipse'&&drawing){const a=drawing.start,b=inputPoint(e.clientX,e.clientY);drawing=null;"
