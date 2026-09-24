@@ -53,7 +53,13 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
 
   await page.locator('#surveyFavouriteButtons .surveyFavouriteQuick').first().click();
   const box=await page.locator('#canvas').boundingBox();
-  await page.mouse.click(box.x+box.width*.56,box.y+box.height*.42);
+  const directionalBeam=await page.locator('.homeVersion').evaluate(el=>/v0\.42\b/.test(el.textContent||''));
+  if(directionalBeam){
+   const sx=box.x+box.width*.50,sy=box.y+box.height*.46,tx=box.x+box.width*.63,ty=box.y+box.height*.38;
+   await page.mouse.move(sx,sy);await page.mouse.down();await page.mouse.move(tx,ty,{steps:7});await page.mouse.up();
+  }else{
+   await page.mouse.click(box.x+box.width*.56,box.y+box.height*.42);
+  }
   await page.waitForTimeout(300);
 
   await page.locator('#surveyDevice').click();
