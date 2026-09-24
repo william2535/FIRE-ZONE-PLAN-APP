@@ -41,7 +41,16 @@ if 'v0.29 — keep zone cards fully visible' not in text:
         raise SystemExit('v0.29 could not find closing style tag')
     text = text.replace('</style>', css + '\n</style>', 1)
 
-text = text.replace('v0.28', 'v0.29')
+# Only update the user-visible release labels. Keep the v0.28 viewport-lock
+# comments intact so the regression guard can prove that fix is still present.
+old_title = '<title>Zone Sketch by Will v0.28 — site survey draft</title>'
+new_title = '<title>Zone Sketch by Will v0.29 — site survey draft</title>'
+old_home = 'ON SITE ZONE PLANNER · v0.28'
+new_home = 'ON SITE ZONE PLANNER · v0.29'
+if old_title not in text or old_home not in text:
+    raise SystemExit('v0.29 could not find the v0.28 visible version labels')
+text = text.replace(old_title, new_title, 1)
+text = text.replace(old_home, new_home, 1)
 
 for path in html_paths:
     path.write_text(text)
