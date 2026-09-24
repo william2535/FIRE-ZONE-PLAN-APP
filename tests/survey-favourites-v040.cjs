@@ -53,7 +53,10 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
 
   await page.locator('#surveyFavouriteButtons .surveyFavouriteQuick').first().click();
   const box=await page.locator('#canvas').boundingBox();
-  const directionalBeam=await page.locator('.homeVersion').evaluate(el=>/v0\.42\b/.test(el.textContent||''));
+  const directionalBeam=await page.locator('.homeVersion').evaluate(el=>{
+   const m=(el.textContent||'').match(/v0\.(\d+)/);
+   return !!m&&Number(m[1])>=42;
+  });
   if(directionalBeam){
    const sx=box.x+box.width*.50,sy=box.y+box.height*.46,tx=box.x+box.width*.63,ty=box.y+box.height*.38;
    await page.mouse.move(sx,sy);await page.mouse.down();await page.mouse.move(tx,ty,{steps:7});await page.mouse.up();
