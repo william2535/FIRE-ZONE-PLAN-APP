@@ -302,3 +302,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Zone Plan shows zones plus Panel, Repeater and You are here symbols.
 - Site Survey hides zone colours and uses surveyed device symbols/counts.
 - Export now produces a separate Zone Plan and Site Survey as PNG or all-floor PDF.
+
+## Version 0.37 — Survey editing and zoom
+- Survey mode now has Select / move: drag an item, or select Properties to change device colour, type, size and reference. Duplicate and rotation remain available in the selection bar.
+- A persistent centre-anchored zoom slider, percentage and Fit control work in both modes. Pan-mode pinch zoom now anchors to the fingers instead of jumping around the canvas centre.
+- Added Survey Redo and clearer Pan naming.
+- Editing a 0.10× device preserves its small size.
