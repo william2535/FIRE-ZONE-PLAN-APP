@@ -188,3 +188,20 @@ Validation: browser regression tests, multi-floor persistence/migration tests, a
 - Office exports and building packs carry **Zone Sketch by Will** branding.
 - New editable backups identify themselves as `ZoneSketchByWill`; older `ZoneSketch` backups remain supported.
 - Android package ID and browser storage identifiers intentionally remain unchanged so existing installs and saved drafts continue to work.
+
+## v0.22 — Projects / Home (roadmap step 1)
+
+The app opens to **Your surveys**. Create a named blank survey, reopen a recent
+project, or import an editable backup as a separate project. Cards show the site,
+floor count, last edit time and a preview of the last drawing view, with Open,
+Rename, Duplicate, Export and Delete actions. Return through **Project → Home / Projects**.
+
+Each survey saves separately in the existing local IndexedDB database. The previous
+single draft migrates automatically; backups remain compatible with version 1.
+Project changes reset Undo/Redo, and switching stops if saving fails. Deleting a
+project requires confirmation and cannot be undone. Export backups regularly:
+clearing app/browser data still removes locally saved projects.
+
+This step does not yet include reusable templates, recovery snapshots or cloud sync.
+Browser regression coverage includes `node tests/projects.cjs` alongside the existing
+browser, floors, interactions and v020 suites.

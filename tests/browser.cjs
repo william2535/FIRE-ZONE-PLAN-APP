@@ -7,10 +7,10 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
  const browser=await chromium.launch({headless:true});
  try{
   const page=await browser.newPage({viewport:{width:1024,height:768}}), errors=[];
-  page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
+  page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept(d.type()==='prompt'?'Test survey':undefined));
   await page.addInitScript(()=>{window.AndroidBridge={sharePng:(data,name)=>{window.exported={data,name}}}});
   const url='http://127.0.0.1:'+server.address().port;
-  await page.goto(url);await page.waitForTimeout(200);
+  await page.goto(url);await page.locator('#homeNew').click();await page.locator('#projectsHome').waitFor({state:'hidden'});await page.waitForTimeout(200);
   const svg='<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500"><rect width="800" height="500" fill="black"/></svg>';
   await page.locator('#file').setInputFiles({name:'plan.svg',mimeType:'image/svg+xml',buffer:Buffer.from(svg)});
   await page.waitForFunction(()=>document.getElementById('empty').hidden);
@@ -26,7 +26,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   await page.locator('#togglePicture').click();await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);rgba=await pixel();assert.deepEqual(rgba,[255,255,255,255],'Hidden background exports white');
   // Check a wall survives removal of the imported background.
   const wall=await page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);return Math.min(...Array.from(x.getImageData(250,156,1,9).data).filter((_,i)=>i%4===0))});assert(wall<180,'Wall remains in exported drawing');
-  await page.waitForTimeout(700);await page.reload();await page.waitForFunction(()=>document.getElementById('togglePicture').textContent==='Show picture');
+  await page.waitForTimeout(700);await page.reload();await page.locator('#resumeProject').click();await page.waitForFunction(()=>document.getElementById('togglePicture').textContent==='Show picture');
   assert.equal(await page.locator('#opacity').inputValue(),'25');assert.equal(await page.locator('.zone').count(),1);
   await page.locator('#togglePicture').click();assert.equal(await page.locator('#opacity').isEnabled(),true);
   // Selected-zone panning must not throw or turn into a rectangle.
@@ -36,7 +36,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   await page.locator('#layoutMenuBtn').click();await page.locator('[data-menu-tool="pen"]').click();await drag(await xy(.3,.35,1600,1000),await xy(.6,.6,1600,1000));
   await page.locator('#undo').click();await page.locator('#redo').click();
   await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);assert(await page.evaluate(()=>window.exported.data.startsWith('data:image/png')));
-  await page.waitForTimeout(700);await page.reload();await page.waitForFunction(()=>document.getElementById('empty').hidden);
+  await page.waitForTimeout(700);await page.reload();await page.locator('#resumeProject').click();await page.waitForFunction(()=>document.getElementById('empty').hidden);
   const saved=await page.evaluate(()=>new Promise(ok=>{const r=indexedDB.open('ZoneSketch-v1',1);r.onsuccess=()=>{const g=r.result.transaction('draft').objectStore('draft').get('state');g.onsuccess=()=>ok(g.result)}}));
   assert.equal(saved.isBlank,true);assert.equal(saved.walls.length,2);assert.equal(saved.shapes.length,0);
   await page.locator('#site').fill('Blank canvas test');
