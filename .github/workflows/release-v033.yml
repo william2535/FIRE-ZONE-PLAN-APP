@@ -6,6 +6,7 @@ on:
       - '.github/upgrade_v033.py'
       - '.github/workflows/release-v033.yml'
       - 'tests/zone-overlap-v033.cjs'
+      - 'tests/zone-fill-v032.cjs'
 
 permissions:
   contents: write
