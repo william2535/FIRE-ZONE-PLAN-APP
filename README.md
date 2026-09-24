@@ -296,3 +296,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - New symbol size can now go down to 0.10× instead of 0.25×.
 - The symbol renderer itself now has a much smaller minimum radius, line width and label size, so the lower end of the slider genuinely looks smaller on the plan.
 - Existing placed symbols are unchanged and can still be resized individually from Properties.
+
+## Version 0.36 — Zone Plan + Site Survey modes
+- One shared building plan/floor set now has two working views: Zone Plan and Site Survey.
+- Zone Plan shows zones plus Panel, Repeater and You are here symbols.
+- Site Survey hides zone colours and uses surveyed device symbols/counts.
+- Export now produces a separate Zone Plan and Site Survey as PNG or all-floor PDF.
