@@ -1,4 +1,5 @@
 name: Release On Site Zone Planner v0.45
+# Retry with UI-only v0.45 gesture coverage.
 on:
   workflow_dispatch:
   push:
