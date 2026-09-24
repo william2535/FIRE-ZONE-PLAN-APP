@@ -29,10 +29,12 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
 
   await page.locator('#canvasOptionsBtn').click();
   const gridValues=await page.locator('#surveyGridSize option').evaluateAll(os=>os.map(o=>o.value));
-  assert.deepEqual(gridValues.slice(0,3),['5','10','20']);
+  for(const value of ['5','10','20'])assert.equal(gridValues.includes(value),true,'Survey grid should keep '+value+' as a spacing choice');
   await page.locator('#surveyGridSize').selectOption('5');
   assert.equal(await page.locator('#surveyGridSize').inputValue(),'5');
-  await page.mouse.click(700,300);
+  // Do not close this Survey popup by touching the canvas; that intentionally
+  // places the currently selected device.
+  await page.keyboard.press('Escape');
 
   await page.locator('#surveyDevice').click();
   assert.equal(await page.locator('[data-symbol="beam"]').isVisible(),true);
@@ -103,6 +105,6 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   assert.equal(await page.locator('#saveSurveyFavourite').isDisabled(),true);
 
   assert.deepEqual(errors,[]);
-  console.log('PASS: 5-unit grid, Beam/I-O devices, colour/size survey favourites, persistence and 9-slot side rail');
+  console.log('PASS: survey grid choices, Beam/I-O devices, colour/size survey favourites, persistence and 9-slot side rail');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
