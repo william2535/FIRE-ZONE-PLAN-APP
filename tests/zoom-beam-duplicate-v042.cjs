@@ -3,14 +3,14 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
 
 (async()=>{
   let html=fs.readFileSync('index.html','utf8');
-  const marker="const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);";
-  assert(html.includes(marker),'v0.42 test hook marker missing');
+  const marker="document.querySelector('.app').inert=true;\nensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();";
+  assert(html.includes(marker),'late v0.42 test hook marker missing');
   const hook=`window.v042Test={
     read:()=>({state:JSON.parse(JSON.stringify(state)),zoom,imgW:img?.width||0,imgH:img?.height||0}),
     screen:p=>screenPoint(p),
     start:async()=>{state=fresh();state.site='v0.42 test';state.image=blankImage();state.isBlank=true;ensureUiState();ensureFloors();syncFloor();document.querySelector('#projectsHome').hidden=true;document.querySelector('.app').inert=false;await setImage(state.image,false);renderFloors();renderZones();syncGrid();syncWallSize();updateButtons();draw()}
-  };`;
-  html=html.replace(marker,marker+hook);
+  };\n`;
+  html=html.replace(marker,hook+marker);
 
   const server=http.createServer((req,res)=>{
     const path=(req.url||'/').split('?')[0];
@@ -24,7 +24,6 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:'+server.address().port);
     await page.waitForFunction(()=>!!window.v042Test);
-    await page.waitForTimeout(80);
     await page.evaluate(()=>window.v042Test.start());
     await page.waitForTimeout(100);
 
