@@ -101,3 +101,4 @@ jobs:
           name: On-Site-Zone-Planner-v0.40-Test-Previews
           path: test-results/*
           if-no-files-found: ignore
+# release trigger: survey quick favourites
