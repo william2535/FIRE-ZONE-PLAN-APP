@@ -274,3 +274,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Restores the visible, collapsible Zones list at the side on tablet/desktop and as a strip on phone.
 - Keeps the v0.30 wall-aware Zone Box snapping improvement.
 - Existing zone creation, selection, saved projects and collapse/reopen behaviour remain intact.
+
+## Version 0.32 — cleaner zone fills
+- Removes coloured perimeter outlines from completed zones, previews and exported plans.
+- Keeps the light transparent zone colour fill so building walls stay visually dominant.
+- A single selected zone shows resize handles without drawing another full box around it.
+- Keeps the restored Zones sidebar and wall-aware Zone Box snapping from v0.31/v0.30.
