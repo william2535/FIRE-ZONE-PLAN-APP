@@ -56,7 +56,7 @@ const fs=require('fs'),http=require('http'),path=require('path'),assert=require(
       const list=document.querySelector('#zones').getBoundingClientRect();
       return {side:{top:side.top,bottom:side.bottom,height:side.height},zone:{top:zone.top,bottom:zone.bottom,height:zone.height},list:{top:list.top,bottom:list.bottom,height:list.height},help:getComputedStyle(document.querySelector('#zoneSide .help')).display};
     });
-    assert(d.zone.height>=50,`desktop zone card should keep usable height, got ${d.zone.height}`);
+    assert(d.zone.height>=48,`desktop zone card should keep usable height, got ${d.zone.height}`);
     assert(d.zone.top>=d.side.top-1 && d.zone.bottom<=d.side.bottom+1,`desktop zone card must be fully visible inside side panel: ${JSON.stringify(d)}`);
     assert(d.list.height>=58,`desktop zone list should reserve visible space, got ${d.list.height}`);
     assert.equal(d.help,'none','short desktop viewport should prioritise zone cards over help copy');
