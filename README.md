@@ -205,3 +205,16 @@ clearing app/browser data still removes locally saved projects.
 This step does not yet include reusable templates, recovery snapshots or cloud sync.
 Browser regression coverage includes `node tests/projects.cjs` alongside the existing
 browser, floors, interactions and v020 suites.
+
+## v0.23 — Survey mode and project polish
+
+Use **Survey mode** for a larger drawing area and six touch controls: Move, Undo,
+Delete, Add device, Add room and Add note. **Full tools** restores the normal
+interface; floor switching, project actions and export remain available. Entering
+Survey mode starts in Move to avoid accidental marks. Mode selection lasts for the
+current session and does not change exported drawings.
+
+The Home screen now has survey search and a cleaner responsive card layout.
+Opening a drawing no longer focuses the site-name field (and opens a phone keyboard).
+Opening or reopening a saved survey no longer changes its last-edited date or
+rewrites the full drawing. The last opened project is still restored correctly.

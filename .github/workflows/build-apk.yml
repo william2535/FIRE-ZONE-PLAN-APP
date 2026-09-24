@@ -25,6 +25,7 @@ jobs:
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
+          node tests/survey-mode.cjs
           node tests/projects.cjs
           node tests/browser.cjs
           node tests/floors.cjs
