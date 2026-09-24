@@ -28,6 +28,7 @@ jobs:
           node tests/canvas-touch.cjs
           node tests/filled-symbols.cjs
           node tests/survey-edit-zoom.cjs
+          node tests/survey-favourites-v040.cjs
           node tests/mode-separation-v036.cjs
           node tests/favourites.cjs
           node tests/survey-mode.cjs
