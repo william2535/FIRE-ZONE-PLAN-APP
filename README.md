@@ -269,3 +269,8 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Zones are still created, selected and edited from the bottom Zone menu.
 - Zone Box now snaps its dragged corners/edges to nearby building wall endpoints and wall lines.
 - Keeps the locked Safari/web viewport behaviour from v0.28.
+
+## Version 0.31 — Zones sidebar restored
+- Restores the visible, collapsible Zones list at the side on tablet/desktop and as a strip on phone.
+- Keeps the v0.30 wall-aware Zone Box snapping improvement.
+- Existing zone creation, selection, saved projects and collapse/reopen behaviour remain intact.
