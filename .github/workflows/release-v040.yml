@@ -92,6 +92,11 @@ jobs:
           git restore .github/workflows/build-apk.yml
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle download.html downloads/Zone-Sketch-by-Will-v0.40.apk
           git commit -m 'Release On Site Zone Planner v0.40 survey favourites' || exit 0
+          # A normal build can finish while this longer release is running. Rebase the generated
+          # release commit onto the latest main before publishing so that harmless branch movement
+          # does not cause a non-fast-forward failure.
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
       - uses: actions/upload-artifact@v4
         with:
@@ -104,3 +109,4 @@ jobs:
           path: test-results/*
           if-no-files-found: ignore
 # release trigger: permission-safe v0.40 publish
+# rerun trigger: rebase generated release before push
