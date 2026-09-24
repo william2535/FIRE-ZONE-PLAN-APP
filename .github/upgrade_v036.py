@@ -20,6 +20,6 @@ for path in [Path('index.html'),Path('ZoneSketch.html'),Path('Zone-Sketch-by-Wil
     if tablet_css.strip() not in text:
         text=text.replace('</style>',tablet_css+'</style>',1)
         path.write_text(text)
-# The browser export regression samples the rendered sheet rather than fixed coordinates,
-# because Zone Plan and Site Survey exports intentionally have different page furniture.
+# Browser export regression verifies the imported tracing picture stays out of clean
+# Zone Plan exports, while the building drawing and zones remain present.
 print('Applied v0.36 plus tablet toolbar overlap fix')
