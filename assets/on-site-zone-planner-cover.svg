@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs><pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#1b4f78" stroke-width="1"/></pattern><filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="1600" height="900" fill="#062c4d"/><rect width="1600" height="900" fill="url(#g)" opacity=".85"/>
+<g stroke="#7fb3d5" fill="none" opacity=".55" stroke-width="2" stroke-dasharray="10 8"><path d="M40 80H760M60 160H740M80 720H760M820 80H1540M820 760H1540"/><circle cx="65" cy="65" r="42"/><circle cx="1535" cy="785" r="35"/></g>
+<g transform="translate(835 105)" fill="none" stroke="#fff" stroke-width="16" stroke-linejoin="round"><path d="M55 105H300V170H435V105H650V565H440V500H305V565H55Z"/><path d="M300 105V325H55M300 325H440V565M440 170V350H650M55 430H305"/><path d="M150 430v135M150 475h155"/></g>
+<g transform="translate(1240 180)" filter="url(#glow)"><path d="M0 0c-64 0-116 52-116 116 0 88 116 196 116 196s116-108 116-196C116 52 64 0 0 0Z" fill="#ff4b2b"/><circle cy="112" r="42" fill="#fff"/></g>
+<g transform="translate(1180 350)"><rect width="260" height="180" rx="8" fill="#ff4b2b" opacity=".20" stroke="#ff4b2b" stroke-width="8" stroke-dasharray="18 12"/><circle cx="130" cy="78" r="25" fill="none" stroke="#fff" stroke-width="12"/><path d="M95 120q35 35 70 0M110 145q20 20 40 0" fill="none" stroke="#ff4b2b" stroke-width="10"/></g>
+<text x="70" y="305" font-family="Arial,Helvetica,sans-serif" font-size="120" font-weight="800" fill="#fff">On Site</text>
+<text x="70" y="435" font-family="Arial,Helvetica,sans-serif" font-size="118" font-weight="800" fill="#ff4b2b">Zone <tspan fill="#fff">Planner</tspan></text>
+<path d="M75 505H690" stroke="#ff4b2b" stroke-width="8"/><path d="M382 480c-25 30-36 50-26 73 9 20 27 30 45 30 30 0 52-22 52-52 0-24-15-46-33-66 3 28-12 35-20 47-5-17-3-25-18-32Z" fill="#ff4b2b"/>
+<g fill="#dcecf8" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="700" letter-spacing="4"><text x="90" y="680">PLAN</text><text x="270" y="680">PLACE</text><text x="475" y="680">ZONE</text><text x="640" y="680">EXPORT</text></g>
+<g stroke="#dcecf8" fill="none" stroke-width="8"><rect x="95" y="585" width="58" height="48"/><path d="M112 585v-18h24v18M292 575c-25 0-45 20-45 45 0 34 45 76 45 76s45-42 45-76c0-25-20-45-45-45Z"/><circle cx="292" cy="620" r="14"/><circle cx="510" cy="605" r="26"/><path d="M475 650q35 28 70 0M650 585h70v82h-70zM667 625l14 14 26-30"/></g>
+</svg>
