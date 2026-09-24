@@ -1,0 +1,91 @@
+name: Finalize On Site Zone Planner Brand Images
+
+on:
+  push:
+    paths:
+      - '.github/finalize_brand_images.py'
+      - '.github/workflows/finalize-brand-images.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select generated repository cover and launcher icon
+        run: python .github/finalize_brand_images.py
+
+      - name: Verify generated image assets
+        shell: bash
+        run: |
+          test -s assets/on-site-zone-planner-cover.webp
+          test -s assets/on-site-zone-planner-icon.webp
+          test -s app/src/main/res/drawable/app_icon.webp
+          cmp -s assets/on-site-zone-planner-icon.webp app/src/main/res/drawable/app_icon.webp
+          grep -q 'assets/on-site-zone-planner-cover.webp' README.md
+          ! grep -q 'on-site-zone-planner-cover.svg' README.md
+          grep -q 'android:icon="@drawable/app_icon"' app/src/main/AndroidManifest.xml
+          grep -q 'android:roundIcon="@drawable/app_icon"' app/src/main/AndroidManifest.xml
+          python - <<'PY'
+          from pathlib import Path
+          for p in [Path('assets/on-site-zone-planner-cover.webp'), Path('assets/on-site-zone-planner-icon.webp'), Path('app/src/main/res/drawable/app_icon.webp')]:
+              data=p.read_bytes()
+              assert data[:4] == b'RIFF' and data[8:12] == b'WEBP', f'Invalid WebP: {p}'
+              assert len(data) > 5000, f'Unexpectedly small image: {p}'
+              print(p, len(data), 'bytes')
+          PY
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Run browser regression suite
+        run: |
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          node tests/v020.cjs
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build APK with generated launcher icon
+        run: gradle --no-daemon assembleDebug
+
+      - name: Update public APK download
+        run: |
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.21.apk
+
+      - name: Commit final visual branding and public APK
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m 'Set generated On Site Zone Planner cover and app icon'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-by-Will-v0.21-Branded-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
