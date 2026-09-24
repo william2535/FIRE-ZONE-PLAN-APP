@@ -1,0 +1,101 @@
+name: Release On Site Zone Planner v0.24
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v024.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify v0.24 source and synced app copies
+        shell: bash
+        run: |
+          grep -q "versionCode 24" app/build.gradle
+          grep -q "versionName '0.24'" app/build.gradle
+          grep -q "Zone Sketch by Will v0.24" index.html
+          grep -q "favouriteQuick" index.html
+          grep -q "defaultFavourites" index.html
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Run full browser regression suite
+        run: |
+          node tests/favourites.cjs
+          node tests/survey-mode.cjs
+          node tests/projects.cjs
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build v0.24 Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Update public v0.24 download
+        shell: bash
+        run: |
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.24.apk
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('download.html')
+          t=p.read_text()
+          t=t.replace('v0.21','v0.24')
+          t=t.replace('Zone-Sketch-by-Will-v0.21.apk','Zone-Sketch-by-Will-v0.24.apk')
+          p.write_text(t)
+          PY
+          grep -q 'Zone-Sketch-by-Will-v0.24.apk' download.html
+          grep -q 'v0.24' download.html
+
+      - name: Commit public v0.24 APK and download page
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add download.html downloads/Zone-Sketch-by-Will-v0.24.apk
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish On Site Zone Planner v0.24 tester APK'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.24-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.24-Test-Previews
+          path: test-results/
+          if-no-files-found: warn
