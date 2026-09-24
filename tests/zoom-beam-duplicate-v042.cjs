@@ -8,7 +8,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   const hook=`window.v042Test={
     read:()=>({state:JSON.parse(JSON.stringify(state)),zoom,imgW:img?.width||0,imgH:img?.height||0}),
     screen:p=>screenPoint(p),
-    start:async()=>{state=fresh();state.site='v0.42 test';state.image=blankImage();state.isBlank=true;ensureUiState();ensureFloors();syncFloor();currentProject='v042-test';projectDirty=false;projectsReady=false;document.querySelector('#projectsHome').hidden=true;document.querySelector('.app').inert=false;await setImage(state.image,false);renderFloors();renderZones();syncGrid();syncWallSize();updateButtons();draw()}
+    start:async()=>{state=fresh();state.site='v0.42 test';state.image=blankImage();state.isBlank=true;ensureUiState();ensureFloors();syncFloor();document.querySelector('#projectsHome').hidden=true;document.querySelector('.app').inert=false;await setImage(state.image,false);renderFloors();renderZones();syncGrid();syncWallSize();updateButtons();draw()}
   };`;
   html=html.replace(marker,marker+hook);
 
@@ -24,6 +24,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
     page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:'+server.address().port);
     await page.waitForFunction(()=>!!window.v042Test);
+    await page.waitForTimeout(80);
     await page.evaluate(()=>window.v042Test.start());
     await page.waitForTimeout(100);
 
@@ -46,7 +47,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
     await page.locator('#canvasOptionsBtn').click();
     await page.locator('#surveyGridSize').selectOption('20');
     await page.locator('#surveyGridSize').dispatchEvent('change');
-    await page.mouse.click(900,280); // close options if it remains open
+    await page.locator('#canvasOptionsBtn').click();
     read=await page.evaluate(()=>window.v042Test.read());
     if(!read.state.gridVisible)await page.locator('#surveyMove').click();
     read=await page.evaluate(()=>window.v042Test.read());
@@ -84,7 +85,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
     read=await page.evaluate(()=>window.v042Test.read());
     smokes=read.state.symbols.filter(s=>s.type==='smoke');
     assert.equal(smokes.length,2);
-    const copy=smokes.find(s=>s.id!==smokes[0].id)||smokes[1];
+    const copy=smokes[1];
     assert(multiple(copy.x*read.imgW,20),'duplicated detector x must be on grid');
     assert(multiple(copy.y*read.imgH,20),'duplicated detector y must be on grid');
     const dx=Math.round(Math.abs((smokes[1].x-smokes[0].x)*read.imgW));
