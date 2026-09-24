@@ -13,7 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply v0.42 interaction fixes
-        run: python .github/upgrade_v042.py
+        run: |
+          python .github/upgrade_v042.py
+          python .github/fix_v042_grid_init.py
       - name: Verify v0.42 source
         shell: bash
         run: |
@@ -22,6 +24,7 @@ jobs:
           cmp -s index.html app/src/main/assets/index.html
           grep -q "versionCode 43" app/build.gradle
           grep -q "versionName '0.42'" app/build.gradle
+          grep -q 'const SURVEY_GRID_STEPS=\[2,5,10,20,40,50,100,150,200,250\]' index.html
           grep -q 'function drawBeamTriangle' index.html
           grep -q 'zoomSliderPointer' index.html
           grep -q "drawing?.mode==='beamSymbol'" index.html
@@ -37,6 +40,7 @@ jobs:
           ids=re.findall(r'\bid="([^"]+)"',t)
           dup=sorted({x for x in ids if ids.count(x)>1})
           assert not dup, f'duplicate ids: {dup}'
+          assert t.index('const SURVEY_GRID_STEPS=') < t.index('const fresh=()=>'), 'Survey grid steps must initialize before startup state'
           print('v0.42 static checks passed')
           PY
           node --check /tmp/zonesketch-v042.js
@@ -104,4 +108,4 @@ jobs:
           name: On-Site-Zone-Planner-v0.42-Test-Previews
           path: test-results/*
           if-no-files-found: ignore
-# rerun: test hooks are now injected after all app declarations
+# rerun: Survey grid steps initialize before any startup render
