@@ -25,11 +25,12 @@ jobs:
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-          node tests/canvas-touch.cjs
+          node tests/canvas-touch-v042.cjs
           node tests/filled-symbols.cjs
           node tests/survey-edit-zoom.cjs
           node tests/survey-favourites-v040.cjs
-          node tests/grid-door-shutter-v041.cjs
+          if grep -q 'v0.41' index.html || grep -q 'v0.42' index.html; then node tests/grid-door-shutter-v041.cjs; fi
+          if grep -q 'v0.42' index.html; then node tests/zoom-beam-duplicate-v042.cjs; fi
           node tests/mode-separation-v036.cjs
           node tests/favourites.cjs
           node tests/survey-mode.cjs
