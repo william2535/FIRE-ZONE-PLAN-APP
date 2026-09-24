@@ -96,8 +96,18 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle download.html downloads/Zone-Sketch-by-Will-v0.42.apk
           git commit -m 'Release On Site Zone Planner v0.42 interaction fixes' || exit 0
-          git pull --rebase origin main
+          # npm/Gradle/test output may leave tracked or untracked runner files behind.
+          # Save the APK/previews outside the checkout, stash that transient state,
+          # then rebase/push only the clean release commit.
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/zone-sketch-v042.apk
+          if [ -d test-results ]; then cp -a test-results /tmp/zone-sketch-v042-test-results; fi
+          git stash push --include-untracked -m 'v0.42 runner build state' || true
+          git fetch origin main
+          git rebase origin/main
           git push origin HEAD:main
+          mkdir -p app/build/outputs/apk/debug
+          cp /tmp/zone-sketch-v042.apk app/build/outputs/apk/debug/app-debug.apk
+          if [ -d /tmp/zone-sketch-v042-test-results ]; then rm -rf test-results; cp -a /tmp/zone-sketch-v042-test-results test-results; fi
       - uses: actions/upload-artifact@v4
         with:
           name: On-Site-Zone-Planner-v0.42-APK
@@ -114,3 +124,4 @@ jobs:
 # rerun: grid regression closes popup without stamping a detector
 # rerun: v0.40 favourites test accepts finer grid additions
 # rerun: favourites regression drags directional Beam in v0.42
+# rerun: preserve APK while cleaning transient runner files before publish
