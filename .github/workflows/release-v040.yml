@@ -104,3 +104,4 @@ jobs:
 # release trigger: survey quick favourites
 # rerun trigger: clean export regression updated
 # rerun trigger: robust browser regression
+# rerun trigger: build workflow updated outside release
