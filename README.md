@@ -1,10 +1,9 @@
 <p align="center">
-  <img src="assets/on-site-zone-planner-cover.jpg" alt="On Site Zone Planner" width="100%">
+  <img src="assets/on-site-zone-planner-cover.webp" alt="On Site Zone Planner" width="100%">
 </p>
 
 # Zone Sketch by Will — site draft for the office
 
-![On Site Zone Planner](assets/on-site-zone-planner-cover.svg)
 
 A small offline Android app for walking a site and marking fire-alarm zone areas on a floor-plan image. It is a **working draft for an office CAD redraw**, not a finished customer chart or a substitute for checking the current fire strategy.
 
