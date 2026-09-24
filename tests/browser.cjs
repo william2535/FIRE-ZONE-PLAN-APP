@@ -21,10 +21,9 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   await page.locator('#zoneMenuBtn').click();await page.locator('[data-menu-tool="rect"]').click();await drag(await xy(.1,.2),await xy(.45,.5));
   await page.locator('#opacity').fill('25');
   await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);
-  // v0.36 can change export page/legend dimensions, so inspect the whole image rather than a fixed pixel.
   const imageStats=async()=>page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);const d=x.getImageData(0,0,c.width,c.height).data;let faded=0,white=0,dark=0,samples=0;for(let py=0;py<c.height;py+=4){for(let px=0;px<c.width;px+=4){const n=(py*c.width+px)*4,r=d[n],g=d[n+1],b=d[n+2],a=d[n+3];samples++;if(a===255&&r>=188&&r<=194&&g>=188&&g<=194&&b>=188&&b<=194)faded++;if(a===255&&r>=250&&g>=250&&b>=250)white++;if(a===255&&r<80&&g<80&&b<80)dark++}}return{width:c.width,height:c.height,faded,white,dark,samples}});
-  const fadedStats=await imageStats();assert(fadedStats.faded>500,'Export should contain the imported black picture faded to 25%');
-  await page.locator('#togglePicture').click();await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);const hiddenStats=await imageStats();assert(hiddenStats.faded<fadedStats.faded*.2,'Hidden background should remove the faded imported picture from export');assert(hiddenStats.white>fadedStats.white,'Hidden background should reveal the white drawing sheet');
+  const visibleStats=await imageStats();assert(visibleStats.white>500,'Zone Plan export should contain a clean white drawing sheet');assert(visibleStats.faded<200,'Imported tracing picture should be excluded from the clean Zone Plan export');
+  await page.locator('#togglePicture').click();await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);const hiddenStats=await imageStats();assert.equal(hiddenStats.width,visibleStats.width);assert.equal(hiddenStats.height,visibleStats.height);assert(Math.abs(hiddenStats.white-visibleStats.white)<50,'Hiding the tracing picture should not materially change the clean export');
   // Check drawing content remains after removal of the imported background.
   assert(hiddenStats.dark>100,'Building drawing should remain visible after hiding the imported background');
   await page.waitForTimeout(700);await page.reload();await page.locator('#resumeProject').click();await page.waitForFunction(()=>document.getElementById('togglePicture').textContent==='Show picture');
@@ -44,7 +43,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   fs.mkdirSync('test-results',{recursive:true});await page.screenshot({path:'test-results/tablet.png'});
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:'test-results/phone.png'});
   assert.deepEqual(errors,[],'No browser runtime errors');
-  console.log('PASS: trace lines, zones, faded export, picture-free export, restore picture, persistence, blank drawing, undo/redo and phone layout');
+  console.log('PASS: trace lines, zones, clean export, picture-free export, restore picture, persistence, blank drawing, undo/redo and phone layout');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
 
