@@ -39,7 +39,7 @@ if old_poly not in text:
 text = text.replace(old_poly, new_poly, 1)
 
 old_export = "for(const sh of d.shapes){const z=d.zones.find(z=>z.id===sh.zone);if(z&&sh.points.length>2)shape(x,sh.points.map(map),z.color,z.number,Math.max(1.4,W/1800),true)}"
-new_export = "drawZoneLayer(x,d.shapes,d.zones,map,.14)"
+new_export = "drawZoneLayer(x,d.shapes,d.zones,map,.14);"
 if old_export not in text:
     raise SystemExit('v0.33 could not find export zone drawing loop')
 text = text.replace(old_export, new_export, 1)
