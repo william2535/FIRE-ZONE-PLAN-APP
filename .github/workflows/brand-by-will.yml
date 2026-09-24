@@ -1,0 +1,103 @@
+name: Zone Sketch by Will v0.21 Branding Release
+
+on:
+  push:
+    paths:
+      - '.github/brand_by_will.py'
+      - '.github/workflows/brand-by-will.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  brand-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply Zone Sketch by Will branding
+        run: python .github/brand_by_will.py
+
+      - name: Verify branding and synced app copies
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q 'Zone Sketch by Will v0.21' index.html
+          grep -q 'ZONE SKETCH BY WILL' index.html
+          grep -q 'android:label="Zone Sketch by Will"' app/src/main/AndroidManifest.xml
+          grep -q "versionCode 21" app/build.gradle
+          grep -q "versionName '0.21'" app/build.gradle
+          grep -q "rootProject.name = 'ZoneSketchByWill'" settings.gradle
+          grep -q 'Zone-Sketch-by-Will-v0.21.apk' download.html
+          grep -q 'ZoneSketchByWill' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zone-sketch-by-will.js').write_text('\n'.join(scripts))
+          ids=re.findall(r'\bid="([^"]+)"',t)
+          dup=sorted({x for x in ids if ids.count(x)>1})
+          assert not dup, f'duplicate ids: {dup}'
+          assert "['ZoneSketch','ZoneSketchByWill']" in t
+          assert '-Zone-Sketch-by-Will-draft.png' in t
+          assert '-Zone-Sketch-by-Will-all-floors.pdf' in t
+          print('Branding static checks passed')
+          PY
+          node --check /tmp/zone-sketch-by-will.js
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Run browser regression suite
+        run: |
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          node tests/v020.cjs
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build branded Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Publish direct branded APK
+        shell: bash
+        run: |
+          mkdir -p downloads
+          rm -f downloads/ZoneSketch-v0.20.apk
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.21.apk
+
+      - name: Commit branded release
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/src/main/AndroidManifest.xml app/src/main/java/com/zonesketch/app/MainActivity.java app/build.gradle settings.gradle download.html README.md downloads/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Brand public release as Zone Sketch by Will v0.21'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-by-Will-v0.21-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
