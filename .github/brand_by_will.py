@@ -24,15 +24,12 @@ if 'Zone Sketch by Will' not in text:
         if old not in text:
             raise SystemExit(f'Branding marker missing: {old[:90]}')
         text = text.replace(old, new, 1)
-    # Remaining user-visible mixed-case wording, without touching technical ZoneSketch identifiers.
     text = text.replace('Zone Sketch building pack', 'Zone Sketch by Will building pack')
 
 for p in html_paths:
     p.write_text(text)
-# Branded standalone copy for anyone sharing the HTML file itself.
 (ROOT/'Zone-Sketch-by-Will.html').write_text(text)
 
-# Android launcher / system UI branding, but keep package ID and provider authority stable for updates.
 manifest = ROOT/'app/src/main/AndroidManifest.xml'
 m = manifest.read_text().replace('android:label="Zone Sketch"', 'android:label="Zone Sketch by Will"')
 manifest.write_text(m)
@@ -55,25 +52,25 @@ settings = ROOT/'settings.gradle'
 s = settings.read_text().replace("rootProject.name = 'ZoneSketch'", "rootProject.name = 'ZoneSketchByWill'")
 settings.write_text(s)
 
-# Public tester landing page and direct download filename.
 download = ROOT/'download.html'
 d = download.read_text()
+d = d.replace('downloads/ZoneSketch-v0.20.apk', 'downloads/Zone-Sketch-by-Will-v0.21.apk')
+d = d.replace('downloads/ZoneSketch-v0.21.apk', 'downloads/Zone-Sketch-by-Will-v0.21.apk')
 d = d.replace('Zone Sketch v0.20', 'Zone Sketch by Will v0.21')
 d = d.replace('ZONE SKETCH<small>PUBLIC TESTER BUILD</small>', 'ZONE SKETCH BY WILL<small>PUBLIC TESTER BUILD</small>')
 d = d.replace('v0.20', 'v0.21')
 d = d.replace('Zone Sketch is an on-site', 'Zone Sketch by Will is an on-site')
 d = d.replace('test Zone Sketch', 'test Zone Sketch by Will')
 d = d.replace('official Zone Sketch link', 'official Zone Sketch by Will link')
-d = d.replace('downloads/ZoneSketch-v0.20.apk', 'downloads/Zone-Sketch-by-Will-v0.21.apk')
 download.write_text(d)
 
-# Repository documentation uses the public brand; technical package paths stay unchanged.
 readme = ROOT/'README.md'
 r = readme.read_text()
 r = r.replace('# Zone Sketch — site draft for the office', '# Zone Sketch by Will — site draft for the office', 1)
 r = r.replace('ZoneSketch-APK', 'Zone-Sketch-by-Will-APK')
 r = r.replace('- `ZoneSketch.html`: standalone browser preview of the interface.', '- `Zone-Sketch-by-Will.html`: branded standalone browser preview of the interface.\n- `ZoneSketch.html`: compatibility copy kept in sync for older tooling.')
-r += "\n\n## Version 0.21 — Zone Sketch by Will branding\n- Public-facing product name is **Zone Sketch by Will** across the browser app, Android launcher, public tester page and Android share UI.\n- APK, PNG, PDF and editable-backup filenames include **Zone-Sketch-by-Will** so shared copies are immediately recognisable.\n- Office exports and building packs carry **Zone Sketch by Will** branding.\n- New editable backups identify themselves as `ZoneSketchByWill`; older `ZoneSketch` backups remain supported.\n- Android package ID and browser storage identifiers intentionally remain unchanged so existing installs and saved drafts continue to work.\n"
+if '## Version 0.21 — Zone Sketch by Will branding' not in r:
+    r += "\n\n## Version 0.21 — Zone Sketch by Will branding\n- Public-facing product name is **Zone Sketch by Will** across the browser app, Android launcher, public tester page and Android share UI.\n- APK, PNG, PDF and editable-backup filenames include **Zone-Sketch-by-Will** so shared copies are immediately recognisable.\n- Office exports and building packs carry **Zone Sketch by Will** branding.\n- New editable backups identify themselves as `ZoneSketchByWill`; older `ZoneSketch` backups remain supported.\n- Android package ID and browser storage identifiers intentionally remain unchanged so existing installs and saved drafts continue to work.\n"
 readme.write_text(r)
 
 print('Applied Zone Sketch by Will v0.21 branding')
