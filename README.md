@@ -175,3 +175,11 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Paints coalesce to animation frames; the canvas buffer only reallocates when size changes. Saved status waits for IndexedDB completion. Editable backups provide a portable copy of the device-local draft.
 
 Validation: browser regression tests, multi-floor persistence/migration tests, and interaction tests for door deletion, locks, real multi-touch, grouped objects, pinned photos, PNG/PDF/backup exports and backup restore. Test screenshots cover tablet/phone menus. Android compilation runs in GitHub Actions. Physical-device sharing is not automated.
+
+## Version 0.20 — public tester build
+- Adds Double door as a proper wall-opening object with two swing leaves and finger-side swing preview.
+- Adds Circular room under Building layout; drag a circle/oval to create editable wall sections that accept doors/windows and Zone Fill Area.
+- Double doors remain selectable, deletable, movable, groupable, undoable and included correctly in office exports.
+- Browser, standalone HTML and Android WebView copies are kept identical.
+- Android app version bumped to 0.20 for the public tester release.
+- Release workflow runs the full browser regression suite plus dedicated v0.20 geometry/mobile tests before building the APK.
