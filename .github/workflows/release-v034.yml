@@ -1,0 +1,136 @@
+name: Release On Site Zone Planner v0.34
+
+on:
+  push:
+    paths:
+      - '.github/upgrade_v034.py'
+      - '.github/workflows/release-v034.yml'
+      - 'tests/symbol-size-v034.cjs'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.34 symbol size slider upgrade
+        run: python .github/upgrade_v034.py
+
+      - name: Prepare legacy browser tests for bundled app assets
+        run: python .github/prepare_static_test_servers.py
+
+      - name: Verify v0.34 source
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 34" app/build.gradle
+          grep -q "versionName '0.34'" app/build.gradle
+          grep -q 'v0.34 — Symbols menu controls the default size' index.html
+          grep -q 'id="symbolStampScale"' index.html
+          grep -q 'scale:symbolStampScale' index.html
+          grep -q 'zoneSketchSymbolScale' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v034.js').write_text('\n'.join(scripts))
+          ids=re.findall(r'\bid="([^"]+)"',t)
+          dup=sorted({x for x in ids if ids.count(x)>1})
+          assert not dup, f'duplicate ids: {dup}'
+          assert 'id="symbolStampScale"' in t
+          assert "scale:symbolStampScale" in t
+          assert "localStorage.setItem('zoneSketchSymbolScale'" in t
+          print('v0.34 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v034.js
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Run full browser regression suite
+        run: |
+          node tests/symbol-size-v034.cjs
+          node tests/zone-overlap-v033.cjs
+          node tests/zone-fill-v032.cjs
+          node tests/zone-sidebar-v031.cjs
+          node tests/web-lock-v028.cjs
+          node tests/plan-tools-v027.cjs
+          node tests/drawing-tools-v026.cjs
+          node tests/note-size.cjs
+          node tests/favourites.cjs
+          node tests/survey-mode.cjs
+          node tests/projects.cjs
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build v0.34 Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Update README and public v0.34 download
+        shell: bash
+        run: |
+          if ! grep -q 'Version 0.34' README.md; then
+            cat >> README.md <<'EOF'
+
+          ## Version 0.34 — symbol size slider
+          - The Symbols menu now has a 0.25× to 4× size slider for newly stamped symbols.
+          - The chosen stamp size is remembered locally, including when symbols are opened from Survey mode or Favourites.
+          - Existing symbols keep their own size and can still be resized individually from Properties.
+          EOF
+          fi
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.34.apk
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('download.html')
+          t=p.read_text().replace('v0.33','v0.34').replace('Zone-Sketch-by-Will-v0.33.apk','Zone-Sketch-by-Will-v0.34.apk')
+          p.write_text(t)
+          PY
+
+      - name: Commit v0.34 source and public APK
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle README.md download.html downloads/Zone-Sketch-by-Will-v0.34.apk
+          if ! git diff --cached --quiet; then
+            git commit -m 'Release On Site Zone Planner v0.34 symbol size slider'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.34-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.34-Test-Previews
+          path: test-results/
+          if-no-files-found: warn
