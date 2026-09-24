@@ -218,3 +218,15 @@ The Home screen now has survey search and a cleaner responsive card layout.
 Opening a drawing no longer focuses the site-name field (and opens a phone keyboard).
 Opening or reopening a saved survey no longer changes its last-edited date or
 rewrites the full drawing. The last opened project is still restored correctly.
+
+## v0.24 — Favourite tools
+
+The normal drawing toolbar now starts with a persistent **Favourites** section.
+Defaults are Smoke, Heat, MCP, Door, Wall and Pinned note. Open **★ Favourites**
+to choose up to ten tools, or press and hold a supported item in the Building,
+Objects, Symbols, Zone or Site details menu to add/remove it quickly.
+
+Favourites are stored as a device preference, so they remain available across all
+projects and after reopening the browser/app. **Reset defaults** restores the standard
+fire-survey set. The favourites row hides automatically in Survey mode, which keeps
+its existing six large controls.
