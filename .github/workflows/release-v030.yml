@@ -1,0 +1,134 @@
+name: Release On Site Zone Planner v0.30
+
+on:
+  push:
+    paths:
+      - '.github/upgrade_v030.py'
+      - '.github/workflows/release-v030.yml'
+      - 'tests/zone-snap-v030.cjs'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply v0.30 full canvas and zone snapping upgrade
+        run: python .github/upgrade_v030.py
+
+      - name: Prepare legacy browser tests for bundled app assets
+        run: python .github/prepare_static_test_servers.py
+
+      - name: Verify v0.30 source
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 30" app/build.gradle
+          grep -q "versionName '0.30'" app/build.gradle
+          grep -q 'v0.30 — full-canvas zone workflow' index.html
+          grep -q '#zoneSide{display:none!important}' index.html
+          grep -q 'function snapZoneCorner' index.html
+          grep -q "rect:'Drag a zone box · corners and edges snap to nearby building walls'" index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v030.js').write_text('\n'.join(scripts))
+          ids=re.findall(r'\bid="([^"]+)"',t)
+          dup=sorted({x for x in ids if ids.count(x)>1})
+          assert not dup, f'duplicate ids: {dup}'
+          assert 'v0.28 — lock the app viewport' in t, 'Safari viewport lock must remain present'
+          assert 'v0.29 — keep zone cards fully visible' in t, 'v0.29 compatibility CSS should remain documented beneath the v0.30 override'
+          assert 'v0.30 — full-canvas zone workflow' in t
+          print('v0.30 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v030.js
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Run full browser regression suite
+        run: |
+          node tests/zone-snap-v030.cjs
+          node tests/web-lock-v028.cjs
+          node tests/plan-tools-v027.cjs
+          node tests/drawing-tools-v026.cjs
+          node tests/note-size.cjs
+          node tests/favourites.cjs
+          node tests/survey-mode.cjs
+          node tests/projects.cjs
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build v0.30 Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Update README and public v0.30 download
+        shell: bash
+        run: |
+          if ! grep -q 'Version 0.30' README.md; then
+            cat >> README.md <<'EOF'
+
+          ## Version 0.30 — full canvas and wall-snapping zones
+          - Removes the permanent Zones side/bottom barrier so the drawing canvas uses the full workspace.
+          - Zones are still created, selected and edited from the bottom Zone menu.
+          - Zone Box now snaps its dragged corners/edges to nearby building wall endpoints and wall lines.
+          - Keeps the locked Safari/web viewport behaviour from v0.28.
+          EOF
+          fi
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.30.apk
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('download.html')
+          t=p.read_text().replace('v0.29','v0.30').replace('Zone-Sketch-by-Will-v0.29.apk','Zone-Sketch-by-Will-v0.30.apk')
+          p.write_text(t)
+          PY
+
+      - name: Commit v0.30 source and public APK
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle README.md download.html downloads/Zone-Sketch-by-Will-v0.30.apk
+          if ! git diff --cached --quiet; then
+            git commit -m 'Release On Site Zone Planner v0.30 full canvas zone snapping'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.30-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.30-Test-Previews
+          path: test-results/
+          if-no-files-found: warn
