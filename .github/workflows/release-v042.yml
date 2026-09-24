@@ -109,3 +109,4 @@ jobs:
           path: test-results/*
           if-no-files-found: ignore
 # rerun: Survey grid steps initialize before any startup render
+# rerun: touch regression waits for Survey mode activation
