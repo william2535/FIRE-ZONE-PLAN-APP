@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Zone Sketch by Will Android APK
 on:
   workflow_dispatch:
   push:
@@ -19,24 +19,24 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Check drawing and export in browser
+      - name: Check Zone Sketch by Will drawing and export in browser
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
           node tests/browser.cjs
           node tests/floors.cjs
           node tests/interactions.cjs
+          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Browser-previews
+          name: Zone-Sketch-by-Will-Browser-Previews
           path: |
             test-results/*.png
             test-results/*.pdf
-      - name: Build installable debug APK
+      - name: Build installable Zone Sketch by Will APK
         run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: ZoneSketch-APK
+          name: Zone-Sketch-by-Will-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
