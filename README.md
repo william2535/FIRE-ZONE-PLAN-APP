@@ -286,3 +286,8 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Zone fills are composed into one layer first, then the transparency is applied once.
 - The same constant-opacity behaviour is used on the live canvas, Zone Box/Outline previews and exported plans.
 - Different overlapping zone colours can still replace one another visually, but the transparency never stacks darker.
+
+## Version 0.34 — symbol size slider
+- The Symbols menu now has a 0.25× to 4× size slider for newly stamped symbols.
+- The chosen stamp size is remembered locally, including when symbols are opened from Survey mode or Favourites.
+- Existing symbols keep their own size and can still be resized individually from Properties.
