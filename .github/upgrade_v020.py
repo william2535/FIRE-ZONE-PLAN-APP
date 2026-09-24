@@ -91,8 +91,8 @@ rep(old_hit, new_hit, 'double door hit testing')
 
 # Properties should identify a double door clearly.
 rep(
-    "$('propKind').textContent=refNames[ref.type]||ref.type;const hasText=",
-    "$('propKind').textContent=(ref.type==='doors'&&o.double)?'Double door':(refNames[ref.type]||ref.type);const hasText=",
+    "$('propKind').textContent=refNames[ref.type]||ref.type;",
+    "$('propKind').textContent=(ref.type==='doors'&&o.double)?'Double door':(refNames[ref.type]||ref.type);",
     'double door properties label'
 )
 
