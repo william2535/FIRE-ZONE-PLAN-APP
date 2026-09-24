@@ -21,6 +21,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),pat
   try{
     const p=await browser.newPage({viewport:{width:1180,height:900}});
     p.on('pageerror',e=>errors.push(e.message));
+    p.on('dialog',d=>d.accept(d.type()==='prompt'?'v0.30 snap test':undefined));
     await p.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
     await p.locator('#homeNew').waitFor({state:'visible'});
     await p.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
