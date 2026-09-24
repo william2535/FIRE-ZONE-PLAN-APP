@@ -291,3 +291,8 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - The Symbols menu now has a 0.25× to 4× size slider for newly stamped symbols.
 - The chosen stamp size is remembered locally, including when symbols are opened from Survey mode or Favourites.
 - Existing symbols keep their own size and can still be resized individually from Properties.
+
+## Version 0.35 — extra-small symbols
+- New symbol size can now go down to 0.10× instead of 0.25×.
+- The symbol renderer itself now has a much smaller minimum radius, line width and label size, so the lower end of the slider genuinely looks smaller on the plan.
+- Existing placed symbols are unchanged and can still be resized individually from Properties.
