@@ -1,0 +1,141 @@
+name: Release On Site Zone Planner v0.27
+
+on:
+  push:
+    paths:
+      - '.github/upgrade_v027.py'
+      - '.github/workflows/release-v027.yml'
+      - 'tests/plan-tools-v027.cjs'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned offline PDF renderer
+        run: npm install --no-save pdfjs-dist@3.11.174
+
+      - name: Apply v0.27 plan import and cleanup upgrade
+        run: python .github/upgrade_v027.py
+
+      - name: Verify v0.27 source and plan tools
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          cmp -s vendor/pdf.min.js app/src/main/assets/vendor/pdf.min.js
+          cmp -s vendor/pdf.worker.min.js app/src/main/assets/vendor/pdf.worker.min.js
+          test -s vendor/pdf.min.js
+          test -s vendor/pdf.worker.min.js
+          grep -q "versionCode 27" app/build.gradle
+          grep -q "versionName '0.27'" app/build.gradle
+          grep -q 'application/pdf' index.html
+          grep -q 'id="cleanupPicture"' index.html
+          grep -q 'id="straightenPicture"' index.html
+          grep -q 'function renderPdfPlan' index.html
+          grep -q 'function warpPerspectiveApprox' index.html
+          grep -q "kind:'MID'" index.html
+          grep -q "kind:'END'" index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v027.js').write_text('\n'.join(scripts))
+          ids=re.findall(r'\bid="([^"]+)"',t)
+          dup=sorted({x for x in ids if ids.count(x)>1})
+          assert not dup, f'duplicate ids: {dup}'
+          assert 'vendor/pdf.min.js' in t
+          assert 'pictureBrightness' in t and 'pictureContrast' in t and 'pictureGrayscale' in t
+          print('v0.27 static plan-tool checks passed')
+          PY
+          node --check /tmp/zonesketch-v027.js
+          node --check vendor/pdf.min.js
+
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1 pdfjs-dist@3.11.174
+          npx playwright install --with-deps chromium
+
+      - name: Run full browser regression suite
+        run: |
+          node tests/plan-tools-v027.cjs
+          node tests/drawing-tools-v026.cjs
+          node tests/note-size.cjs
+          node tests/favourites.cjs
+          node tests/survey-mode.cjs
+          node tests/projects.cjs
+          node tests/browser.cjs
+          node tests/floors.cjs
+          node tests/interactions.cjs
+          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: Build v0.27 Android APK
+        run: gradle --no-daemon assembleDebug
+
+      - name: Update README and public v0.27 download
+        shell: bash
+        run: |
+          if ! grep -q 'Version 0.27' README.md; then
+            cat >> README.md <<'EOF'
+
+          ## Version 0.27 — plan import and tracing cleanup
+          - Import PDF floor-plan pages directly as a background, with page choice for multi-page PDFs.
+          - PDF rendering is bundled locally so Android can open PDFs without an internet connection.
+          - Background cleanup adds brightness, contrast and black-and-white controls plus a plan preset.
+          - Four-corner perspective straighten corrects photographed plans before tracing.
+          - Rotate imported plans by 90 degrees before drawing.
+          - Snapping now shows endpoint, midpoint and wall snap markers plus alignment guides.
+          EOF
+          fi
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.27.apk
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('download.html')
+          t=p.read_text().replace('v0.26','v0.27').replace('Zone-Sketch-by-Will-v0.26.apk','Zone-Sketch-by-Will-v0.27.apk')
+          p.write_text(t)
+          PY
+
+      - name: Commit v0.27 source, offline PDF renderer and public APK
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/src/main/assets/vendor vendor app/build.gradle README.md download.html downloads/Zone-Sketch-by-Will-v0.27.apk
+          if ! git diff --cached --quiet; then
+            git commit -m 'Release On Site Zone Planner v0.27 plan import and cleanup'
+            git push
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.27-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.27-Test-Previews
+          path: test-results/
+          if-no-files-found: warn
