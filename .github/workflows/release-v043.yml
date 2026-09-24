@@ -48,7 +48,7 @@ jobs:
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-      - name: Run Circuit Builder and regression suites
+      - name: Run v0.43 Circuit Builder and regression suites
         run: |
           node tests/circuit-builder-v043.cjs
           node tests/canvas-touch-v042.cjs
