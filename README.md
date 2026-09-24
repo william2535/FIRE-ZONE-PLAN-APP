@@ -230,3 +230,8 @@ Favourites are stored as a device preference, so they remain available across al
 projects and after reopening the browser/app. **Reset defaults** restores the standard
 fire-survey set. The favourites row hides automatically in Survey mode, which keeps
 its existing six large controls.
+
+
+## v0.25 — Resizable notes
+
+Plan notes can now be made smaller or larger. Select a normal Note or pinned site-detail marker and use **Properties → Size**, or drag the blue corner resize handles directly on the plan. Note/pin scale is stored with the project and is preserved in PNG/PDF office exports. Existing projects keep their current visual size until changed.
