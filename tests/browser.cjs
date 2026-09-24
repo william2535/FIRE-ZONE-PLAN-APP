@@ -20,22 +20,22 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   await page.locator('#zoneMenuBtn').click();await page.locator('#zoneCreate').click();await page.locator('#zoneName').fill('Offices');await page.locator('#saveZone').click();
   await page.locator('#zoneMenuBtn').click();await page.locator('[data-menu-tool="rect"]').click();await drag(await xy(.1,.2),await xy(.45,.5));
   await page.locator('#opacity').fill('25');
-  await page.locator('#shareBtn').click();
+  await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);
   const pixel=async()=>page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const ctx=c.getContext('2d');ctx.drawImage(i,0,0);return [...ctx.getImageData(690,485,1,1).data]});
   let rgba=await pixel();assert(rgba[0]>=189&&rgba[0]<=193,'Export should fade black picture to 25%');
-  await page.locator('#togglePicture').click();await page.locator('#shareBtn').click();rgba=await pixel();assert.deepEqual(rgba,[255,255,255,255],'Hidden background exports white');
+  await page.locator('#togglePicture').click();await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);rgba=await pixel();assert.deepEqual(rgba,[255,255,255,255],'Hidden background exports white');
   // Check a wall survives removal of the imported background.
   const wall=await page.evaluate(async()=>{const i=new Image();i.src=window.exported.data;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);return Math.min(...Array.from(x.getImageData(250,156,1,9).data).filter((_,i)=>i%4===0))});assert(wall<180,'Wall remains in exported drawing');
   await page.waitForTimeout(700);await page.reload();await page.waitForFunction(()=>document.getElementById('togglePicture').textContent==='Show picture');
   assert.equal(await page.locator('#opacity').inputValue(),'25');assert.equal(await page.locator('.zone').count(),1);
   await page.locator('#togglePicture').click();assert.equal(await page.locator('#opacity').isEnabled(),true);
   // Selected-zone panning must not throw or turn into a rectangle.
-  await page.locator('[data-tool="pan"]').click();await drag(await xy(.5,.5),await xy(.55,.55));
-  await page.locator('#blankBtn').click();await page.waitForTimeout(200);assert.equal(await page.locator('#backgroundBar').isVisible(),false);
+  await page.locator('#moveModeTop').click();await drag(await xy(.5,.5),await xy(.55,.55));
+  await page.locator('#projectMenuBtn').click();await page.locator('#blankBtn').click();await page.waitForTimeout(200);assert.equal(await page.locator('#backgroundBar').isVisible(),false);
   await drag(await xy(.1,.2,1600,1000),await xy(.8,.2,1600,1000));
   await page.locator('#layoutMenuBtn').click();await page.locator('[data-menu-tool="pen"]').click();await drag(await xy(.3,.35,1600,1000),await xy(.6,.6,1600,1000));
   await page.locator('#undo').click();await page.locator('#redo').click();
-  await page.locator('#shareBtn').click();assert(await page.evaluate(()=>window.exported.data.startsWith('data:image/png')));
+  await page.evaluate(()=>window.exported=null);await page.locator('#shareBtn').click();await page.locator('#exportPng').click();await page.waitForFunction(()=>window.exported?.data);assert(await page.evaluate(()=>window.exported.data.startsWith('data:image/png')));
   await page.waitForTimeout(700);await page.reload();await page.waitForFunction(()=>document.getElementById('empty').hidden);
   const saved=await page.evaluate(()=>new Promise(ok=>{const r=indexedDB.open('ZoneSketch-v1',1);r.onsuccess=()=>{const g=r.result.transaction('draft').objectStore('draft').get('state');g.onsuccess=()=>ok(g.result)}}));
   assert.equal(saved.isBlank,true);assert.equal(saved.walls.length,2);assert.equal(saved.shapes.length,0);
@@ -46,3 +46,4 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   console.log('PASS: trace lines, zones, faded export, picture-free export, restore picture, persistence, blank drawing, undo/redo and phone layout');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
+

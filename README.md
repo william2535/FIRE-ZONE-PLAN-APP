@@ -101,7 +101,7 @@ Use the Floor selector to switch drawings. Add Ground, First, Second, Third, Fou
 
 Copy current building layout when adding a floor to reuse walls, openings, stairs and room labels, without copying zone assignments, notes or the background photo. Send to office exports the selected floor, with its name in the title and filename; switch floors to export the next drawing.
 
-### Ideas for faster onsite work (not yet implemented)
+### Onsite workflow roadmap (see newer releases below)
 
 - Favourite symbol stamps: fire panel, repeater, MCP, smoke, heat, sounder, beacon and you-are-here marker, with a clear symbol key.
 - Repeat placement: keep a symbol selected and tap several locations; optional sequential device labels.
@@ -159,3 +159,19 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Symbol rotation is saved per symbol and preserved in office exports.
 - Single symbols can be rotated from Object Properties.
 - Existing drafts remain compatible; symbols without a saved angle default to 0 degrees.
+
+
+
+## Version 0.19 — clean controls and reliable office handoff
+
+- Project and Drawing dropdowns declutter the header; floors use the same in-app menu and preset buttons. Menus scroll within the phone viewport.
+- Door selection/deletion follows the visible leaf, swing arc and opening. Delete removes only the door, leaving the wall gap; Undo restores it. Zone fills no longer steal nearby object taps.
+- Photos display matching P markers on screen and exports, with a preview in Properties.
+- Beacon and repeater stamps, editable device references, and a symbol key on exported plans. “You are here” markers are excluded from device totals.
+- Drawing reference, revision, surveyed-by and date fields appear in exports.
+- Send to office offers current-floor PNG, a paged all-floor PDF with building zone index, or an editable JSON project backup. Open backups from Project; all floors/photos remain editable. PDF pages contain high-resolution raster drawings, not CAD vectors.
+- Android shares PDF/PNG/JSON with the correct MIME type and filename; separate export files prevent a later share overwriting an earlier attachment.
+- Fixed move-mode previews throwing errors, locked room stamps bypassing locks on touch-up, second-touch stamps, and groups distorting against the canvas edge. Cancelled drags roll back. Rotations outside the canvas are rejected instead of crushing geometry.
+- Paints coalesce to animation frames; the canvas buffer only reallocates when size changes. Saved status waits for IndexedDB completion. Editable backups provide a portable copy of the device-local draft.
+
+Validation: browser regression tests, multi-floor persistence/migration tests, and interaction tests for door deletion, locks, real multi-touch, grouped objects, pinned photos, PNG/PDF/backup exports and backup restore. Test screenshots cover tablet/phone menus. Android compilation runs in GitHub Actions. Physical-device sharing is not automated.

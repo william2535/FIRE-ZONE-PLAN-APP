@@ -25,10 +25,13 @@ jobs:
           npx playwright install --with-deps chromium
           node tests/browser.cjs
           node tests/floors.cjs
+          node tests/interactions.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: Browser-previews
-          path: test-results/*.png
+          path: |
+            test-results/*.png
+            test-results/*.pdf
       - name: Build installable debug APK
         run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
@@ -36,3 +39,4 @@ jobs:
           name: ZoneSketch-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
