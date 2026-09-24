@@ -15,6 +15,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
  try{
   const page=await browser.newPage({viewport:{width:1180,height:820}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  page.on('dialog',d=>d.accept(d.type()==='prompt'?'Favourites test':undefined));
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.waitForFunction(()=>!document.getElementById('homeNew').disabled);
   await page.locator('#homeNew').click();
