@@ -280,3 +280,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Keeps the light transparent zone colour fill so building walls stay visually dominant.
 - A single selected zone shows resize handles without drawing another full box around it.
 - Keeps the restored Zones sidebar and wall-aware Zone Box snapping from v0.31/v0.30.
+
+## Version 0.33 — constant zone transparency
+- Overlapping zone areas no longer become darker when the same area is covered more than once.
+- Zone fills are composed into one layer first, then the transparency is applied once.
+- The same constant-opacity behaviour is used on the live canvas, Zone Box/Outline previews and exported plans.
+- Different overlapping zone colours can still replace one another visually, but the transparency never stacks darker.
