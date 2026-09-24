@@ -104,4 +104,4 @@ jobs:
           name: On-Site-Zone-Planner-v0.42-Test-Previews
           path: test-results/*
           if-no-files-found: ignore
-# rerun: deterministic feature harness no longer depends on project-state TDZ variables
+# rerun: test hooks are now injected after all app declarations
