@@ -235,3 +235,11 @@ its existing six large controls.
 ## v0.25 — Resizable notes
 
 Plan notes can now be made smaller or larger. Select a normal Note or pinned site-detail marker and use **Properties → Size**, or drag the blue corner resize handles directly on the plan. Note/pin scale is stored with the project and is preserved in PNG/PDF office exports. Existing projects keep their current visual size until changed.
+
+## Version 0.26 — drawing productivity
+- Corridor tool creates a grouped rectangular corridor and labels it automatically.
+- L-shaped room tool creates a six-wall grouped L room in one drag.
+- Edit wall ends shows draggable endpoint handles for quick corrections.
+- Join wall gap moves one wall endpoint directly onto another.
+- Split wall creates a new editable junction/section with one tap.
+- New drawing tools can be added to Favourite Tools.
