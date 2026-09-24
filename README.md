@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/on-site-zone-planner-cover.jpg" alt="On Site Zone Planner" width="100%">
+</p>
+
 # Zone Sketch by Will — site draft for the office
 
 A small offline Android app for walking a site and marking fire-alarm zone areas on a floor-plan image. It is a **working draft for an office CAD redraw**, not a finished customer chart or a substitute for checking the current fire strategy.
@@ -94,8 +98,6 @@ There is no login, subscription, internet permission, camera permission or analy
 - **Objects** contains wall-snapped Door, Window and Roller shutter tools plus a drag-to-place Stairway symbol.
 - New objects support selection, movement, grouping, deletion, undo/redo and PNG export.
 
-
-
 ## v0.10 — multiple floors
 
 Use the Floor selector to switch drawings. Add Ground, First, Second, Third, Fourth, Basement, Mezzanine or a custom floor. Each floor keeps its own zones, image, opacity, objects and notes. Existing drafts migrate to Ground floor. Rename or delete a floor; Undo restores deletion. Blank this floor and Import plan affect only the selected floor. New starts a whole new site.
@@ -122,8 +124,6 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Send all floors creates one combined building-pack PNG containing every floor plus a building-wide zone index.
 - New objects remain floor-local, autosaved, undoable, groupable, selectable and movable.
 
-
-
 ## Version 0.12
 
 - Selected rooms/groups can be resized by dragging blue corner handles. Quick room labels and favourite symbols scale with the selection.
@@ -131,14 +131,12 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Grid spacing is adjustable and an optional Snap mode aligns new drawing points, stamps and selection movement to the grid.
 - Favourite symbols have a colour palette; the selected colour is stored on each placed symbol and is preserved in exports.
 
-
 ## Version 0.13 — stable corner resize + quick delete
 
 - Delete is duplicated beside Undo / Redo in the top-right for faster onsite editing.
 - Corner resize now recalculates every frame from the original selection snapshot, preventing cumulative shrink/jump behaviour.
 - The opposite corner stays fixed while resizing a room or group.
 - A 24-screen-pixel minimum prevents a selected corridor/room collapsing into an unusably tiny shape.
-
 
 ## Version 0.15
 - Global Move mode: ON pans/zooms without editing; OFF edits without canvas panning.
@@ -161,8 +159,6 @@ Copy current building layout when adding a floor to reuse walls, openings, stair
 - Single symbols can be rotated from Object Properties.
 - Existing drafts remain compatible; symbols without a saved angle default to 0 degrees.
 
-
-
 ## Version 0.19 — clean controls and reliable office handoff
 
 - Project and Drawing dropdowns declutter the header; floors use the same in-app menu and preset buttons. Menus scroll within the phone viewport.
@@ -184,7 +180,6 @@ Validation: browser regression tests, multi-floor persistence/migration tests, a
 - Browser, standalone HTML and Android WebView copies are kept identical.
 - Android app version bumped to 0.20 for the public tester release.
 - Release workflow runs the full browser regression suite plus dedicated v0.20 geometry/mobile tests before building the APK.
-
 
 ## Version 0.21 — Zone Sketch by Will branding
 - Public-facing product name is **Zone Sketch by Will** across the browser app, Android launcher, public tester page and Android share UI.
