@@ -37,7 +37,9 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   await page.locator('#surveyModeBtn').click();
   await page.locator('#canvasOptionsBtn').click();
   await page.locator('#surveyGridSize').selectOption('20');
-  await page.mouse.click(760,300);
+  // Close the popup without touching the Survey canvas: one finger on the
+  // canvas is intentionally a device placement gesture.
+  await page.keyboard.press('Escape');
   await page.locator('#surveyGridDown').click();
   let read=await page.evaluate(()=>window.v041Test.read());
   assert.equal(read.state.gridSize,10);
