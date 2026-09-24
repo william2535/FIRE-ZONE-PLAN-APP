@@ -251,3 +251,9 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 - Four-corner perspective straighten corrects photographed plans before tracing.
 - Rotate imported plans by 90 degrees before drawing.
 - Snapping now shows endpoint, midpoint and wall snap markers plus alignment guides.
+
+## Version 0.28 — mobile web stability
+- Locks the main web-app viewport so Safari/iOS cannot drag the whole page up and down while drawing.
+- Uses the dynamic viewport height so the workspace follows the visible browser area more reliably.
+- Canvas touch movement is explicitly prevented from becoming page scrolling/rubber-banding.
+- Menus, project lists and modal panels keep their own contained scrolling when content genuinely needs to scroll.
