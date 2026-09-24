@@ -113,3 +113,4 @@ jobs:
 # rerun: Survey pinch is measured relative to preserved canvas scale
 # rerun: grid regression closes popup without stamping a detector
 # rerun: v0.40 favourites test accepts finer grid additions
+# rerun: favourites regression drags directional Beam in v0.42
