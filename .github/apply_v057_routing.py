@@ -1,0 +1,145 @@
+from pathlib import Path
+import re
+
+ROOT = Path(__file__).resolve().parents[1]
+p = ROOT / 'index.html'
+t = p.read_text()
+assert 'v0.56' in t
+assert 'function cbNodesAlong' in t and 'function cbProcessPointer' in t
+assert 'function cbCaptureDragTarget' in t and 'function cbRouteGridStep' in t
+
+
+def replace_function(text, name, next_name, new_source):
+    pat = rf"function {re.escape(name)}\([\s\S]*?(?=\nfunction {re.escape(next_name)}\()"
+    m = re.search(pat, text)
+    if not m:
+        raise SystemExit(f'Could not locate {name} -> {next_name}')
+    return text[:m.start()] + new_source.rstrip() + '\n' + text[m.end():]
+
+
+# Visible version moves together with the routing generation.
+t = t.replace('v0.56', 'v0.57')
+
+# Small status surface: routing behavior is explicit without covering useful plan space.
+badge_css = '''
+/* v0.57 Smart Routing — raw touch is decoupled from professional cable geometry. */
+.cbRouteStateBadge{position:absolute;left:10px;top:10px;z-index:6;padding:7px 10px;border-radius:999px;background:#f7fafde8;border:1px solid #c8d7e5;color:#466079;font-size:9px;font-weight:950;letter-spacing:.08em;box-shadow:0 5px 18px #10263d12;backdrop-filter:blur(5px);pointer-events:none;transition:.14s ease}
+.cbRouteStateBadge.active{background:#e9f4ff;border-color:#8fc0eb;color:#1d669f}.cbRouteStateBadge.capture{background:#e9f9ef;border-color:#9fd5b5;color:#187447}.cbRouteStateBadge.corner{background:#fff6df;border-color:#ebcc82;color:#8a6414}.cbRouteStateBadge.return{background:#e9fff2;border-color:#83d5a7;color:#16854c}
+@media(max-width:520px){.cbRouteStateBadge{left:7px;top:7px;font-size:8px;padding:6px 8px}}
+'''
+marker = '/* Motion preference. */'
+assert marker in t
+t = t.replace(marker, badge_css + '\n' + marker, 1)
+html_marker = '<div id="cbPairBadge" class="cbPairBadge" hidden>⇄ TWIN CABLE SNAP</div>'
+assert html_marker in t
+t = t.replace(html_marker, html_marker + '<div id="cbRouteStateBadge" class="cbRouteStateBadge">SMART ROUTE · READY</div>', 1)
+
+# State machine + three-channel input pipeline: raw pointer, hit corridor, drawn/saved route.
+helper_marker = 'function cbSegmentConflict(a,b,c,d)'
+assert helper_marker in t
+helpers = r'''const CB_ROUTING_STATES=Object.freeze({WAITING:'waiting-to-start',ROUTING:'routing-normally',APPROACH:'approaching-device',CAPTURED:'device-captured',CORNER_PENDING:'corner-pending',CORNER_COMMITTED:'corner-committed',RETURN:'routing-return'});
+function cbRoutingState(){if(!cbDrag)return cbCircuit?.complete?'complete':CB_ROUTING_STATES.WAITING;if(cbDrag.returnMode)return CB_ROUTING_STATES.RETURN;if(cbDrag.turnAnchor)return CB_ROUTING_STATES.CORNER_PENDING;return cbDrag.routeState||CB_ROUTING_STATES.ROUTING}
+function cbUpdateRouteStateUi(){const el=$('cbRouteStateBadge');if(!el)return;const s=cbRoutingState(),labels={"waiting-to-start":"SMART ROUTE · READY","routing-normally":"SMART ROUTE · DRAWING","approaching-device":"TARGET CORRIDOR","device-captured":"DEVICE CAPTURED ✓","corner-pending":"CORNER LOCKING","corner-committed":"CORNER SET","routing-return":"RETURN MAGNET","complete":"ROUTE VALIDATED ✓"};el.textContent=labels[s]||'SMART ROUTE';el.className='cbRouteStateBadge'+(s==='device-captured'||s==='complete'?' capture':s==='corner-pending'||s==='corner-committed'?' corner':s==='routing-return'?' return':s==='routing-normally'||s==='approaching-device'?' active':'')}
+function cbSetRoutingState(s){if(cbDrag)cbDrag.routeState=s;cbUpdateRouteStateUi()}
+function cbRecordRawPointer(p){if(!cbDrag)return;const q={x:p.x,y:p.y};if(!Array.isArray(cbDrag.rawSamples))cbDrag.rawSamples=[];const last=cbDrag.rawSamples.at(-1);if(!last||Math.hypot(last.x-q.x,last.y-q.y)>.5)cbDrag.rawSamples.push(q);if(cbDrag.rawSamples.length>96)cbDrag.rawSamples.splice(0,cbDrag.rawSamples.length-96);cbDrag.rawLast=q}
+function cbDeviceCorridorPx(w,h,selection=false){const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y);if(cbReturnPhase())return Math.max(36,Math.min(46,grid*1.05));return Math.max(selection?30:27,Math.min(selection?40:36,grid*(selection?.92:.78)))}
+function cbStartRadiusPx(w,h){const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y);return Math.max(38,Math.min(48,grid*.92))}
+function cbGeometryIntent(p,w,h){if(!cbDrag)return p;const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y),prev=cbDrag.geometryInput||cbDrag.routeInput||p,dist=Math.hypot(p.x-prev.x,p.y-prev.y);if(dist<grid*.10)return prev;const alpha=dist>grid*1.25?.72:dist>grid*.55?.52:.34,q={x:prev.x+(p.x-prev.x)*alpha,y:prev.y+(p.y-prev.y)*alpha};cbDrag.geometryInput=q;return q}
+function cbPolylineLengthPx(points){let n=0;for(let i=1;i<(points||[]).length;i++)n+=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y);return n}
+function cbAxisBetween(a,b){if(Math.abs(a.x-b.x)<1)return'v';if(Math.abs(a.y-b.y)<1)return'h';return Math.abs(b.x-a.x)>=Math.abs(b.y-a.y)?'h':'v'}
+function cbPolishOrthogonal(points){let out=cbSimplify(points||[]),changed=true;while(changed){changed=false;for(let i=1;i<out.length-1;i++){const a=out[i-1],b=out[i],c=out[i+1],sameX=Math.abs(a.x-b.x)<.75&&Math.abs(b.x-c.x)<.75,sameY=Math.abs(a.y-b.y)<.75&&Math.abs(b.y-c.y)<.75;if(sameX||sameY){out.splice(i,1);changed=true;break}}}return cbSimplify(out)}
+function cbCandidateConflict(points,w,h){if(!points||points.length<2)return false;if(cbCircuit?.type==='conventional')return cbChallengePointsBlocked(points,w,h);const obstacles=cbPairSegmentsPx(w,h),segs=[];for(let i=1;i<points.length;i++)segs.push({a:points[i-1],b:points[i]});for(const s of segs)for(const o of obstacles)if(cbSegmentConflict(s.a,s.b,o.a,o.b))return true;for(let i=0;i<segs.length;i++)for(let j=0;j<i-1;j++)if(cbSegmentConflict(segs[i].a,segs[i].b,segs[j].a,segs[j].b))return true;return false}
+function cbProfessionalizeLegPx(points,w,h){const raw=cbPolishOrthogonal(points);if(raw.length<2)return raw;if(cbDrag?.pairSnap)return raw;const a=raw[0],b=raw.at(-1),dx=Math.abs(b.x-a.x),dy=Math.abs(b.y-a.y),straight=dx<1||dy<1;if(straight){const direct=[a,b];if(!cbCandidateConflict(direct,w,h))return direct;return raw}const first=raw.length>1?cbAxisBetween(raw[0],raw[1]):(dx>=dy?'h':'v'),candidates=[[a,{x:b.x,y:a.y},b],[a,{x:a.x,y:b.y},b]].map(cbPolishOrthogonal),cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y);let best=null;for(const c of candidates){if(cbCandidateConflict(c,w,h))continue;const axis=c.length>1?cbAxisBetween(c[0],c[1]):first,score=cbPolylineLengthPx(c)+(axis===first?0:grid*.24)+(c.length-2)*grid*.08;if(!best||score<best.score)best={c,score}}return best?best.c:raw}
+'''
+t = t.replace(helper_marker, helpers + '\n' + helper_marker, 1)
+
+new_nodes = r'''function cbNodesAlong(a,b,w,h,selection=false){const dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy,ids=selection?cbSurveyDevices().map(d=>d.id):[cbCircuit?.panelId,...(cbCircuit?.deviceIds||[])],hits=[],radius=cbDeviceCorridorPx(w,h,selection);for(const id of ids){const p=cbNodePx(id,w,h);if(!p)continue;const u=l2?clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/l2):0,d=Math.hypot(a.x+u*dx-p.x,a.y+u*dy-p.y);if(d<=radius)hits.push({id,t:u,p,d})}return hits.sort((a,b)=>a.t-b.t||a.d-b.d)}'''
+new_process = r'''function cbProcessPointer(p,w,h){if(!cbDrag)return;const prev=cbDrag.rawLast||cbDrag.lastPointer||p;cbRecordRawPointer(p);if(cbDrag.select){for(const hit of cbNodesAlong(prev,p,w,h,true))cbSelection.add(hit.id);cbDrag.lastPointer=p;cbUpdateGame();return}let captured=false;const hits=cbNodesAlong(prev,p,w,h);if(hits.length)cbSetRoutingState(CB_ROUTING_STATES.APPROACH);for(const hit of hits){if(!cbDrag||cbCircuit?.complete)break;if(cbValidTarget(hit.id)){cbHover=hit.id;const appended=cbAppendDrag(hit.p,w,h);if(appended===false)break;if(cbCaptureDragTarget(hit.id,w,h)){captured=true;if(cbDrag)cbSetRoutingState(CB_ROUTING_STATES.CAPTURED)}}}if(cbDrag?.points&&!captured){const intent=cbGeometryIntent(p,w,h);cbAppendDrag(intent,w,h);if(cbDrag)cbSetRoutingState(cbDrag.turnAnchor?CB_ROUTING_STATES.CORNER_PENDING:CB_ROUTING_STATES.ROUTING)}if(cbDrag){cbDrag.lastPointer=p;cbDrag.rawLast={x:p.x,y:p.y};cbHover=cbDrag.targets.at(-1)||cbHover||null}}'''
+t = replace_function(t, 'cbNodesAlong', 'cbProcessPointer', new_nodes)
+t = replace_function(t, 'cbProcessPointer', 'cbClearReward', new_process)
+
+new_snapshot = r'''function cbRouteSnapshot(){return{points:(cbDrag?.points||[]).map(p=>({...p})),routeAxis:cbDrag?.routeAxis||null,turnAnchor:cbDrag?.turnAnchor?{...cbDrag.turnAnchor}:null,pairSide:cbDrag?.pairSide??null,pairSnap:!!cbDrag?.pairSnap,pairAxis:cbDrag?.pairAxis||null,pairLine:Number.isFinite(cbDrag?.pairLine)?cbDrag.pairLine:null,routeInput:cbDrag?.routeInput?{...cbDrag.routeInput}:null,geometryInput:cbDrag?.geometryInput?{...cbDrag.geometryInput}:null,routeState:cbDrag?.routeState||CB_ROUTING_STATES.ROUTING}}'''
+new_restore = r'''function cbRouteRestore(s){if(!cbDrag||!s)return;cbDrag.points=s.points.map(p=>({...p}));cbDrag.routeAxis=s.routeAxis;cbDrag.turnAnchor=s.turnAnchor?{...s.turnAnchor}:null;cbDrag.pairSide=s.pairSide;cbDrag.pairSnap=s.pairSnap;cbDrag.pairAxis=s.pairAxis;cbDrag.pairLine=s.pairLine;cbDrag.routeInput=s.routeInput?{...s.routeInput}:null;cbDrag.geometryInput=s.geometryInput?{...s.geometryInput}:null;cbDrag.routeState=s.routeState||CB_ROUTING_STATES.ROUTING}'''
+t = replace_function(t, 'cbRouteSnapshot', 'cbRouteRestore', new_snapshot)
+t = replace_function(t, 'cbRouteRestore', 'cbPairSnapPx', new_restore)
+
+# Professionalize a completed device-to-device leg before saving it.
+m = re.search(r'function cbCaptureDragTarget\([\s\S]*?(?=\nfunction cbCommitDrag\()', t)
+assert m
+capture = m.group(0)
+assert 'const clean=cbSimplify(pts);' in capture
+capture = capture.replace('const clean=cbSimplify(pts);', 'const clean=cbProfessionalizeLegPx(pts,w,h);')
+capture = capture.replace('cbDrag.routeInput=end;cbDrag.pairSnap=false;', 'cbDrag.routeInput=end;cbDrag.geometryInput=end;cbDrag.routeState=CB_ROUTING_STATES.CAPTURED;cbDrag.pairSnap=false;')
+t = t[:m.start()] + capture + t[m.end():]
+
+# Explicit turn states, while keeping the proven v0.55 hysteresis thresholds.
+old = "if(perp<arm){\n  cbDrag.turnAnchor=null;if(axis==='h')last.x=q.x;else last.y=q.y"
+assert old in t
+t = t.replace(old, "if(perp<arm){\n  cbDrag.turnAnchor=null;cbSetRoutingState(CB_ROUTING_STATES.ROUTING);if(axis==='h')last.x=q.x;else last.y=q.y", 1)
+old = "if(!cbDrag.turnAnchor)cbDrag.turnAnchor={x:last.x,y:last.y};const a=cbDrag.turnAnchor;last.x=a.x;last.y=a.y;"
+assert old in t
+t = t.replace(old, "if(!cbDrag.turnAnchor){cbDrag.turnAnchor={x:last.x,y:last.y};cbSetRoutingState(CB_ROUTING_STATES.CORNER_PENDING)}const a=cbDrag.turnAnchor;last.x=a.x;last.y=a.y;", 1)
+old = "cbDrag.routeAxis=axis==='h'?'v':'h';cbDrag.turnAnchor=null}"
+assert old in t
+t = t.replace(old, "cbDrag.routeAxis=axis==='h'?'v':'h';cbDrag.turnAnchor=null;cbSetRoutingState(CB_ROUTING_STATES.CORNER_COMMITTED)}", 1)
+
+# Touch-friendly route start; raw samples and visual geometry get independent channels.
+assert "Math.hypot(p.x-sp.x,p.y-sp.y)>34" in t
+t = t.replace("Math.hypot(p.x-sp.x,p.y-sp.y)>34", "Math.hypot(p.x-sp.x,p.y-sp.y)>cbStartRadiusPx(w,h)", 1)
+init_old = "returnMode:returning,returnProgress:0,returnGuide:null}"
+init_new = "returnMode:returning,returnProgress:0,returnGuide:null,rawLast:{...p},rawSamples:[{...p}],geometryInput:{...sp},routeState:returning?CB_ROUTING_STATES.RETURN:CB_ROUTING_STATES.ROUTING}"
+assert init_old in t
+t = t.replace(init_old, init_new, 1)
+
+# Return magnet remains canonical and becomes an explicit route state.
+ret_old = "function cbAppendReturnDrag(p,w,h){if(!cbDrag)return false;"
+assert ret_old in t
+t = t.replace(ret_old, "function cbAppendReturnDrag(p,w,h){if(!cbDrag)return false;cbSetRoutingState(CB_ROUTING_STATES.RETURN);", 1)
+
+# Live preview also strips collinear backtracking; paired/retrace lanes are intentionally preserved.
+append_old = "cbRouteGridStep(q,w,h,raw);\n  if(cbChallengePointsBlocked(cbDrag.points,w,h))"
+assert append_old in t
+t = t.replace(append_old, "cbRouteGridStep(q,w,h,raw);if(!cbDrag.pairSnap)cbDrag.points=cbPolishOrthogonal(cbDrag.points);\n  if(cbChallengePointsBlocked(cbDrag.points,w,h))", 1)
+
+# UI state remains correct after pointer-up, undo, zoom, checkpoint and completion.
+update_old = "function cbUpdateGame(){const hud=$('cbDetectorHud');"
+assert update_old in t
+t = t.replace(update_old, "function cbUpdateGame(){cbUpdateRouteStateUi();const hud=$('cbDetectorHud');", 1)
+
+old_copy = 'Hold on the green-ring device and drag through detectors · cable uses Survey field grid · corners lock cleanly · the final return magnetically follows the outgoing cable · pinch with two fingers to zoom'
+new_copy = 'Hold on the green-ring device and drag naturally · raw touch uses a forgiving device corridor while Smart Route produces clean field-grid cable · the final return magnetically follows the outgoing cable · pinch with two fingers to zoom'
+assert old_copy in t
+t = t.replace(old_copy, new_copy, 1)
+
+p.write_text(t)
+for dst in ['ZoneSketch.html', 'Zone-Sketch-by-Will.html', 'app/src/main/assets/index.html']:
+    (ROOT / dst).write_text(t)
+
+# Android generation bump.
+gp = ROOT / 'app/build.gradle'
+g = gp.read_text()
+assert 'versionCode 57' in g and "versionName '0.56'" in g
+gp.write_text(g.replace('versionCode 57', 'versionCode 58').replace("versionName '0.56'", "versionName '0.57'"))
+
+# Permanent deterministic aggressive-touch comparison, with the captured v0.56 baseline embedded.
+tp = ROOT / 'tests/circuit-aggressive-touch-v057.cjs'
+s = tp.read_text()
+if 'baselineFallback' not in s:
+    s = s.replace("const outPath=process.env.ROUTING_OUTPUT||`test-results/aggressive-touch-${phase}.json`;", "const outPath=process.env.ROUTING_OUTPUT||`test-results/aggressive-touch-${phase}.json`;\nconst baselineFallback={noisy:{points:362,segments:292,corners:148,shortLegs:74,reversals:70,intersections:4,excessRatio:1.6221}};")
+    s = s.replace("const base=JSON.parse(fs.readFileSync(baselinePath,'utf8'));", "const base=fs.existsSync(baselinePath)?JSON.parse(fs.readFileSync(baselinePath,'utf8')):baselineFallback;")
+tp.write_text(s)
+
+rp = ROOT / 'tests/run-regressions.cjs'
+r = rp.read_text()
+if "'circuit-aggressive-touch-v057'" not in r:
+    r = r.replace("'circuit-return-magnet-v056'", "'circuit-return-magnet-v056','circuit-aggressive-touch-v057'")
+rp.write_text(r)
+
+# Tester portal follows the tested build and explains the routing generation.
+bp = ROOT / 'beta.html'
+b = bp.read_text().replace('v0.56', 'v0.57')
+b = b.replace('Circuit Builder</strong><span>Live detector progress, rising bell feedback, completion screen and addressable twin-cable return snapping.</span>', 'Circuit Builder</strong><span>New Smart Route engine separates raw touch from saved cable geometry, uses swept device corridors, locks cleaner corners and keeps magnetic addressable return.</span>')
+bp.write_text(b)
+(ROOT / 'download.html').write_text(b)
+
+print('v0.57 Smart Route generation applied')
