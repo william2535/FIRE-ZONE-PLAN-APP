@@ -1,5 +1,5 @@
 name: Release On Site Zone Planner v0.49
-# Retry after preserving legacy UI contracts, fixing project-home load ordering, and correcting the visual regression assertion.
+# Retry after preserving legacy UI contracts, fixing project-home load ordering, correcting visual assertions, and keeping global notices above Circuit Builder.
 on:
   workflow_dispatch:
   push:
@@ -33,6 +33,7 @@ jobs:
           grep -q 'CABLES PAIRED' index.html
           grep -q 'TWIN CABLE SNAP' index.html
           grep -q 'Make a new plan' index.html
+          grep -q 'z-index:260' index.html
           grep -q 'v0.49' index.html
           python - <<'PY'
           from pathlib import Path
