@@ -39,7 +39,7 @@ function orthogonal(points){return points.every((p,i)=>!i||Math.abs(p.x-points[i
  const pts=s.c.editDraft.legs[0].points,start={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2},end={x:(pts.at(-2).x+pts.at(-1).x)/2,y:(pts.at(-2).y+pts.at(-1).y)/2};
  const a=await page.evaluate(p=>cbEditorTest.anchor(p),start),b=await page.evaluate(p=>cbEditorTest.anchor(p),end);assert(a&&b,'cable anchors must be hittable');
  await page.evaluate(({a,start})=>cbEditorTest.start(a,start),{a,start});
- const centerY=(start.y+end.y)/2,replacementY=Math.max(.08,Math.min(.92,centerY+(centerY<.75?.14:-.14))),replacementPoints=[{x:start.x,y:replacementY},{x:(start.x+end.x)/2,y:replacementY},{x:end.x,y:replacementY}];
+ const originalDetourY=pts[2].y,replacementY=start.y+(originalDetourY-start.y)*.55,replacementPoints=[{x:start.x,y:replacementY},{x:(start.x+end.x)/2,y:replacementY},{x:end.x,y:replacementY}];
  for(const p of replacementPoints)await page.evaluate(p=>cbEditorTest.move(p),p);
  const accepted=await page.evaluate(b=>cbEditorTest.finish(b),b);assert.equal(accepted,true,'replacement should stage successfully');
  s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit.pending,'draw-first workflow must retain replacement before deleting old');assert(orthogonal(s.edit.pending.points),'saved replacement must be orthogonal');
