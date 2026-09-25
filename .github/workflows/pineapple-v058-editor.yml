@@ -28,6 +28,8 @@ jobs:
         run: node tests/circuit-editor-startup-v058.cjs
       - name: Run draft-first manual editor behaviour
         run: node tests/circuit-manual-editor-v058.cjs
+      - name: Prove real Bridge crossing persistence
+        run: node tests/circuit-bridge-crossing-v058.cjs
       - name: Re-run Smart Route compatibility
         run: |
           node tests/circuit-capture-transition-v058.cjs
