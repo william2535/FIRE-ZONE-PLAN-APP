@@ -1,0 +1,35 @@
+name: Audit current main v0.57 routing
+on:
+  push:
+    branches: [audit-main-v057-alt]
+    paths:
+      - '.github/workflows/audit-main-v057-alt.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Replay current main routing against stored v0.56 baseline
+        env:
+          ROUTING_PHASE: after
+          ROUTING_BASELINE: tests/fixtures/aggressive-touch-v056-baseline.json
+          ROUTING_OUTPUT: test-results/aggressive-touch-current-main.json
+        run: node tests/circuit-aggressive-touch-v057.cjs
+      - name: Run current regression suite
+        env:
+          ROUTING_PHASE: after
+        run: node tests/run-regressions.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: current-main-v057-routing-audit
+          path: test-results/aggressive-touch-current-main.json
+          if-no-files-found: error
