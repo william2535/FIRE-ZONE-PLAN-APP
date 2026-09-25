@@ -1,4 +1,5 @@
 name: Release On Site Zone Planner v0.47
+# Retry after animation-frame timing fix in the Circuit Builder pair-snap test.
 on:
   workflow_dispatch:
   push:
