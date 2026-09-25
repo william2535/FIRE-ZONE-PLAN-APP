@@ -1,58 +1,71 @@
 # Project Pineapple — Live Checkpoint
 
-This file is the durable handoff for the ongoing Pineapple work. Update it at every meaningful milestone, before risky edits, and after important CI results so work can resume immediately after a chat/tool crash.
+Durable handoff for the ongoing Pineapple work. Update before risky edits and after meaningful CI/results so work can resume immediately after a crash.
 
-## Current branch
+## Branch / safety
 
 - Branch: `project-pineapple-v058`
-- Current head before this checkpoint update: `1bb19696b7509779deedb4e66b45eecc9b5e7815` — `Checkpoint post-repair editor startup gate`
+- Current app/checkpoint head before this update: `3559785531b8469c234019c626ae862a97ddac52`
 - Protected 24/7 build must remain unchanged.
 
 ## Current objective
 
-Continue v0.58 Circuit Builder/manual-editor hardening autonomously. Preserve accepted Smart Route/capture behaviour while making editing predictable and professional.
+Continue v0.58 Circuit Builder/manual-editor hardening autonomously while preserving accepted Smart Route/capture behaviour.
 
-## Parser/startup status
+## Repaired / green foundations
 
-The former inline-JS parser break is repaired.
-
-- Root cause: `cbEditAnchorAt()` was missing the brace closing its outer leg loop before `return best`.
-- Repair commit: `2a35764842c87fa897064b0d9a2e7117f9b5923a` — `Fix manual editor anchor parser break`
+- Former parser crash is fixed. Root cause was `cbEditAnchorAt()` missing the brace closing its outer leg loop before `return best`.
+- Repair commit: `2a35764842c87fa897064b0d9a2e7117f9b5923a`.
+- Startup test now checks mounted editor UI instead of expecting IIFE-local functions to be globals (`b47d492d3c69856c728e907539edb0a38d6b4d2d`).
 - Current parser gate: PASS.
-- Startup assertion was corrected in `b47d492d3c69856c728e907539edb0a38d6b4d2d` so it checks the actual mounted editor controls rather than expecting IIFE-local functions to be globals.
-- Fresh startup on run `36196440655`: PASS with `ready:true` and `hasEditorUi:true`.
+- Current startup gate: PASS (`ready:true`, `hasEditorUi:true`).
+- Capture transition on head `3559785...`: PASS, run `36196724926`.
+- Routing compatibility on head `3559785...`: PASS, run `36196724831`.
+- Protected 24/7 verification: PASS.
 
-## Fresh CI on `1bb1969...`
+## Manual editor status
 
-- Capture transition run `36196440708`: PASS
-- Routing compatibility run `36196440741`: PASS
-- Manual editor run `36196440655`: FAIL only in `Run draft-first manual editor behaviour`
-- Protected 24/7: PASS
-- Inline parser: PASS
-- Chromium/startup: PASS
+Manual editor run `36196724917`, job `108274138339`, is the only red gate.
 
-### First real manual-editor failure
+The strengthened regression in `f211c886a1f891ee40b5fa462254ec40853e92af` now compares actual leg coordinates rather than point count. That improved test advances past the Pencil/Bin splice, proving the staged replacement genuinely changes route geometry.
 
-Job `108273247903` fails at `tests/circuit-manual-editor-v058.cjs` line 44:
+Bridge-locality checks also advance: deleting one local segment preserves an unrelated bridge on the same leg, and Undo restores both bridge markers.
 
-`AssertionError: local leg geometry should actually change`
+Open-route state also advances:
 
-The assertion compares only the route point count before and after the Pencil/Bin splice. It observed `6` before and `6` after.
+1. direct deletion creates one explicit gap and `ROUTE OPEN` status;
+2. Undo restores zero gaps;
+3. Redo restores the gap;
+4. Done correctly rejects the open route;
+5. Undo is then used to repair the route.
 
-This is not sufficient evidence that the reroute failed: a legitimate replacement can keep the same number of orthogonal vertices while changing their coordinates. The editor successfully staged the replacement and `cbEditSplicePending()` cleared the pending state before this assertion.
+### Current exact failure
 
-## Immediate next step
+After that final Undo, the test calls `cbEditValidateDraft()` and its assertion passes (`ok:true`). Immediately afterwards `cbEditDone()` returns `false`:
 
-1. Strengthen the regression so it snapshots the actual leg geometry before the splice and compares coordinates after the splice, rather than comparing only `.points.length`.
-2. Log before/after geometry in CI so a genuine no-op is obvious.
-3. Rerun manual-editor CI and follow the first genuine behavioural failure.
-4. Once the splice regression advances, verify the existing bridge-locality assertions and then audit the suspected Bridge coordinate bug in `cbEditFinishStroke()`:
-   - current callback appears to use `conflict.crossings.map(h=>({point:cbPxBoard(h.point,w,h),...}))`
-   - callback variable `h` shadows the canvas-height parameter `h`, so Bridge mode may pass the crossing object as height.
-   - confirm via behaviour/test before patching.
-5. Keep capture/routing/24-7/generated-copy gates green throughout.
+`AssertionError: Done should accept repaired route` (`false !== true`).
 
-## Existing editor work that must be preserved
+`cbEditDone()` can return false only when either:
+
+- `cbEdit?.active` is false; or
+- its own second call to `cbEditValidateDraft()` returns non-ok.
+
+Because an explicit validation immediately before Done is green, the next diagnostic must capture edit-active state + validation + Done result atomically in one browser execution, rather than weakening validation.
+
+## Immediate next steps
+
+1. Instrument `tests/circuit-manual-editor-v058.cjs` with a single atomic helper around the final Done call returning:
+   - `activeBefore`
+   - `validationBefore`
+   - `result`
+   - `activeAfter`
+   - draft/gap summary before/after.
+2. Run manual-editor CI and identify whether edit mode is being cleared asynchronously or the validator changes inside `cbEditDone()`.
+3. Fix the actual runtime-state cause; do not loosen `cbEditValidateDraft()`.
+4. Re-run full manual editor + Smart Route compatibility + capture + 24/7 + generated-copy equality.
+5. Then test the separate suspected Bridge bug in `cbEditFinishStroke()` where `conflict.crossings.map(h=>({point:cbPxBoard(h.point,w,h),...}))` shadows canvas height `h`; confirm via behaviour test before patching.
+
+## Editor work to preserve
 
 - Pencil/Bin replacement workflow
 - explicit route-open state and Done rejection
@@ -60,12 +73,11 @@ This is not sufficient evidence that the reroute failed: a legitimate replacemen
 - persisted `editDraft`
 - Bridge rendering / As-Fit integration
 - cleanup control
-- bridge-locality fix so deleting one segment does not remove unrelated bridge markers on the same leg
+- bridge-locality fix
 
 ## Pineapple continuity rule
 
-- Save meaningful progress to the branch continuously.
-- Update this checkpoint before risky structural edits.
-- Update it again after important CI outcomes or whenever the active blocker changes.
-- Prefer small reproducible commits/patchers over unsaved broad changes.
+- Save meaningful progress to this branch continuously.
+- Update this checkpoint before risky structural edits and after important CI outcomes.
+- Prefer small reproducible commits/patchers over broad unsaved changes.
 - Never leave a long investigation existing only in chat state.
