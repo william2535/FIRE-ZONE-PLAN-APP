@@ -9,8 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Verify protected 24/7 build
         run: python .github/verify_247_protected.py
+      - name: Bisect original editor syntax injection
+        continue-on-error: true
+        run: python tests/circuit-editor-hunk-bisect-v058.py
       - name: Parse inline JavaScript before browser startup
         run: |
           npm install --no-save acorn@8.15.0
