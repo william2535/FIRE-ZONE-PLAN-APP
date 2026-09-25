@@ -5,6 +5,8 @@ This file is the durable handoff for the ongoing Pineapple work. Update it at ev
 ## Current branch
 
 - Branch: `project-pineapple-v058`
+- Repaired app head before this checkpoint: `2a35764842c87fa897064b0d9a2e7117f9b5923a`
+- Head message: `Fix manual editor anchor parser break`
 - Protected 24/7 build must remain unchanged.
 
 ## Current objective
@@ -14,74 +16,87 @@ Continue the v0.58 Circuit Builder / manual editor hardening work without waitin
 ## What is already established
 
 - Aggressive-touch / capture-transition work had been accepted sufficiently to move on to manual editor hardening.
-- The branch already contains a real manual editor implementation rather than just UI: Edit, Pencil/Bin, Undo/Redo, Bridge, Cleanup, Done validation, persisted `editDraft`, As-Fit blocking for unfinished edits, bridge rendering, staged replacement/splice, and crossing/overlap validation.
-- A concrete editor defect was found: deleting one local cable section could remove bridge metadata too broadly on the same detector-to-detector leg.
+- The branch contains a real manual editor implementation: Edit, Pencil/Bin, Undo/Redo, Bridge, Cleanup, Done validation, persisted `editDraft`, As-Fit blocking for unfinished edits, bridge rendering, staged replacement/splice, and crossing/overlap validation.
+- A concrete editor defect was found earlier: deleting one local cable section could remove bridge metadata too broadly on the same detector-to-detector leg.
 - Bridge-locality regression work and local bridge bookkeeping changes are already on the branch and must be preserved.
 
-## Current blocker
+## Parser blocker — root cause found and repaired
 
-The manual-editor branch currently contains malformed inline JavaScript and cannot initialize the app.
-
-Observed failure:
+The longstanding inline JavaScript failure was:
 
 - `SyntaxError: Unexpected token ')'` at final `})();`
-- Browser startup never reaches ready state.
-- Protected 24/7 verification continues to pass.
+- Browser startup never reached ready state.
+- Protected 24/7 verification continued to pass.
 
-## Confirmed baseline
+### Isolation
 
-### Last confirmed good app
+Confirmed baseline:
 
-`fcd59d236411c41e48383b774fbc632c4ebf0e16` — `Apply Pineapple v0.58 editor transformation`
+- Last good pre-editor app state: `fcd59d236411c41e48383b774fbc632c4ebf0e16`
+- First generated editor app commit: `c8b76b265702b6667fe780fca360c7e68393ce0a`
 
-CI on this SHA:
-- Capture transition run `36191711835`: PASS
-- Routing compatibility run `36191711836`: PASS
-- Editor apply run `36191711987`: PASS and generated the editor commit.
+A deterministic hunk parser bisect showed:
 
-### Generated editor commit under investigation
+- Hunks 1–5 parse.
+- Hunk 6 is the first syntax-breaking hunk.
+- Hunk 6 is the manual editor-engine insertion around `cbLegSegments`.
 
-`c8b76b265702b6667fe780fca360c7e68393ce0a` — `Add manual Circuit Builder route editor core`
+### Exact defect
 
-It changes the four app HTML copies and was generated from `.github/pineapple_v058_editor_patch.py`.
+The malformed function was `cbEditAnchorAt()`.
 
-## Exact syntax isolation result
+Its segment-search tail ended with only two closing braces before `return best`:
 
-A deterministic hunk-by-hunk parser bisect was added:
+`...d:q.d}}return best}`
 
-- Script: `tests/circuit-editor-hunk-bisect-v058.py`
-- Script commit: `502259a7477a377cb858ae99894365406bbc43c0`
-- Workflow wiring commit: `230342111fe594d319873ffb6d17f629f86caca3`
-- Manual editor workflow run: `36195630175`
-- Job: `108270710594`
+It requires three:
 
-Result:
+`...d:q.d}}}return best}`
 
-- Known-good `fcd59d...` parses cleanly.
-- Original editor diff contains 8 hunks.
-- Hunks 1–5: PASS.
-- **Hunk 6 is the first syntax-breaking hunk.**
-- Hunk header: `@@ -893,12 +899,57 @@ ...`
-- This is the large editor-engine insertion beginning with `cbEditClone`, `cbEditBoardClose`, `cbEditSimplifyBoard`, `cbEditGapMatches`, `cbEditDraft`, `cbEditVisibleSegments`, `cbEditEnsureDraft`, etc., around the `cbLegSegments` / board-routing area.
-- Failure immediately after applying hunk 6: final `})();` gives `Unexpected token ')'`.
-- Normal parser gate reproduces the same failure.
+The missing brace left the outer segment loop/function structure open, causing following editor functions to be swallowed until the parser finally failed at the app IIFE closing `})();`.
 
-Important correction: do not blame the landing-page or `cbOpenCircuit` replacement first; those are in earlier/later hunks and hunks 1–5 already parse. The syntax fault is inside hunk 6 itself.
+### Repair
+
+A deterministic repair source was added:
+
+- `.github/pineapple_v058_editor_syntax_fix.py`
+- commit `f949defdff603b55b1dd298c5b37a277335ca743`
+
+A one-shot repair workflow was added:
+
+- `.github/workflows/pineapple-v058-editor-syntax-fix.yml`
+- commit `82eb97beefc0cc8464b26dfc0722c4e9bf447b27`
+- workflow run `36196044447`: PASS
+
+That workflow:
+
+- repaired `.github/pineapple_v058_editor_patch.py` so the source generator no longer regenerates the bad function;
+- repaired `index.html`;
+- synchronized `ZoneSketch.html`, `Zone-Sketch-by-Will.html`, and `app/src/main/assets/index.html`;
+- verified the protected 24/7 build;
+- ran the Acorn inline-JS parser gate successfully before committing.
+
+Generated repair commit:
+
+- `2a35764842c87fa897064b0d9a2e7117f9b5923a` — `Fix manual editor anchor parser break`
+
+Important CI detail: GitHub does not recursively trigger normal push workflows for the commit created by the syntax-repair workflow's `GITHUB_TOKEN`, so `2a35764...` itself has zero normal Actions runs. This checkpoint commit is intentionally being used as the follow-up API/user-authored push to trigger the normal editor/routing/capture suites against the repaired app.
 
 ## Immediate next steps
 
-1. Split hunk 6 into smaller function-level chunks and run syntax checking after each group to identify the exact malformed editor function/block.
-2. Fix the reproducible editor patch source rather than hand-editing four HTML copies where possible.
-3. Apply a small repair to the current branch while preserving later bridge-locality/editor improvements.
-4. Re-run:
-   - inline script parser
-   - browser startup
+1. Inspect the normal Pineapple workflows triggered by this checkpoint commit.
+2. Confirm:
+   - inline script parser PASS
+   - browser startup PASS
+   - protected 24/7 PASS
+3. If editor behaviour now fails, fix the first real runtime/behaviour defect rather than returning to syntax archaeology.
+4. Re-run/verify:
    - manual editor behaviour + bridge locality
    - Smart Route compatibility
    - capture/aggressive-touch/return-magnet gates
-   - protected 24/7 verification
    - generated-copy equality
-5. Once green, continue deliberate break-testing of Pencil splice anchors, bridge persistence, undo/redo topology, cleanup strength, Done/open-route validation, As-Fit, and phone/tablet behaviour.
+5. Specifically audit Bridge mode once runtime tests execute. `cbEditFinishStroke()` currently deserves scrutiny because its crossing-map callback uses `h` as a callback parameter while `h` is also the canvas-height parameter; this may incorrectly pass the crossing object as height into `cbPxBoard` and should be fixed if confirmed.
+6. Once green, continue deliberate break-testing of Pencil splice anchors, bridge persistence/locality, undo/redo topology, cleanup strength, Done/open-route validation, As-Fit, and phone/tablet behaviour.
 
 ## Pineapple continuity rule
 
