@@ -32,7 +32,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert(await p.locator('[data-symbol="smoke"]').isVisible());
   const canvas=await p.locator('#canvas').boundingBox();
   await p.locator('[data-symbol="smoke"]').click();await p.mouse.click(canvas.x+canvas.width*.56,canvas.y+canvas.height*.48);
-  await p.locator('.uiToast.success').waitFor({state:'visible'});assert.match(await p.locator('.uiToast.success').last().innerText(),/Smoke added/);
+  const smokeToast=p.locator('.uiToast.success').filter({hasText:'Smoke added'});await smokeToast.waitFor({state:'visible'});assert.match(await smokeToast.innerText(),/Smoke added/);
   assert.match(await p.locator('#saveIndicator').getAttribute('data-state'),/saving|saved/);
 
   // The Circuit Builder still exposes the polished field controls and As-Fit validation surface.
