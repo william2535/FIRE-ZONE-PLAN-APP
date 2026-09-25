@@ -30,6 +30,8 @@ jobs:
         run: node tests/circuit-manual-editor-v058.cjs
       - name: Prove real Bridge crossing persistence
         run: node tests/circuit-bridge-crossing-v058.cjs
+      - name: Stress Manual Edit on mobile viewports
+        run: node tests/circuit-editor-mobile-stress-v058.cjs
       - name: Re-run Smart Route compatibility
         run: |
           node tests/circuit-capture-transition-v058.cjs
