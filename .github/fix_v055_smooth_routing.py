@@ -28,7 +28,7 @@ function cbPairSnapPx(q,last,w,h,raw=q){
  if(!cbDrag||!last)return q;
  const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y),prev=cbDrag.routeInput||last,rx=Number(raw?.x)??q.x,ry=Number(raw?.y)??q.y,dx=rx-prev.x,dy=ry-prev.y,move=Math.hypot(dx,dy);
  let wantH=Math.abs(dx)>=Math.abs(dy);if(move<grid*.24&&cbDrag.pairAxis)wantH=cbDrag.pairAxis==='h';
- const scale=Math.max(1,cbView.scale),range=Math.max(10,Math.min(42,grid*1.05,CB_PAIR_RANGE*scale)),gap=Math.max(7,Math.min(12,CB_PAIR_GAP*Math.max(1,Math.min(1.2,scale)),grid*.42)),reach=Math.max(18,grid*.70);
+ const scale=Math.max(1,cbView.scale),range=Math.max(10,Math.min(42,grid*1.05,CB_PAIR_RANGE*scale)),gap=CB_PAIR_GAP*scale,reach=Math.max(18,grid*.70);
  let best=null;
  for(const s of cbPairSegmentsPx(w,h)){
   const sx=s.b.x-s.a.x,sy=s.b.y-s.a.y;if(Math.min(Math.abs(sx),Math.abs(sy))>1.25)continue;
@@ -123,5 +123,6 @@ assert '// v0.55 smooth route engine' in t
 assert 'CB_ROUTE_ARM_CELLS=.28' in t
 assert 'CB_ROUTE_SAMPLE_CELLS=.30' in t
 assert 'function cbRouteSnapshot' in t
+assert 'gap=CB_PAIR_GAP*scale' in t
 assert 'turnAnchor:null,routeInput:sp' in t
 print('Applied v0.55 smooth shared-grid Circuit Builder routing; 24/7 demo untouched')
