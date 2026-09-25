@@ -15,6 +15,8 @@ jobs:
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
+      - name: Verify editor build starts cleanly
+        run: node tests/circuit-editor-startup-v058.cjs
       - name: Run draft-first manual editor behaviour
         run: node tests/circuit-manual-editor-v058.cjs
       - name: Re-run Smart Route compatibility
