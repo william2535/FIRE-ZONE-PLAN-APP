@@ -1,0 +1,90 @@
+name: Finalize Zone Sketch v0.55 APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-v055.yml'
+permissions:
+  contents: write
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protect 24/7 company demo
+        run: python .github/verify_247_protected.py
+      - name: Verify final v0.55 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 56" app/build.gradle
+          grep -q "versionName '0.55'" app/build.gradle
+          grep -Fq '// v0.55 smooth route engine' index.html
+          grep -Fq 'gap=CB_PAIR_GAP*scale' index.html
+          grep -Fq 'function fieldGridPoint' index.html
+          grep -Fq 'function cbFieldGridScreenStep' index.html
+          grep -Fq 'Device snap · ON' index.html
+          grep -Fq 'ZONE CHALLENGE · NO CROSSING' index.html
+          grep -q "'circuit-smooth-routing-v055'" tests/run-regressions.cjs
+          python .github/verify_247_protected.py
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v055-final.js').write_text('\n'.join(scripts))
+          PY
+          node --check /tmp/zonesketch-v055-final.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run all regressions
+        run: node tests/run-regressions.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build final v0.55 APK
+        run: gradle --no-daemon assembleDebug
+      - name: Prepare final APK and mirror
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/Zone-Sketch-by-Will-v0.55.apk
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.55.apk
+      - name: Verify 24/7 stayed untouched
+        run: |
+          python .github/verify_247_protected.py
+          git diff --exit-code -- company-demos/247-protection 247-protection-demo.html
+      - name: Commit final public mirror
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add downloads/Zone-Sketch-by-Will-v0.55.apk
+          git commit -m 'Refresh v0.55 APK with final smooth routing' || true
+          git stash push --include-untracked -m 'v0.55 finalizer state' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Replace v0.55 release APK and notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v0.55 >/dev/null 2>&1 || gh release create v0.55 --title 'Zone Sketch v0.55'
+          gh release edit v0.55 --notes 'Survey and Circuit Builder now share one resizable plan-space field grid, so surveyed devices sit on the exact cable lattice. Circuit routing samples sparse touch movement, ignores small finger wobble, freezes a corner before a turn can overshoot into a long stray line, preserves clean twin/parallel return lanes at every zoom level, and keeps the multi-zone colour challenge with previous routes visible and crossings blocked. The separate 24/7 Protection demo remains checksum-protected and unchanged.'
+          gh release upload v0.55 /tmp/Zone-Sketch-by-Will-v0.55.apk --clobber
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-v0.55-Final-Smooth-Routing-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
