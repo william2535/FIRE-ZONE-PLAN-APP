@@ -6,10 +6,13 @@ on:
     paths:
       - '.github/workflows/release-v051.yml'
       - '.github/fix_v051_circuit_grid.py'
+      - '.github/sync-beta-portal.py'
       - 'tests/circuit-grid-routing-v051.cjs'
       - 'tests/run-regressions.cjs'
 permissions:
   contents: write
+env:
+  ZONE_SKETCH_VERSION: '0.51'
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -20,24 +23,33 @@ jobs:
           if [ -f company-demos/247-protection/index.html ]; then sha256sum company-demos/247-protection/index.html > /tmp/company-demo.sha; fi
       - name: Apply v0.51 clean grid routing
         run: |
-          if grep -q "versionName '0.51'" app/build.gradle; then
-            echo 'v0.51 already applied'
+          if grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle; then
+            echo "v${ZONE_SKETCH_VERSION} already applied"
           else
             python -m py_compile .github/fix_v051_circuit_grid.py
             python .github/fix_v051_circuit_grid.py
           fi
+      - name: Sync beta tester portal delivery
+        run: python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
       - name: Prove company demo stayed separate
         run: |
           if [ -f /tmp/company-demo.sha ]; then sha256sum -c /tmp/company-demo.sha; fi
           git diff --exit-code -- company-demos/247-protection 247-protection-demo.html
-      - name: Verify v0.51 source
+      - name: Verify v0.51 source and delivery
         shell: bash
         run: |
+          set -euo pipefail
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          RELEASE_URL="https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/${VERSION_TAG}/${APK_NAME}"
+          MIRROR_PATH="downloads/${APK_NAME}"
+
           cmp -s index.html ZoneSketch.html
           cmp -s index.html Zone-Sketch-by-Will.html
           cmp -s index.html app/src/main/assets/index.html
+          cmp -s beta.html download.html
           grep -q "versionCode 52" app/build.gradle
-          grep -q "versionName '0.51'" app/build.gradle
+          grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle
           grep -q 'v0.51 circuit grid routing' index.html
           grep -q 'CB_ROUTE_GRID=24' index.html
           grep -q 'CB_ROUTE_TURN_CELLS=1.45' index.html
@@ -45,6 +57,13 @@ jobs:
           grep -q 'function cbDrawRouteGrid' index.html
           grep -q 'cable snaps to grid' index.html
           grep -q "indexedDB.open('ZoneSketch-v1',1)" index.html
+          grep -Fq "const BETA_VERSION='${VERSION_TAG}'" beta.html
+          grep -Fq "$RELEASE_URL" beta.html
+          grep -Fq "$MIRROR_PATH" beta.html
+          grep -Fq 'href="./index.html"' beta.html
+          grep -Fq "const betaUrl='https://william2535.github.io/FIRE-ZONE-PLAN-APP/beta.html'" beta.html
+          if grep -q 'v0.50' beta.html; then echo 'Stale v0.50 reference found in beta.html' >&2; exit 1; fi
+          python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
           python - <<'PY'
           from pathlib import Path
           import re
@@ -74,31 +93,37 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Build v0.51 Android APK
+      - name: Build Android APK
         run: gradle --no-daemon assembleDebug
-      - name: Update public v0.51 APK
+      - name: Update public APK mirror
         run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
           mkdir -p downloads
-          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.51.apk
-      - name: Commit v0.51 main build only
+          cp app/build/outputs/apk/debug/app-debug.apk "downloads/${APK_NAME}"
+      - name: Commit main build and synced portal
         run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html downloads/Zone-Sketch-by-Will-v0.51.apk
-          git commit -m 'Release Zone Sketch v0.51 clean grid-snapped Circuit Builder routing' || true
-          cp app/build/outputs/apk/debug/app-debug.apk /tmp/Zone-Sketch-by-Will-v0.51.apk
-          git stash push --include-untracked -m 'v0.51 runner build state' || true
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html "downloads/${APK_NAME}"
+          git commit -m "Release Zone Sketch ${VERSION_TAG} clean grid-snapped Circuit Builder routing" || true
+          cp app/build/outputs/apk/debug/app-debug.apk "/tmp/${APK_NAME}"
+          git stash push --include-untracked -m "${VERSION_TAG} runner build state" || true
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
           mkdir -p app/build/outputs/apk/debug
-          cp /tmp/Zone-Sketch-by-Will-v0.51.apk app/build/outputs/apk/debug/app-debug.apk
-      - name: Publish v0.51 Android APK release
+          cp "/tmp/${APK_NAME}" app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish Android APK release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view v0.51 >/dev/null 2>&1 || gh release create v0.51 --title 'Zone Sketch v0.51' --notes 'Circuit Builder routes now follow a clean visible grid with turn hysteresis to remove accidental extra bends.'
-          gh release upload v0.51 /tmp/Zone-Sketch-by-Will-v0.51.apk --clobber
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'Circuit Builder routes now follow a clean visible grid with turn hysteresis to remove accidental extra bends.'
+          gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}" --clobber
       - uses: actions/upload-artifact@v4
         with:
           name: Zone-Sketch-v0.51-Grid-Routing-APK
