@@ -1,4 +1,4 @@
-name: Release Zone Sketch v0.55 Shared Survey Grid
+name: Release Zone Sketch v0.55 Shared Grid + Smooth Routing
 on:
   workflow_dispatch:
   push:
@@ -6,8 +6,11 @@ on:
     paths:
       - '.github/fix_v055_shared_survey_grid.py'
       - '.github/fix_v055_grid_undo.py'
+      - '.github/fix_v055_smooth_routing.py'
       - '.github/verify_247_protected.py'
+      - 'tests/run-regressions.cjs'
       - 'tests/circuit-survey-grid-v055.cjs'
+      - 'tests/circuit-smooth-routing-v055.cjs'
       - 'tests/survey-mode.cjs'
       - 'tests/circuit-builder-v047.cjs'
       - 'tests/circuit-grid-routing-v051.cjs'
@@ -25,15 +28,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify locked 24/7 Protection build before release
         run: python .github/verify_247_protected.py
-      - name: Apply v0.55 shared Survey and Circuit field grid
+      - name: Apply v0.55 shared grid and smooth Circuit Builder routing
         run: |
           if grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle; then
-            echo "v${ZONE_SKETCH_VERSION} already applied"
+            echo "v${ZONE_SKETCH_VERSION} shared-grid base already applied"
           else
             python -m py_compile .github/fix_v055_shared_survey_grid.py
             python .github/fix_v055_shared_survey_grid.py
           fi
           python .github/fix_v055_grid_undo.py
+          python -m py_compile .github/fix_v055_smooth_routing.py
+          python .github/fix_v055_smooth_routing.py
       - name: Sync beta tester portal delivery
         run: python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
       - name: Prove 24/7 Protection build stayed untouched
@@ -61,7 +66,13 @@ jobs:
           grep -Fq 'return cbPlanPx(fieldGridPoint(plan),bounds,w,h)' index.html
           grep -Fq 'Device snap · ON' index.html
           grep -Fq 'Field grid' index.html
+          grep -Fq '// v0.55 smooth route engine' index.html
+          grep -Fq 'CB_ROUTE_ARM_CELLS=.28' index.html
+          grep -Fq 'CB_ROUTE_SAMPLE_CELLS=.30' index.html
+          grep -Fq 'function cbRouteSnapshot' index.html
+          grep -Fq 'turnAnchor:null,routeInput:sp' index.html
           grep -q "'circuit-survey-grid-v055'" tests/run-regressions.cjs
+          grep -q "'circuit-smooth-routing-v055'" tests/run-regressions.cjs
           grep -Fq "const BETA_VERSION='${VERSION_TAG}'" beta.html
           grep -Fq "$RELEASE_URL" beta.html
           grep -Fq "$MIRROR_PATH" beta.html
@@ -78,7 +89,11 @@ jobs:
           assert 'function fieldGridPoint' in t
           assert 'function cbFieldGridScreenStep' in t
           assert 'if(off>0)push()' in t
-          print('v0.55 static checks passed')
+          assert '// v0.55 smooth route engine' in t
+          assert 'CB_ROUTE_ARM_CELLS=.28' in t
+          assert 'CB_ROUTE_SAMPLE_CELLS=.30' in t
+          assert 'function cbRouteSnapshot' in t
+          print('v0.55 shared-grid + smooth-routing static checks passed')
           PY
           node --check /tmp/zonesketch-v055.js
       - name: Install browser test runtime
@@ -135,7 +150,7 @@ jobs:
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html tests/run-regressions.cjs
           if [ "${{ steps.published_apk.outputs.exists }}" != 'true' ]; then git add "downloads/${APK_NAME}"; fi
           git diff --cached --quiet -- company-demos/247-protection 247-protection-demo.html
-          git commit -m "Release Zone Sketch ${VERSION_TAG} shared Survey Circuit grid" || true
+          git commit -m "Release Zone Sketch ${VERSION_TAG} shared grid and smooth routing" || true
           git stash push --include-untracked -m "${VERSION_TAG} runner build state" || true
           git fetch origin main
           git rebase origin/main
@@ -147,11 +162,11 @@ jobs:
         run: |
           VERSION_TAG="v${ZONE_SKETCH_VERSION}"
           APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
-          gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'Survey and Circuit Builder now use one shared resizable field grid. Survey devices are locked to its intersections, existing off-grid device points are aligned before Circuit Builder, and cable snapping/visible routing uses the exact same plan-space grid. The separate 24/7 Protection build remains checksum-locked and unchanged.'
+          gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'Circuit Builder and Survey now share one resizable plan-space grid, so every surveyed device lands on the exact cable lattice. Routing now samples sparse touch movement, freezes a corner as soon as the turn is armed instead of letting the previous leg shoot across the drawing, ignores small finger wobble, preserves clean parallel return lanes, and retains the multi-zone no-crossing game. The separate 24/7 Protection build remains checksum-locked and unchanged.'
           gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}"
       - uses: actions/upload-artifact@v4
         if: steps.published_apk.outputs.exists != 'true'
         with:
-          name: Zone-Sketch-v0.55-Shared-Field-Grid-APK
+          name: Zone-Sketch-v0.55-Shared-Grid-Smooth-Routing-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
