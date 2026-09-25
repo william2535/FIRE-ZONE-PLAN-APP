@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/finalize-v057-routing.yml'
       - 'tests/circuit-zone-game-v054.cjs'
+      - 'tests/run-regressions.cjs'
   workflow_dispatch:
 permissions:
   contents: write
