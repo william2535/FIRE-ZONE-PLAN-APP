@@ -1,0 +1,31 @@
+name: Baseline aggressive touch routing v0.57
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/baseline-aggressive-touch-v057.yml'
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Replay deterministic aggressive-touch baseline
+        env:
+          ROUTING_PHASE: baseline
+          ROUTING_OUTPUT: test-results/aggressive-touch-baseline.json
+        run: node tests/circuit-aggressive-touch-v057.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aggressive-touch-v056-baseline
+          path: test-results/aggressive-touch-baseline.json
+          if-no-files-found: error
