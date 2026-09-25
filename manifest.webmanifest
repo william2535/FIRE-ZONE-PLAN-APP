@@ -1,0 +1,13 @@
+{
+  "name": "Zone Sketch by Will Flood",
+  "short_name": "Zone Sketch",
+  "description": "Fire & security field workspace for plans, surveys, validated circuits and As-Fit drawings. Designed and built by Will Flood.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#edf2f7",
+  "theme_color": "#10263d",
+  "icons": [
+    {"src": "assets/zone-sketch-app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}

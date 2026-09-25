@@ -66,6 +66,16 @@ public final class MainActivity extends Activity {
     }
 
     private final class Bridge {
+        @JavascriptInterface public void openBetaPortal() {
+            runOnUiThread(() -> {
+                try {
+                    Intent open = new Intent(Intent.ACTION_VIEW, Uri.parse("https://william2535.github.io/FIRE-ZONE-PLAN-APP/beta.html"));
+                    startActivity(open);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Could not open the beta tester portal", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
         @JavascriptInterface public void sharePng(String dataUrl, String suggestedName) {
             shareFile(dataUrl, suggestedName, "image/png");
         }
