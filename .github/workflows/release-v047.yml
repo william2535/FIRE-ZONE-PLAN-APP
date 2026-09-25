@@ -1,0 +1,97 @@
+name: Release On Site Zone Planner v0.47
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v047.yml'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v0.47 Circuit Builder bells, count and pair snap
+        run: python .github/fix_v047_circuit_audio_pair.py
+      - name: Verify v0.47 source
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 48" app/build.gradle
+          grep -q "versionName '0.47'" app/build.gradle
+          grep -q 'cbPlayProgressBell' index.html
+          grep -q 'cbDetectorCount' index.html
+          grep -q 'cbPairSnapPx' index.html
+          grep -q 'TWIN CABLE SNAP' index.html
+          grep -q 'v0.47' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v047.js').write_text('\n'.join(scripts))
+          assert "freq=500+520*Math.pow(p,.82)" in t
+          assert "const seq=[...cbCircuit.sequence,...(cbDrag?.targets||[])]" in t
+          assert "q=cbPairSnapPx(q,last,w,h)" in t
+          assert "cbPlayWinChime()" in t
+          print('v0.47 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v047.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run Circuit Builder and touch regressions
+        run: |
+          node tests/circuit-builder-v043.cjs
+          node tests/circuit-builder-v046.cjs
+          node tests/circuit-builder-v047.cjs
+          node tests/canvas-touch-v042.cjs
+          node tests/survey-edit-zoom.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build v0.47 Android APK
+        run: gradle --no-daemon assembleDebug
+      - name: Update public v0.47 download
+        run: |
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.47.apk
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('download.html')
+          t=p.read_text()
+          t=re.sub(r'v0\.\d+(?:\.\d+)?', 'v0.47', t)
+          t=re.sub(r'downloads/Zone-Sketch-by-Will-v[0-9.]+\.apk', 'downloads/Zone-Sketch-by-Will-v0.47.apk', t)
+          p.write_text(t)
+          PY
+      - name: Commit v0.47 source and public APK
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle download.html downloads/Zone-Sketch-by-Will-v0.47.apk
+          git commit -m 'Release On Site Zone Planner v0.47 Circuit Builder bells and pair snap' || exit 0
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/zone-sketch-v047.apk
+          git stash push --include-untracked -m 'v0.47 runner build state' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          mkdir -p app/build/outputs/apk/debug
+          cp /tmp/zone-sketch-v047.apk app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: On-Site-Zone-Planner-v0.47-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
