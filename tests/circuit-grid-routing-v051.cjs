@@ -5,7 +5,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  assert.match(html,/CB_ROUTE_TURN_CELLS=1\.45/);
  assert.match(html,/function cbRouteGridStep/);
  assert.match(html,/function cbDrawRouteGrid/);
- assert.match(html,/cable snaps to grid/);
+ assert.match(html,/cable (?:snaps to grid|uses Survey field grid)/);
  const server=http.createServer((q,r)=>{let rel=decodeURIComponent((q.url||'/').split('?')[0]);if(rel.endsWith('/'))rel+='index.html';rel=rel.replace(/^\//,'');const file=path.join(process.cwd(),rel);try{const data=fs.readFileSync(file);if(file.endsWith('.js'))r.setHeader('Content-Type','text/javascript');else if(file.endsWith('.svg'))r.setHeader('Content-Type','image/svg+xml');else if(file.endsWith('.webmanifest'))r.setHeader('Content-Type','application/manifest+json');else r.setHeader('Content-Type','text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
  await new Promise(r=>server.once('listening',r));const browser=await chromium.launch({headless:true});
  try{
