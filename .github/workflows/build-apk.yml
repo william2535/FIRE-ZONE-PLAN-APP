@@ -8,7 +8,10 @@ on:
     paths-ignore:
       - 'downloads/**'
       - 'download.html'
+      - 'beta.html'
       - 'README.md'
+      - '.github/workflows/**'
+      - '.github/sync-beta-portal.py'
 permissions:
   contents: read
 jobs:
@@ -46,41 +49,3 @@ jobs:
           name: Zone-Sketch-by-Will-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-  publish-tested-apk:
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: Zone-Sketch-by-Will-APK
-          path: tested-apk
-      - name: Publish tested Android download
-        env:
-          TESTED_SHA: ${{ github.sha }}
-        run: |
-          git fetch origin main
-          if [ "$(git rev-parse origin/main)" != "$TESTED_SHA" ]; then
-            echo 'Main has newer changes; keep this tested APK as an artifact.'
-            exit 0
-          fi
-          python - <<'PY'
-          from pathlib import Path
-          import re, shutil
-          version = re.search(r"versionName '([0-9.]+)'", Path('app/build.gradle').read_text()).group(1)
-          apk = Path('tested-apk/app-debug.apk')
-          assert apk.is_file()
-          Path('downloads').mkdir(exist_ok=True)
-          shutil.copyfile(apk, 'downloads/Zone-Sketch-by-Will-v'+version+'.apk')
-          p = Path('download.html')
-          p.write_text(re.sub(r'v0\.\d+(?:\.\d+)?', 'v'+version, p.read_text()))
-          PY
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add downloads/Zone-Sketch-by-Will-v*.apk download.html
-          git diff --cached --quiet && exit 0
-          git commit -m 'Publish tested Circuit Builder Android download [release-assets]'
-          git push origin HEAD:main
