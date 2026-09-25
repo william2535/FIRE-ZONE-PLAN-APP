@@ -13,7 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply v0.46 Circuit Builder reward changes
-        run: python .github/fix_v046_circuit_rewards.py
+        run: |
+          python .github/fix_v046_circuit_rewards.py
+          python .github/fix_v046_reward_css.py
       - name: Verify v0.46 source
         shell: bash
         run: |
@@ -25,6 +27,7 @@ jobs:
           grep -q 'cbCelebrateRetry' index.html
           grep -q 'cbAutoCompleteCircuit' index.html
           grep -q 'cbBoardWrap.cbWon' index.html
+          grep -q 'celebration child style isolation' index.html
           grep -q 'v0.46' index.html
           python - <<'PY'
           from pathlib import Path
