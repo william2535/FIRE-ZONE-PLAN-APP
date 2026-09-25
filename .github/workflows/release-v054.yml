@@ -1,0 +1,147 @@
+name: Release Zone Sketch v0.54 Zone Challenge
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/fix_v054_zone_challenge.py'
+      - '.github/fix_v054_backref_repair.py'
+      - 'tests/circuit-zone-game-v054.cjs'
+      - '.github/workflows/release-v054.yml'
+permissions:
+  contents: write
+env:
+  ZONE_SKETCH_VERSION: '0.54'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protect separate company demo
+        run: |
+          if [ -f company-demos/247-protection/index.html ]; then sha256sum company-demos/247-protection/index.html > /tmp/company-demo.sha; fi
+      - name: Apply v0.54 Zone Challenge game layer
+        run: |
+          if grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle; then
+            echo "v${ZONE_SKETCH_VERSION} already applied"
+          else
+            python -m py_compile .github/fix_v054_zone_challenge.py
+            python .github/fix_v054_zone_challenge.py
+          fi
+          python .github/fix_v054_backref_repair.py
+      - name: Sync beta tester portal delivery
+        run: python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
+      - name: Prove company demo stayed separate
+        run: |
+          if [ -f /tmp/company-demo.sha ]; then sha256sum -c /tmp/company-demo.sha; fi
+          git diff --exit-code -- company-demos/247-protection 247-protection-demo.html
+      - name: Verify v0.54 source and delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          RELEASE_URL="https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/${VERSION_TAG}/${APK_NAME}"
+          MIRROR_PATH="downloads/${APK_NAME}"
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          cmp -s beta.html download.html
+          grep -q "versionCode 55" app/build.gradle
+          grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle
+          grep -Fq 'ZONE CHALLENGE · NO CROSSING' index.html
+          grep -Fq 'function cbChallengePointsBlocked' index.html
+          grep -Fq "return c?.color||'#df3f36'" index.html
+          grep -Fq 'symbolColor||s.color' index.html
+          grep -Fq 'GRID · NO CROSSING' index.html
+          grep -Fq 'cbChallengeCircuits' index.html
+          grep -q "'circuit-zone-game-v054'" tests/run-regressions.cjs
+          grep -Fq "const BETA_VERSION='${VERSION_TAG}'" beta.html
+          grep -Fq "$RELEASE_URL" beta.html
+          grep -Fq "$MIRROR_PATH" beta.html
+          grep -Fq 'href="./index.html"' beta.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v054.js').write_text('\n'.join(scripts))
+          assert 'Zone Sketch by Will Flood v0.54' in t
+          assert 'function cbChallengePointsBlocked' in t
+          assert '\\1function cbChallengeBounds' not in t
+          assert '\\1function cbPointClose' not in t
+          print('v0.54 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v054.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run full regressions
+        run: node tests/run-regressions.cjs
+      - name: Check for an existing published APK
+        id: published_apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          if gh release view "$VERSION_TAG" --json assets --jq '.assets[].name' 2>/dev/null | grep -Fxq "$APK_NAME"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-java@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        if: steps.published_apk.outputs.exists != 'true'
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          gradle-version: '8.11.1'
+      - name: Build Android APK
+        if: steps.published_apk.outputs.exists != 'true'
+        run: gradle --no-daemon assembleDebug
+      - name: Update public APK mirror
+        if: steps.published_apk.outputs.exists != 'true'
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk "downloads/${APK_NAME}"
+          cp app/build/outputs/apk/debug/app-debug.apk "/tmp/${APK_NAME}"
+      - name: Commit v0.54 main build
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html tests/run-regressions.cjs
+          if [ "${{ steps.published_apk.outputs.exists }}" != 'true' ]; then git add "downloads/${APK_NAME}"; fi
+          git commit -m "Release Zone Sketch ${VERSION_TAG} Zone Challenge game" || true
+          git stash push --include-untracked -m "${VERSION_TAG} runner build state" || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Publish Android APK release
+        if: steps.published_apk.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'Circuit Builder Zone Challenge: devices and cable use the zone colour, previously drawn zone routes remain on the board, and cable crossings are blocked. Parallel retrace and grid routing remain supported.'
+          gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}"
+      - uses: actions/upload-artifact@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          name: Zone-Sketch-v0.54-Zone-Challenge-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
