@@ -1,5 +1,5 @@
 name: Release On Site Zone Planner v0.49
-# Retry after preserving legacy UI contracts, fixing project-home load ordering, correcting visual assertions, and keeping global notices above Circuit Builder.
+# Retry after preserving legacy UI contracts, fixing project-home load ordering, correcting visual assertions, keeping global notices above Circuit Builder, and targeting the smoke feedback toast directly.
 on:
   workflow_dispatch:
   push:
