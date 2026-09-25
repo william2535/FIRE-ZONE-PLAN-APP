@@ -20,7 +20,14 @@ for old,new,label in replacements:
     elif new not in t:
         raise SystemExit(f'v0.49 regression fix marker missing: {label}')
 
+# Global feedback must stay above the full-screen Circuit Builder overlay.
+layer_css='#appNoticeModal,#appSettingsModal{z-index:260!important}.uiToastStack{z-index:270!important}'
+if layer_css not in t:
+    if '</style>' not in t:
+        raise SystemExit('v0.49 regression fix marker missing: style close')
+    t=t.replace('</style>',layer_css+'</style>',1)
+
 for name in ['index.html','ZoneSketch.html','Zone-Sketch-by-Will.html','app/src/main/assets/index.html']:
     Path(name).write_text(t)
 
-print('Applied v0.49 legacy regression compatibility fixes')
+print('Applied v0.49 legacy regression and overlay-layer fixes')
