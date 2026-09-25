@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/fix_v056_return_magnet.py'
+      - '.github/fix_v056_return_magnet_v2.py'
       - 'tests/circuit-return-magnet-v056.cjs'
       - 'tests/run-regressions.cjs'
       - '.github/verify_247_protected.py'
@@ -27,8 +28,8 @@ jobs:
           if grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle; then
             echo "v${ZONE_SKETCH_VERSION} already applied"
           else
-            python -m py_compile .github/fix_v056_return_magnet.py
-            python .github/fix_v056_return_magnet.py
+            python -m py_compile .github/fix_v056_return_magnet_v2.py
+            python .github/fix_v056_return_magnet_v2.py
           fi
       - name: Sync beta tester portal delivery
         run: python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
