@@ -2,82 +2,100 @@
 
 Durable handoff for the ongoing Pineapple work. Update before risky edits and after meaningful CI/results so work can resume immediately after a crash.
 
+## START HERE
+
+Read `/PROJECT_PINEAPPLE_START_HERE.md` first. It is now the short, obvious entry point for Operation Pineapple.
+
 ## Branch / safety
 
 - Branch: `project-pineapple-v058`
-- Current app/checkpoint head before this update: `3559785531b8469c234019c626ae862a97ddac52`
+- Latest known-good app milestone before the new handoff docs: `6fbd5639df51c6b2b6be892a104c210df47519c2`
 - Protected 24/7 build must remain unchanged.
+- `main` is the stable web-milestone surface; Pineapple is the continuous development/checkpoint branch.
 
 ## Current objective
 
-Continue v0.58 Circuit Builder/manual-editor hardening autonomously while preserving accepted Smart Route/capture behaviour.
+Continue v0.58 Circuit Builder/manual-editor hardening autonomously while preserving accepted Smart Route/capture behaviour. Save continuously, and promote coherent green milestones to the live web app on `main`.
 
-## Repaired / green foundations
+## Green foundations
 
 - Former parser crash is fixed. Root cause was `cbEditAnchorAt()` missing the brace closing its outer leg loop before `return best`.
-- Repair commit: `2a35764842c87fa897064b0d9a2e7117f9b5923a`.
-- Startup test now checks mounted editor UI instead of expecting IIFE-local functions to be globals (`b47d492d3c69856c728e907539edb0a38d6b4d2d`).
-- Current parser gate: PASS.
-- Current startup gate: PASS (`ready:true`, `hasEditorUi:true`).
-- Capture transition on head `3559785...`: PASS, run `36196724926`.
-- Routing compatibility on head `3559785...`: PASS, run `36196724831`.
+- Parser repair commit: `2a35764842c87fa897064b0d9a2e7117f9b5923a`.
+- Browser startup now reaches the normal ready state with editor controls mounted.
+- Routing compatibility: PASS on the repaired editor build.
+- Aggressive-touch / capture transition: PASS on the repaired editor build.
 - Protected 24/7 verification: PASS.
+- Generated app copies remain synchronized by the Pineapple checks.
 
-## Manual editor status
+## Manual editor milestone — GREEN
 
-Manual editor run `36196724917`, job `108274138339`, is the only red gate.
+The full manual-editor lane reached green on commit:
 
-The strengthened regression in `f211c886a1f891ee40b5fa462254ec40853e92af` now compares actual leg coordinates rather than point count. That improved test advances past the Pencil/Bin splice, proving the staged replacement genuinely changes route geometry.
+`6fbd5639df51c6b2b6be892a104c210df47519c2`
 
-Bridge-locality checks also advance: deleting one local segment preserves an unrelated bridge on the same leg, and Undo restores both bridge markers.
+The regression now successfully covers:
 
-Open-route state also advances:
+1. entering a persisted draft-first edit session;
+2. Pencil replacement staging;
+3. Bin committing the staged replacement;
+4. actual route-coordinate change, not merely point-count change;
+5. local bridge bookkeeping (deleting one section preserves unrelated bridges on the same leg);
+6. explicit `ROUTE OPEN` state after local deletion;
+7. Undo restoring connectivity;
+8. Redo restoring the gap;
+9. Done correctly rejecting an open route;
+10. Undo repairing the route;
+11. validation passing on the repaired route;
+12. Done successfully committing the repaired route and clearing the draft;
+13. cleanup strength remaining orthogonal and non-increasing in complexity;
+14. Smart Route compatibility and generated-copy equality in the same editor lane.
 
-1. direct deletion creates one explicit gap and `ROUTE OPEN` status;
-2. Undo restores zero gaps;
-3. Redo restores the gap;
-4. Done correctly rejects the open route;
-5. Undo is then used to repair the route.
+The final apparent Done failure was test-only: successful `delete cbCircuit.editDraft` produces an absent/undefined property, while the regression expected literal `null`. The assertion now checks that no draft exists.
 
-### Current exact failure
+## Bridge coordinate defect — repaired
 
-After that final Undo, the test calls `cbEditValidateDraft()` and its assertion passes (`ok:true`). Immediately afterwards `cbEditDone()` returns `false`:
+A genuine app bug was confirmed in Bridge mode:
 
-`AssertionError: Done should accept repaired route` (`false !== true`).
+`conflict.crossings.map(h => ({ point: cbPxBoard(h.point, w, h), ... }))`
 
-`cbEditDone()` can return false only when either:
+The callback parameter `h` shadowed the numeric canvas-height argument `h`, so a crossing object could be passed to `cbPxBoard()` where height was expected.
 
-- `cbEdit?.active` is false; or
-- its own second call to `cbEditValidateDraft()` returns non-ok.
+The current generated app and generator source now use:
 
-Because an explicit validation immediately before Done is green, the next diagnostic must capture edit-active state + validation + Done result atomically in one browser execution, rather than weakening validation.
+`conflict.crossings.map(hit => ({ point: cbPxBoard(hit.point, w, h), ... }))`
+
+This preserves the real canvas height during coordinate conversion.
 
 ## Immediate next steps
 
-1. Instrument `tests/circuit-manual-editor-v058.cjs` with a single atomic helper around the final Done call returning:
-   - `activeBefore`
-   - `validationBefore`
-   - `result`
-   - `activeAfter`
-   - draft/gap summary before/after.
-2. Run manual-editor CI and identify whether edit mode is being cleared asynchronously or the validator changes inside `cbEditDone()`.
-3. Fix the actual runtime-state cause; do not loosen `cbEditValidateDraft()`.
-4. Re-run full manual editor + Smart Route compatibility + capture + 24/7 + generated-copy equality.
-5. Then test the separate suspected Bridge bug in `cbEditFinishStroke()` where `conflict.crossings.map(h=>({point:cbPxBoard(h.point,w,h),...}))` shadows canvas height `h`; confirm via behaviour test before patching.
+1. Add a dedicated real-crossing Bridge regression rather than relying only on source inspection.
+2. Prove bridge marker coordinates are finite and survive:
+   - staged replacement;
+   - splice commit;
+   - Done/save;
+   - reopen/redraw.
+3. Break-test manual editing across phone/tablet sizes, zoomed in/out, fast/shaky input and awkward anchor returns.
+4. Keep routing/capture/24-7/generated-copy gates green.
+5. Treat the current editor-core-green state as a major milestone and publish it to `main` once its stale visible v0.57 label is corrected to v0.58.
 
-## Editor work to preserve
+## Continuous-save rule
 
-- Pencil/Bin replacement workflow
-- explicit route-open state and Done rejection
-- Undo/Redo
-- persisted `editDraft`
-- Bridge rendering / As-Fit integration
-- cleanup control
-- bridge-locality fix
-
-## Pineapple continuity rule
-
-- Save meaningful progress to this branch continuously.
-- Update this checkpoint before risky structural edits and after important CI outcomes.
+- Save every meaningful logical change to `project-pineapple-v058` continuously.
+- Commit before risky structural edits.
+- Update this checkpoint whenever the active blocker, CI outcome, known-good commit or next exact step changes materially.
+- Update `/PROJECT_PINEAPPLE_START_HERE.md` at major milestones so a new session has one obvious entry point.
 - Prefer small reproducible commits/patchers over broad unsaved changes.
 - Never leave a long investigation existing only in chat state.
+
+## Web milestone rule
+
+At each major milestone:
+
+1. require the relevant Pineapple tests to be green;
+2. require protected 24/7 verification to stay green;
+3. require generated app copies to agree;
+4. promote/merge that known-good milestone to `main` for real-device web testing;
+5. record the deployed `main` commit in START HERE and this checkpoint;
+6. return experimental work to the Pineapple branch.
+
+Do not publish every diagnostic commit to the web app; publish coherent, usable milestones.
