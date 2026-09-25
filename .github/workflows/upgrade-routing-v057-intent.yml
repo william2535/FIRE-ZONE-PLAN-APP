@@ -15,10 +15,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install Playwright Chromium
+      - name: Install Playwright Chromium and WebKit
         run: |
           npm install --no-save playwright@1.62.1
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
       - name: Capture untouched routing baseline
         env:
           ROUTING_PHASE: baseline
@@ -45,6 +45,7 @@ jobs:
           grep -Fq 'function cbProcessSamples' index.html
           grep -Fq 'function cbPruneRouteNoise' index.html
           grep -Fq 'captureGuard' index.html
+          grep -Fq 'TWIN CABLE · SMART ROUTE · GRID' index.html
           grep -Fq "phase='corner-pending'" index.html
           grep -Fq "phase='corner-committed'" index.html
           python - <<'PY'
@@ -73,12 +74,28 @@ jobs:
         run: node tests/run-regressions.cjs
       - name: Protect company demo
         run: python .github/verify_247_protected.py
+      - name: Replay aggressive touch in WebKit / iOS engine
+        env:
+          ROUTING_PHASE: after
+          ROUTING_BASELINE: tests/fixtures/aggressive-touch-v056-baseline.json
+          ROUTING_OUTPUT: test-results/aggressive-touch-webkit.json
+        run: |
+          cp tests/circuit-aggressive-touch-v057.cjs tests/.circuit-aggressive-touch-webkit-v057.cjs
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/.circuit-aggressive-touch-webkit-v057.cjs')
+          t=p.read_text().replace("const {chromium}=require('playwright')","const {webkit:chromium}=require('playwright')",1)
+          p.write_text(t)
+          PY
+          node tests/.circuit-aggressive-touch-webkit-v057.cjs
+          rm tests/.circuit-aggressive-touch-webkit-v057.cjs
       - uses: actions/upload-artifact@v4
         with:
           name: aggressive-touch-before-after-v057-intent
           path: |
             test-results/aggressive-touch-baseline.json
             test-results/aggressive-touch-after.json
+            test-results/aggressive-touch-webkit.json
           if-no-files-found: error
       - name: Commit verified routing upgrade
         run: |
