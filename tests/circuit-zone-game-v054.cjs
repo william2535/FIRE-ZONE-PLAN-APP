@@ -1,0 +1,43 @@
+const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict'),path=require('path');
+(async()=>{
+ const html=fs.readFileSync('index.html','utf8');
+ assert.match(html,/ZONE CHALLENGE · NO CROSSING/);
+ assert.match(html,/function cbChallengePointsBlocked/);
+ assert.match(html,/function cbSegmentConflict/);
+ assert.match(html,/symbolColor\|\|s\.color/);
+ assert.match(html,/return c\?\.color\|\|'#df3f36'/);
+ assert.match(html,/GRID · NO CROSSING/);
+ const server=http.createServer((q,r)=>{let rel=decodeURIComponent((q.url||'/').split('?')[0]);if(rel.endsWith('/'))rel+='index.html';rel=rel.replace(/^\//,'');const file=path.join(process.cwd(),rel);try{const data=fs.readFileSync(file);if(file.endsWith('.js'))r.setHeader('Content-Type','text/javascript');else if(file.endsWith('.svg'))r.setHeader('Content-Type','image/svg+xml');else if(file.endsWith('.webmanifest'))r.setHeader('Content-Type','application/manifest+json');else r.setHeader('Content-Type','text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
+ await new Promise(r=>server.once('listening',r));const browser=await chromium.launch({headless:true});
+ try{
+  const p=await browser.newPage({viewport:{width:1100,height:800}}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Zone game test':undefined));
+  await p.goto('http://127.0.0.1:'+server.address().port+'/');assert.match(await p.title(),/v0\.54/);
+  await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
+  const xy=async(x,y)=>p.locator('#canvas').evaluate((c,{x,y})=>{const b=c.getBoundingClientRect(),w=3200,h=2000,s=Math.min((b.width-48)/w,(b.height-48)/h);return{x:b.x+b.width/2+(x-.5)*w*s,y:b.y+b.height/2+(y-.5)*h*s}},{x,y});
+  const drag=async(a,b)=>{await p.mouse.move(a.x,a.y);await p.mouse.down();await p.mouse.move(b.x,b.y,{steps:8});await p.mouse.up()};
+  const makeZone=async(name,a,b)=>{await p.locator('#zoneMenuBtn').click();await p.locator('#zoneCreate').click();await p.locator('#zoneName').fill(name);await p.locator('#saveZone').click();await p.locator('#zoneMenuBtn').click();await p.locator('[data-menu-tool="rect"]').click();await drag(await xy(a.x,a.y),await xy(b.x,b.y))};
+  await makeZone('Offices',{x:.10,y:.18},{x:.45,y:.70});
+  await makeZone('Stores',{x:.50,y:.18},{x:.88,y:.70});
+  await p.locator('#surveyModeBtn').click();
+  const place=async(type,q)=>{await p.locator('#surveyDevice').click();await p.locator(`[data-symbol="${type}"]`).click();const pt=await xy(q.x,q.y);await p.mouse.click(pt.x,pt.y)};
+  await place('panel',{x:.47,y:.44});await place('smoke',{x:.28,y:.42});await place('mcp',{x:.69,y:.43});
+  await p.locator('#circuitModeBtn').click();
+  assert.equal(await p.locator('#cbConventionalZones .cbZoneButton').count(),2);
+  assert.equal(await p.locator('#cbExisting .cbZoneButton').count(),2,'desktop side rail should be a zone-colour palette');
+  assert.equal(await p.locator('#cbExisting .cbZoneButton .cbZoneSwatch').count(),2);
+  assert.doesNotMatch(await p.locator('#cbExisting').innerText(),/devices/i,'side palette should not be cluttered with device counts');
+  await p.locator('#cbConventionalZones .cbZoneButton').nth(0).click();
+  assert.equal(await p.locator('#cbCircuitType').innerText(),'ZONE CHALLENGE');
+  assert(await p.locator('#cbCircuitType').evaluate(el=>el.classList.contains('zoneChallenge')));
+  const colorCheck=await p.evaluate(()=>({route:cbGameRouteColor(cbCircuit),circuit:cbCircuit.color,cross:cbSegmentConflict({x:0,y:50},{x:100,y:50},{x:50,y:0},{x:50,y:100}),touch:cbSegmentConflict({x:0,y:0},{x:50,y:0},{x:50,y:0},{x:50,y:50})}));
+  assert.equal(colorCheck.route,colorCheck.circuit,'active cable must use the zone colour');assert.equal(colorCheck.cross,true,'proper cable crossing must be blocked');assert.equal(colorCheck.touch,false,'a shared endpoint is legal');
+  const nodeInfo=await p.locator('#cbCanvas').evaluate(c=>{const r=c.getBoundingClientRect(),w=r.width,h=r.height;return{panel:cbNodePx(cbCircuit.panelId,w,h),device:cbNodePx(cbCircuit.deviceIds[0],w,h),deviceId:cbCircuit.deviceIds[0]}}),box=await p.locator('#cbCanvas').boundingBox();
+  await p.mouse.move(box.x+nodeInfo.panel.x,box.y+nodeInfo.panel.y);await p.mouse.down();await p.mouse.move(box.x+nodeInfo.device.x,box.y+nodeInfo.device.y,{steps:10});await p.locator('#cbCelebrate').waitFor({state:'visible'});await p.mouse.up();
+  await p.locator('#cbCelebrateKeep').click();
+  await p.locator('#cbConventionalZones .cbZoneButton').nth(1).click();
+  const history=await p.evaluate(id=>({history:cbChallengeCircuits().length,owner:cbChallengeOwner(id)?.color||null,obstacles:(()=>{const c=document.querySelector('#cbCanvas'),r=c.getBoundingClientRect();return cbChallengeObstacleSegmentsPx(r.width,r.height).length})()}),nodeInfo.deviceId);
+  assert(history.history>=1,'completed previous zone must remain on the challenge board');assert(history.owner,'previous zone device must retain its zone colour owner');assert(history.obstacles>=1,'previous zone cable must become a no-cross obstacle');
+  assert.deepEqual(errors,[],'No Zone Challenge runtime errors');
+  console.log('PASS: v0.54 Zone Challenge uses zone colours, keeps previous zones visible and blocks crossing geometry');
+ }finally{await browser.close();server.close()}
+})().catch(e=>{console.error(e);process.exit(1)});
