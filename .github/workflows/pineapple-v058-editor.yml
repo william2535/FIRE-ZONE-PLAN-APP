@@ -1,44 +1,32 @@
-name: Pineapple v0.58 editor foundation
+name: Pineapple v0.58 manual editor
 on:
   push:
     branches: [project-pineapple-v058]
 permissions:
-  contents: write
+  contents: read
 jobs:
-  editor-foundation:
+  editor:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Generate editor foundation
-        if: ${{ !contains(github.event.head_commit.message, '[editor-generated]') }}
-        run: python .github/pineapple_v058_editor_foundation.py
+      - name: Verify protected 24/7 build
+        run: python .github/verify_247_protected.py
       - name: Install Chromium test runtime
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-      - name: Run editor and routing gates
+      - name: Run draft-first manual editor behaviour
+        run: node tests/circuit-manual-editor-v058.cjs
+      - name: Re-run Smart Route compatibility
         run: |
-          node tests/circuit-editor-foundation-v058.cjs
           node tests/circuit-capture-transition-v058.cjs
           node tests/circuit-routing-state-v057.cjs
           node tests/circuit-aggressive-touch-v057.cjs
           node tests/circuit-routing-hardening-v057.cjs
           node tests/circuit-return-magnet-v056.cjs
-      - name: Validate generated copies
+      - name: Validate generated app copies
         run: |
           cmp -s index.html ZoneSketch.html
           cmp -s index.html Zone-Sketch-by-Will.html
           cmp -s index.html app/src/main/assets/index.html
           git diff --check
-      - name: Commit generated application
-        if: ${{ !contains(github.event.head_commit.message, '[editor-generated]') }}
-        run: |
-          if git diff --quiet; then
-            echo 'No generated changes to commit'
-            exit 0
-          fi
-          git config user.name 'Project Pineapple'
-          git config user.email '48844093+william2535@users.noreply.github.com'
-          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
-          git commit -m '[editor-generated] Apply v0.58 manual editor foundation'
-          git push
