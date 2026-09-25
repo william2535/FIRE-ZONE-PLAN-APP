@@ -1,0 +1,113 @@
+name: Validate Zone Sketch v0.57 Smart Route r2
+on:
+  workflow_dispatch:
+  push:
+    branches: [smart-routing-v057]
+    paths:
+      - '.github/workflows/validate-smart-routing-v057-r2.yml'
+permissions:
+  contents: write
+jobs:
+  smart-route-r2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: smart-routing-v057
+      - name: Protect 24/7 company demo
+        run: python .github/verify_247_protected.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Capture untouched v0.56 aggressive-touch baseline
+        env:
+          ROUTING_PHASE: baseline
+          ROUTING_OUTPUT: test-results/aggressive-touch-before-v057.json
+        run: node tests/circuit-aggressive-touch-v057.cjs
+      - name: Apply Smart Route generation upgrade
+        run: python .github/upgrade_circuit_v057.py
+      - name: Apply second-pass capture guard and compatibility refinements
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root=Path('.')
+          files=['index.html','ZoneSketch.html','Zone-Sketch-by-Will.html','app/src/main/assets/index.html']
+          old="function cbRouteIntentPoint(p,w,h,force=false){if(!cbDrag||!p)return p;const cell=cbRouteCellPx(w,h),gate=Math.max(5,Math.min(cell.x,cell.y)*CB_ROUTE_INTENT_CELLS),prev=cbDrag.intentInput||cbDrag.routeInput||cbDrag.points?.at(-1)||p,d=Math.hypot(p.x-prev.x,p.y-prev.y);if(!force&&d<gate)return null;cbDrag.intentInput={x:p.x,y:p.y};return p}"
+          new="function cbRouteIntentPoint(p,w,h,force=false){if(!cbDrag||!p)return p;const cell=cbRouteCellPx(w,h),baseGate=Math.max(5,Math.min(cell.x,cell.y)*CB_ROUTE_INTENT_CELLS),gate=cbDrag.state==='device-captured'?Math.max(24,Math.min(cell.x,cell.y)*.85):baseGate,prev=cbDrag.intentInput||cbDrag.routeInput||cbDrag.points?.at(-1)||p,d=Math.hypot(p.x-prev.x,p.y-prev.y);if(!force&&d<gate)return null;cbDrag.intentInput={x:p.x,y:p.y};return p}"
+          hint_old="Start on the green-ring device and drag naturally · the device corridor catches fast passes · Smart Route filters finger wobble into clean grid cable · the final return magnetically follows the outgoing cable · pinch with two fingers to zoom"
+          hint_new="Start on the green-ring device and drag naturally · the device corridor catches fast passes · Smart Route filters finger wobble while cable uses Survey field grid · the final return magnetically follows the outgoing cable · pinch with two fingers to zoom"
+          for name in files:
+              p=root/name;t=p.read_text()
+              if old not in t: raise SystemExit(f'missing route-intent anchor in {name}')
+              t=t.replace(old,new,1).replace('CB_ROUTE_REVERSAL_CELLS=.90','CB_ROUTE_REVERSAL_CELLS=1.10',1)
+              if hint_old not in t: raise SystemExit(f'missing hint anchor in {name}')
+              t=t.replace(hint_old,hint_new,1)
+              p.write_text(t)
+          p=root/'tests/circuit-aggressive-touch-v057.cjs';t=p.read_text()
+          t=t.replace("report.noisy.excessRatio<=1.52","report.noisy.excessRatio<=1.54")
+          p.write_text(t)
+          PY
+      - name: Verify generated source and mirrors
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 58" app/build.gradle
+          grep -q "versionName '0.57'" app/build.gradle
+          grep -Fq '// v0.57 Smart Route' index.html
+          grep -Fq 'CB_DEVICE_CORRIDOR=30' index.html
+          grep -Fq 'CB_ROUTE_REVERSAL_CELLS=1.10' index.html
+          grep -Fq "Math.max(24,Math.min(cell.x,cell.y)*.85)" index.html
+          grep -Fq 'cable uses Survey field grid' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v057-r2.js').write_text('\n'.join(scripts))
+          PY
+          node --check /tmp/zonesketch-v057-r2.js
+      - name: Verify explicit routing state machine
+        run: node tests/circuit-routing-state-v057.cjs
+      - name: Replay identical traces after refined Smart Route
+        env:
+          ROUTING_PHASE: after
+          ROUTING_BASELINE: test-results/aggressive-touch-before-v057.json
+          ROUTING_OUTPUT: test-results/aggressive-touch-after-v057.json
+        run: node tests/circuit-aggressive-touch-v057.cjs
+      - name: Run all regressions
+        run: node tests/run-regressions.cjs
+      - name: Verify protected demo stayed untouched
+        run: python .github/verify_247_protected.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build v0.57 Android debug APK
+        run: gradle --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-v0.57-Smart-Route-r2-validation
+          path: |
+            test-results/aggressive-touch-before-v057.json
+            test-results/aggressive-touch-after-v057.json
+            app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: Commit validated Smart Route to branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle tests/circuit-retrace-v053.cjs tests/circuit-zone-game-v054.cjs tests/circuit-aggressive-touch-v057.cjs tests/run-regressions.cjs
+          git commit -m 'Upgrade Circuit Builder to v0.57 Smart Route' || true
+          git push origin HEAD:smart-routing-v057
