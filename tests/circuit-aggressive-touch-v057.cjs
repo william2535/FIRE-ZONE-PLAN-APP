@@ -86,6 +86,15 @@ function tracePoints(a,b,style,legIndex){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypo
   assert(report.noisy.intersections<=base.noisy.intersections,'noisy traces must not produce more self-intersections than baseline');
   assert(report.noisy.excessRatio<=base.noisy.excessRatio+.0001,'noisy-route excess length must improve or stay equal');
   assert(report.noisy.points<=base.noisy.points,'noisy traces must use no more route points than baseline');
+assert.equal(report.noisy.intersections,0,'Smart Route must not self-intersect under noisy deterministic traces');
+assert(report.noisy.points<=240,`too many noisy route points: ${report.noisy.points}`);
+assert(report.noisy.segments<=170,`too many noisy cable segments: ${report.noisy.segments}`);
+assert(report.noisy.corners<=75,`too many noisy corners: ${report.noisy.corners}`);
+assert(report.noisy.shortLegs<=30,`too many noisy short legs: ${report.noisy.shortLegs}`);
+assert(report.noisy.reversals<=25,`too many noisy immediate reversals: ${report.noisy.reversals}`);
+assert(report.noisy.excessRatio<=1.52,`noisy route excess ratio regressed: ${report.noisy.excessRatio}`);
+assert.equal(report.clean.intersections,0,'clean traces must not self-intersect');
+assert.equal(report.clean.reversals,0,'clean traces must not create immediate reversals');
  }
  console.log(`PASS: ${phase} aggressive-touch replay across ${viewports.length} viewports × ${Object.keys(styles).length} deterministic traces`);
 })().catch(e=>{console.error(e);process.exit(1)});
