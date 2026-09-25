@@ -1,6 +1,6 @@
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
-const phase=process.env.ROUTING_PHASE||'baseline';
+const phase=process.env.ROUTING_PHASE||'regression';
 const baselinePath=process.env.ROUTING_BASELINE||'test-results/aggressive-touch-baseline.json';
 const outPath=process.env.ROUTING_OUTPUT||`test-results/aggressive-touch-${phase}.json`;
 const expose=`window.cbAggressiveTest={
@@ -86,6 +86,16 @@ function tracePoints(a,b,style,legIndex){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypo
   assert(report.noisy.intersections<=base.noisy.intersections,'noisy traces must not produce more self-intersections than baseline');
   assert(report.noisy.excessRatio<=base.noisy.excessRatio+.0001,'noisy-route excess length must improve or stay equal');
   assert(report.noisy.points<=base.noisy.points,'noisy traces must use no more route points than baseline');
+  assert(report.noisy.reversals<=Math.floor(base.noisy.reversals*.55),'Smart Route must cut noisy immediate reversals by at least 45%');
+  assert.equal(report.noisy.intersections,0,'Smart Route must remove noisy self-intersections');
+ }else if(phase==='regression'){
+  assert.equal(report.aggregate.devicesCaptured,report.aggregate.totalDevices,'all deterministic traces must capture every device');
+  assert.equal(report.aggregate.complete,report.aggregate.cases,'all deterministic traces must complete');
+  assert.equal(report.noisy.intersections,0,'aggressive touch must not self-intersect');
+  assert(report.noisy.reversals<=38,`too many noisy immediate reversals: ${report.noisy.reversals}`);
+  assert(report.noisy.corners<=132,`too many noisy corners: ${report.noisy.corners}`);
+  assert(report.noisy.points<=330,`too many noisy route points: ${report.noisy.points}`);
+  assert(report.noisy.excessRatio<=1.54,`noisy route length is too inflated: ${report.noisy.excessRatio}`);
  }
  console.log(`PASS: ${phase} aggressive-touch replay across ${viewports.length} viewports × ${Object.keys(styles).length} deterministic traces`);
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -1,7 +1,7 @@
 const fs=require('fs'),assert=require('node:assert/strict'),vm=require('node:vm');
 const html=fs.readFileSync('index.html','utf8');
 assert.match(html,/v0\.53 parallel retrace/);
-assert.match(html,/if\(!captured\)cbAppendDrag\(p,w,h\)/,'detector capture must discard the sparse touch tail');
+assert.match(html,/function cbRouteIntentPoint/,'raw touch must be filtered separately from drawn geometry after detector capture');
 assert.match(html,/pairMode=cbScreen==='game'&&!!cbCircuit/,'parallel-cable feedback must be available on conventional circuits too');
 
 function fn(name,next){const re=new RegExp(`function ${name}\\([\\s\\S]*?(?=\\nfunction ${next})`),m=html.match(re);assert(m,`Could not extract ${name}`);return m[0]}
