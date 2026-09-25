@@ -1,0 +1,51 @@
+const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
+const source=fs.readFileSync('index.html','utf8');
+for(const required of ['function cbEnterEdit','function cbEditAnchorAt','function cbEditStartStroke','function cbEditFinishStroke','function cbEditDeleteSegment','function cbEditUndo','function cbEditRedo','function cbEditDone'])assert(source.includes(required),`manual editor missing ${required}`);
+const expose=`window.cbEditorTest={
+ seed:async()=>{state=fresh();state.image=blankImage();state.isBlank=true;state.symbols=[
+  {id:'panel',type:'panel',scope:'plan',x:.10,y:.25},{id:'d0',type:'smoke',scope:'survey',x:.38,y:.25},{id:'d1',type:'heat',scope:'survey',x:.70,y:.55}
+ ];await setImage(state.image,false);ensureFloors();openCircuitBuilder();const c=cbNewCircuit('addressable',cbSurveyDevices());const P=id=>c.layout[id],A=P('panel'),B=P('d0'),C=P('d1'),x1=A.x+(B.x-A.x)*.30,x2=A.x+(B.x-A.x)*.70,yDetour=Math.max(.08,Math.min(.92,(A.y+B.y)/2+(A.y<.75?.10:-.10))),xBC=(B.x+C.x)/2,returnY=(C.y+A.y)/2;
+ c.sequence=['panel','d0','d1','panel'];c.legs=[
+  {from:'panel',to:'d0',points:[A,{x:x1,y:A.y},{x:x1,y:yDetour},{x:x2,y:yDetour},{x:x2,y:B.y},B]},
+  {from:'d0',to:'d1',points:[B,{x:xBC,y:B.y},{x:xBC,y:C.y},C]},
+  {from:'d1',to:'panel',points:[C,{x:C.x,y:returnY},{x:A.x,y:returnY},A]}
+ ];c.complete=true;c.updatedAt=Date.now();cbOpenCircuit(c);cbEnterEdit(c);cbDrawBoard();return c.id},
+ read:()=>JSON.parse(JSON.stringify({c:cbCircuit,edit:cbEdit,status:document.querySelector('#cbEditStatus')?.textContent||'',draft:cbCircuit?.editDraft||null})),
+ validate:()=>cbEditValidateDraft(),
+ doneState:()=>{const before={active:!!cbEdit?.active,validation:cbEditValidateDraft(),hasDraft:!!cbCircuit?.editDraft,gaps:cbCircuit?.editDraft?.gaps?.length??null,pending:!!cbCircuit?.editDraft?.pending};const result=cbEditDone();const after={active:!!cbEdit?.active,hasDraft:!!cbCircuit?.editDraft,gaps:cbCircuit?.editDraft?.gaps?.length??null,pending:!!cbCircuit?.editDraft?.pending};return{before,result,after}},
+ px:p=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);return{x:q.x,y:q.y}},
+ anchor:p=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);return cbEditAnchorAt(q,r.width,r.height)},
+ start:(anchor,p)=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);return cbEditStartStroke(anchor,q,r.width,r.height)},
+ move:p=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);cbEditMoveStroke(q,r.width,r.height)},
+ finish:(anchor)=>{const r=$('cbCanvas').getBoundingClientRect();return cbEditFinishStroke(anchor,r.width,r.height)},
+ del:(legIndex,segmentIndex)=>cbEditDeleteSegment({legIndex,segmentIndex}),
+ setBridges:bridges=>{const d=cbEditEnsureDraft();d.bridges=JSON.parse(JSON.stringify(bridges||[]));persist();cbDrawBoard();return d.bridges.length},
+ undo:()=>cbEditUndo(),redo:()=>cbEditRedo(),done:()=>cbEditDone(),
+ clean:(raw,start,end,strength)=>{const r=$('cbCanvas').getBoundingClientRect(),toPx=p=>cbBoardPx(p,r.width,r.height),pts=cbEditCleanStroke(raw.map(toPx),toPx(start),toPx(end),r.width,r.height,strength);return pts.map(p=>cbPxBoard(p,r.width,r.height))}
+};`;
+const html=source.replace('ensureUiState();renderFloors();renderSymbolColors();',expose+'ensureUiState();renderFloors();renderSymbolColors();');
+const server=http.createServer((q,r)=>{const f=(q.url||'/').split('?')[0]==='/'?'index.html':(q.url||'').split('?')[0].slice(1);try{r.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':'text/html');r.end(f==='index.html'?html:fs.readFileSync(f))}catch{r.statusCode=404;r.end()}}).listen(0,'127.0.0.1');
+function orthogonal(points){return points.every((p,i)=>!i||Math.abs(p.x-points[i-1].x)<1e-4||Math.abs(p.y-points[i-1].y)<1e-4)}
+(async()=>{await new Promise(ok=>server.once('listening',ok));const browser=await chromium.launch({headless:true});try{
+ const page=await browser.newPage({viewport:{width:768,height:1024}});page.on('dialog',d=>d.accept());await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.evaluate(async()=>{document.querySelector('#projectsHome').hidden=true;await cbEditorTest.seed()});await page.waitForTimeout(50);
+ for(const id of ['cbEditToggle','cbEditBar','cbEditPencil','cbEditBin','cbEditUndo','cbEditRedo','cbEditBridge','cbEditOptions','cbEditClean','cbEditDone'])assert(await page.locator('#'+id).count(),`missing editor UI #${id}`);
+ let s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit?.active,'edit session must start');assert(s.c.editDraft,'edit draft must persist on circuit');assert(/EDITING/.test(s.status),'editing state must be obvious');const initialValidation=await page.evaluate(()=>cbEditorTest.validate());assert.equal(initialValidation.ok,true,'seeded circuit must start valid: '+initialValidation.message);
+ const bridgePts=s.c.editDraft.legs[0].points,mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+ const localBridge={legIndex:0,point:mid(bridgePts[0],bridgePts[1]),axis:'h'},remoteBridge={legIndex:0,point:mid(bridgePts[3],bridgePts[4]),axis:'h'};
+ await page.evaluate(b=>cbEditorTest.setBridges(b),[localBridge,remoteBridge]);
+ await page.evaluate(()=>cbEditorTest.del(0,0));s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.bridges.length,1,'deleting one segment must preserve unrelated bridges on the same leg');assert.deepEqual(s.c.editDraft.bridges[0].point,remoteBridge.point,'the unrelated bridge marker must remain exactly where it was');
+ await page.evaluate(()=>cbEditorTest.undo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.bridges.length,2,'undo must restore both bridge markers exactly');await page.evaluate(()=>cbEditorTest.setBridges([]));
+ const pts=s.c.editDraft.legs[0].points,start={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2},end={x:(pts.at(-2).x+pts.at(-1).x)/2,y:(pts.at(-2).y+pts.at(-1).y)/2};
+ const a=await page.evaluate(p=>cbEditorTest.anchor(p),start),b=await page.evaluate(p=>cbEditorTest.anchor(p),end);assert(a&&b,'cable anchors must be hittable');
+ await page.evaluate(({a,start})=>cbEditorTest.start(a,start),{a,start});
+ const originalDetourY=pts[2].y,replacementY=start.y+(originalDetourY-start.y)*.55,replacementPoints=[{x:start.x,y:replacementY},{x:(start.x+end.x)/2,y:replacementY},{x:end.x,y:replacementY}];
+ for(const p of replacementPoints)await page.evaluate(p=>cbEditorTest.move(p),p);
+ const accepted=await page.evaluate(b=>cbEditorTest.finish(b),b);assert.equal(accepted,true,'replacement should stage successfully');
+ s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit.pending,'draw-first workflow must retain replacement before deleting old');assert(orthogonal(s.edit.pending.points),'saved replacement must be orthogonal');
+ const oldGeometry=JSON.parse(JSON.stringify(s.c.editDraft.legs[0].points));const midSeg=Math.max(0,Math.min(s.c.editDraft.legs[0].points.length-2,2));await page.evaluate(i=>cbEditorTest.del(0,i),midSeg);
+ s=await page.evaluate(()=>cbEditorTest.read());assert(!s.edit.pending,'binning old span should commit staged replacement');assert.notDeepEqual(s.c.editDraft.legs[0].points,oldGeometry,'local leg geometry should actually change');
+ await page.evaluate(()=>cbEditorTest.del(1,1));s=await page.evaluate(()=>cbEditorTest.read());assert(s.c.editDraft.gaps?.length===1,'one local segment deletion should create one explicit gap');assert(/ROUTE OPEN/.test(s.status),'broken edit must read EDITING · ROUTE OPEN');
+ await page.evaluate(()=>cbEditorTest.undo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,0,'undo must restore exact connected state');await page.evaluate(()=>cbEditorTest.redo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,1,'redo must restore gap');const rejected=await page.evaluate(()=>cbEditorTest.done());assert.equal(rejected,false,'Done must reject open route');await page.evaluate(()=>cbEditorTest.undo());const repairedValidation=await page.evaluate(()=>cbEditorTest.validate());assert.equal(repairedValidation.ok,true,'undo-repaired route must validate: '+repairedValidation.message);const doneState=await page.evaluate(()=>cbEditorTest.doneState());console.log('EDITOR_DONE_STATE '+JSON.stringify(doneState));assert.equal(doneState.result,true,'Done should accept repaired route: '+JSON.stringify(doneState));s=await page.evaluate(()=>cbEditorTest.read());assert.equal(!!s.c.editDraft,false,'valid Done removes draft');assert.equal(s.c.complete,true,'valid Done restores complete');
+ const raw=[{x:.2,y:.2},{x:.22,y:.24},{x:.24,y:.19},{x:.27,y:.25},{x:.30,y:.20},{x:.34,y:.24},{x:.38,y:.2}],cs=raw[0],ce=raw.at(-1),low=await page.evaluate(({raw,cs,ce})=>cbEditorTest.clean(raw,cs,ce,10),{raw,cs,ce}),high=await page.evaluate(({raw,cs,ce})=>cbEditorTest.clean(raw,cs,ce,90),{raw,cs,ce});assert(orthogonal(low)&&orthogonal(high),'cleanup output must remain orthogonal');assert(high.length<=low.length,'strong cleanup must be at least as simple as light cleanup');
+ console.log(`EDITOR_CLEANUP low=${low.length} high=${high.length}`);console.log('PASS: v0.58 manual editor stages replacement, preserves unrelated bridges, deletes locally, exposes route-open state, undoes/redoes and validates Done');
+ }finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exit(1)});
