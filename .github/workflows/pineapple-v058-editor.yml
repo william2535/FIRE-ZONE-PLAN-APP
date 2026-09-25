@@ -12,7 +12,9 @@ jobs:
       - name: Verify protected 24/7 build
         run: python .github/verify_247_protected.py
       - name: Parse inline JavaScript before browser startup
-        run: node tests/circuit-editor-syntax-v058.cjs
+        run: |
+          npm install --no-save acorn@8.15.0
+          node tests/circuit-editor-syntax-v058.cjs
       - name: Install Chromium test runtime
         run: |
           npm install --no-save playwright@1.62.1
