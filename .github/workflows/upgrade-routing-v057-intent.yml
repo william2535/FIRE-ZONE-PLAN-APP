@@ -1,0 +1,91 @@
+name: Upgrade Circuit Builder aggressive touch v0.57 intent filtered
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upgrade-routing-v057-intent.yml'
+permissions:
+  contents: write
+jobs:
+  upgrade-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Capture untouched routing baseline
+        env:
+          ROUTING_PHASE: baseline
+          ROUTING_OUTPUT: test-results/aggressive-touch-baseline.json
+        run: |
+          node tests/circuit-aggressive-touch-v057.cjs
+          mkdir -p tests/fixtures
+          cp test-results/aggressive-touch-baseline.json tests/fixtures/aggressive-touch-v056-baseline.json
+      - name: Apply aggressive-touch routing generations
+        run: |
+          python .github/upgrade_routing_v057.py
+          python .github/upgrade_routing_v057_tune.py
+          python .github/upgrade_routing_v057_intent.py
+      - name: Static integrity checks
+        run: |
+          set -euo pipefail
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -Fq 'v0.57 aggressive-touch engine' index.html
+          grep -Fq 'function cbRoutingState' index.html
+          grep -Fq 'function cbHitCorridorPx' index.html
+          grep -Fq 'function cbGeometryIntent' index.html
+          grep -Fq 'function cbProcessSamples' index.html
+          grep -Fq 'function cbPruneRouteNoise' index.html
+          grep -Fq 'captureGuard' index.html
+          grep -Fq "phase='corner-pending'" index.html
+          grep -Fq "phase='corner-committed'" index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v057.js').write_text('\n'.join(scripts))
+          PY
+          node --check /tmp/zonesketch-v057.js
+          git diff --check
+      - name: Replay identical traces after intent filtering
+        env:
+          ROUTING_PHASE: after
+          ROUTING_BASELINE: tests/fixtures/aggressive-touch-v056-baseline.json
+          ROUTING_OUTPUT: test-results/aggressive-touch-after.json
+        run: node tests/circuit-aggressive-touch-v057.cjs
+      - name: Run routing compatibility regressions
+        run: |
+          node tests/circuit-smooth-routing-v055.cjs
+          node tests/circuit-retrace-v053.cjs
+          node tests/circuit-return-magnet-v056.cjs
+          node tests/circuit-grid-routing-v051.cjs
+          node tests/circuit-stress-v048.cjs
+      - name: Run complete regression suite
+        run: node tests/run-regressions.cjs
+      - name: Protect company demo
+        run: python .github/verify_247_protected.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aggressive-touch-before-after-v057-intent
+          path: |
+            test-results/aggressive-touch-baseline.json
+            test-results/aggressive-touch-after.json
+          if-no-files-found: error
+      - name: Commit verified routing upgrade
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html tests/circuit-aggressive-touch-v057.cjs tests/run-regressions.cjs tests/fixtures/aggressive-touch-v056-baseline.json
+          git commit -m 'Make Circuit Builder resilient to aggressive touch' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
