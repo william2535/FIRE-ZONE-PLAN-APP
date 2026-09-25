@@ -805,7 +805,7 @@ renderSurveyDeviceFavourites();
 
 // v0.53 Circuit Builder. Kept in a separate full-screen surface so Zone Plan and Survey behaviour stay untouched.
 let cbScreen='home',cbCircuit=null,cbDrag=null,cbHover=null,cbSelection=new Set(),cbSelectBounds=null,cbView={scale:1,panX:0,panY:0},cbPointers=new Map(),cbPinch=null,cbGestureLock=false,cbAudioCtx=null;
-const CB_ROUTE_GRID=24,CB_ROUTE_TURN_CELLS=1.45,CB_INSET=.045,CB_SPAN=.91,CB_DEVICE_R=11,CB_PANEL_R=16,CB_PAIR_GAP=9,CB_PAIR_RANGE=24,CB_COLORS=['#e33a3a','#2675db','#20a36b','#dc9c16','#9957c5','#e26929','#1d9baa','#d04a88'];
+const CB_ROUTE_GRID=24,CB_ROUTE_TURN_CELLS=.72,CB_ROUTE_ARM_CELLS=.28,CB_ROUTE_SAMPLE_CELLS=.30,CB_INSET=.045,CB_SPAN=.91,CB_DEVICE_R=11,CB_PANEL_R=16,CB_PAIR_GAP=9,CB_PAIR_RANGE=24,CB_COLORS=['#e33a3a','#2675db','#20a36b','#dc9c16','#9957c5','#e26929','#1d9baa','#d04a88'];
 let cbSound=true,cbRewardTimer=null,cbRewardKey='',cbLastReward=0,cbLastBell=-Infinity;
 try{cbSound=localStorage.getItem('zoneSketchCircuitSound')!=='off'}catch(e){}
 function cbSyncSound(){$('cbSoundToggle').textContent=cbSound?'Sound on':'Sound off';$('cbSoundToggle').setAttribute('aria-pressed',String(cbSound))}
@@ -890,7 +890,7 @@ function cbSequenceReady(c,seq){if(!c)return false;const visited=new Set(seq),do
 function cbGameRouteColor(c,extra=[]){return c?.color||'#df3f36'}
 function cbHitNode(pt,w,h,validOnly=false){const ids=cbScreen==='select'?[...cbSurveyDevices().map(s=>s.id),...cbPanels().map(s=>s.id)]:[cbCircuit?.panelId,...(cbCircuit?.deviceIds||[])].filter(Boolean);let best=null;for(const id of ids){if(validOnly&&!cbValidTarget(id))continue;const p=cbNodePx(id,w,h);if(!p)continue;const d=Math.hypot(pt.x-p.x,pt.y-p.y);if(d<=34&&(!best||d<best.d))best={id,d}}return best?.id||null}
 let cbPaintQueued=false;function cbDrawBoard(){if(cbPaintQueued)return;cbPaintQueued=true;requestAnimationFrame(()=>{cbPaintQueued=false;cbPaintBoard()})}
-function cbPaintBoard(){if($('cbGame').hidden)return;const challenge=cbScreen==='game'&&cbCircuit?.type==='conventional',pairBadge=$('cbPairBadge'),pairMode=cbScreen==='game'&&!!cbCircuit,blocked=!!(challenge&&cbDrag?.blocked);if(pairBadge){pairBadge.hidden=!pairMode;pairBadge.classList.toggle('on',!!(pairMode&&cbDrag?.pairSnap&&!blocked));pairBadge.classList.toggle('blocked',blocked);pairBadge.textContent=blocked?'✕ NO CROSSING':pairMode&&cbDrag?.pairSnap?'⇄ CABLES PAIRED':challenge?'GRID '+gridStep()+' · NO CROSSING':'⇄ TWIN CABLE · GRID '+gridStep()}const c=$('cbCanvas'),{x,w,h}=cbCanvasSize(c),bounds=cbScreen==='select'?cbSelectBounds:cbCircuit?.bounds||{x1:0,y1:0,x2:1,y2:1};cbGhost(x,w,h,bounds,cbCircuit?.zoneId||null);if(cbScreen==='game')cbDrawRouteGrid(x,w,h);let routeColor='#df3f36',history=challenge?cbChallengeCircuits():[];if(cbScreen==='game'&&cbCircuit){routeColor=cbGameRouteColor(cbCircuit,cbDrag?.targets||[]);for(const old of history){const oldSegs=cbLegSegments(old);cbDrawBundled(x,oldSegs,p=>cbChallengeMapPointPx(old,p,w,h),4.5,6.5)}const committed=cbLegSegments({...cbCircuit,color:routeColor}),preview=cbDrag?.previewLegs?.length?cbLegSegments({legs:cbDrag.previewLegs,color:routeColor}):[];cbDrawBundled(x,[...committed,...preview],p=>cbBoardPx(p,w,h));if(cbDrag?.points?.length>1){x.save();x.strokeStyle=routeColor;x.lineWidth=5;x.lineCap='round';x.lineJoin='round';x.globalAlpha=.88;x.beginPath();cbDrag.points.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.stroke();x.restore()}}let ids;if(cbScreen==='select')ids=[...cbSurveyDevices().map(s=>s.id),...cbPanels().map(s=>s.id)];else if(challenge)ids=[...new Set([cbCircuit?.panelId,...history.flatMap(c=>c.deviceIds||[]),...(cbCircuit?.deviceIds||[])].filter(Boolean))];else ids=[cbCircuit?.panelId,...(cbCircuit?.deviceIds||[])].filter(Boolean);const visited=new Set(cbCircuit?.sequence||[]),queued=new Set(cbDrag?.targets||[]),current=(cbDrag?.targets||[]).at(-1)||cbCircuit?.sequence?.at(-1);for(const id of ids){const s=cbSymbol(id),owner=challenge?cbChallengeOwner(id):cbCircuit,p=challenge&&s?cbPlanPx(s,bounds,w,h):cbNodePx(id,w,h);if(!s||!p)continue;let ring=null;if(cbScreen==='select'&&cbSelection.has(id))ring='#2675db';else if(cbScreen==='game'&&owner?.id===cbCircuit?.id&&queued.has(id))ring=routeColor;else if(cbScreen==='game'&&owner?.id===cbCircuit?.id&&id===current)ring='#20a36b';else if(cbScreen==='game'&&owner?.id===cbCircuit?.id&&visited.has(id))ring=routeColor;if(cbHover===id)ring=routeColor;const symbolColor=s.type==='panel'?null:(owner?.color||routeColor);cbDrawNode(x,s,p,s.type==='panel'?CB_PANEL_R:CB_DEVICE_R,ring,cbScreen==='select'&&s.type==='panel',symbolColor)}if(cbScreen==='select')$('cbBoardHint').textContent='Pinch to zoom · tap or sweep across the devices in this loop';else if(blocked)$('cbBoardHint').textContent='Blocked — cables cannot cross · route around it (bridge tool later)';else if(cbCircuit?.complete)$('cbBoardHint').textContent='Circuit complete · choose another zone to keep the puzzle going';else if(cbCircuit?.type==='addressable'&&cbSequenceReady(cbCircuit,[...cbCircuit.sequence,...(cbDrag?.targets||[])]))$('cbBoardHint').textContent='Back at the fire panel · loop complete';else if(cbDrag?.targets?.length){const s=cbSymbol(cbDrag.targets.at(-1));$('cbBoardHint').textContent='Keep holding · route from '+(s?.reference||symbolNames[s?.type]||'the last device')+' without crossing another cable';}else $('cbBoardHint').textContent=challenge?'Start at the green-ring device · connect the zone colour · no crossings':'Hold on the green-ring device and drag through detectors · cable uses Survey field grid · retracing makes a parallel cable · pinch with two fingers to zoom'}
+function cbPaintBoard(){if($('cbGame').hidden)return;const challenge=cbScreen==='game'&&cbCircuit?.type==='conventional',pairBadge=$('cbPairBadge'),pairMode=cbScreen==='game'&&!!cbCircuit,blocked=!!(challenge&&cbDrag?.blocked);if(pairBadge){pairBadge.hidden=!pairMode;pairBadge.classList.toggle('on',!!(pairMode&&cbDrag?.pairSnap&&!blocked));pairBadge.classList.toggle('blocked',blocked);pairBadge.textContent=blocked?'✕ NO CROSSING':pairMode&&cbDrag?.pairSnap?'⇄ CABLES PAIRED':challenge?'GRID '+gridStep()+' · NO CROSSING':'⇄ TWIN CABLE · GRID '+gridStep()}const c=$('cbCanvas'),{x,w,h}=cbCanvasSize(c),bounds=cbScreen==='select'?cbSelectBounds:cbCircuit?.bounds||{x1:0,y1:0,x2:1,y2:1};cbGhost(x,w,h,bounds,cbCircuit?.zoneId||null);if(cbScreen==='game')cbDrawRouteGrid(x,w,h);let routeColor='#df3f36',history=challenge?cbChallengeCircuits():[];if(cbScreen==='game'&&cbCircuit){routeColor=cbGameRouteColor(cbCircuit,cbDrag?.targets||[]);for(const old of history){const oldSegs=cbLegSegments(old);cbDrawBundled(x,oldSegs,p=>cbChallengeMapPointPx(old,p,w,h),4.5,6.5)}const committed=cbLegSegments({...cbCircuit,color:routeColor}),preview=cbDrag?.previewLegs?.length?cbLegSegments({legs:cbDrag.previewLegs,color:routeColor}):[];cbDrawBundled(x,[...committed,...preview],p=>cbBoardPx(p,w,h));if(cbDrag?.points?.length>1){x.save();x.strokeStyle=routeColor;x.lineWidth=5;x.lineCap='round';x.lineJoin='round';x.globalAlpha=.88;x.beginPath();cbDrag.points.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.stroke();x.restore()}}let ids;if(cbScreen==='select')ids=[...cbSurveyDevices().map(s=>s.id),...cbPanels().map(s=>s.id)];else if(challenge)ids=[...new Set([cbCircuit?.panelId,...history.flatMap(c=>c.deviceIds||[]),...(cbCircuit?.deviceIds||[])].filter(Boolean))];else ids=[cbCircuit?.panelId,...(cbCircuit?.deviceIds||[])].filter(Boolean);const visited=new Set(cbCircuit?.sequence||[]),queued=new Set(cbDrag?.targets||[]),current=(cbDrag?.targets||[]).at(-1)||cbCircuit?.sequence?.at(-1);for(const id of ids){const s=cbSymbol(id),owner=challenge?cbChallengeOwner(id):cbCircuit,p=challenge&&s?cbPlanPx(s,bounds,w,h):cbNodePx(id,w,h);if(!s||!p)continue;let ring=null;if(cbScreen==='select'&&cbSelection.has(id))ring='#2675db';else if(cbScreen==='game'&&owner?.id===cbCircuit?.id&&queued.has(id))ring=routeColor;else if(cbScreen==='game'&&owner?.id===cbCircuit?.id&&id===current)ring='#20a36b';else if(cbScreen==='game'&&owner?.id===cbCircuit?.id&&visited.has(id))ring=routeColor;if(cbHover===id)ring=routeColor;const symbolColor=s.type==='panel'?null:(owner?.color||routeColor);cbDrawNode(x,s,p,s.type==='panel'?CB_PANEL_R:CB_DEVICE_R,ring,cbScreen==='select'&&s.type==='panel',symbolColor)}if(cbScreen==='select')$('cbBoardHint').textContent='Pinch to zoom · tap or sweep across the devices in this loop';else if(blocked)$('cbBoardHint').textContent='Blocked — cables cannot cross · route around it (bridge tool later)';else if(cbCircuit?.complete)$('cbBoardHint').textContent='Circuit complete · choose another zone to keep the puzzle going';else if(cbCircuit?.type==='addressable'&&cbSequenceReady(cbCircuit,[...cbCircuit.sequence,...(cbDrag?.targets||[])]))$('cbBoardHint').textContent='Back at the fire panel · loop complete';else if(cbDrag?.targets?.length){const s=cbSymbol(cbDrag.targets.at(-1));$('cbBoardHint').textContent='Keep holding · route from '+(s?.reference||symbolNames[s?.type]||'the last device')+' without crossing another cable';}else $('cbBoardHint').textContent=challenge?'Start at the green-ring device · connect the zone colour · no crossings':'Hold on the green-ring device and drag through detectors · cable uses Survey field grid · corners lock cleanly · retracing makes a parallel cable · pinch with two fingers to zoom'}
 function cbGameCounts(){if(!cbCircuit)return{done:0,total:0,ready:false};const seq=[...cbCircuit.sequence,...(cbDrag?.targets||[])],visited=new Set(seq),done=cbCircuit.deviceIds.filter(id=>visited.has(id)).length,total=cbCircuit.deviceIds.length,ready=cbCircuit.type==='conventional'?done===total:(done===total&&seq.at(-1)===cbCircuit.panelId&&seq.length>1);return{done,total,ready}}
 function cbUpdateGame(){const hud=$('cbDetectorHud');if(cbScreen==='select'){if(hud)hud.hidden=true;$('cbSelectCount').textContent=cbSelection.size+' highlighted';$('cbBuildSelected').disabled=cbSelection.size<1;$('cbProgress').textContent='Pinch to zoom · swipe across devices to select them';$('cbReset').textContent='Clear highlighted';cbDrawBoard();return}if(!cbCircuit){if(hud)hud.hidden=true;return}const q=cbGameCounts(),left=Math.max(0,q.total-q.done),seq=[...cbCircuit.sequence,...(cbDrag?.targets||[])],backNeeded=cbCircuit.type==='addressable'&&q.done===q.total&&seq.at(-1)!==cbCircuit.panelId;if(hud){hud.hidden=false;hud.setAttribute('aria-label',q.done+' of '+q.total+' devices connected');const label=hud.querySelector('.label');if(label)label.textContent=cbCircuit.type==='conventional'?'ZONE DEVICES':'LOOP DEVICES'}if($('cbDetectorCount'))$('cbDetectorCount').textContent=q.done+' / '+q.total;if($('cbDetectorLeft'))$('cbDetectorLeft').textContent=cbCircuit.complete?(cbCircuit.type==='addressable'?'LOOP CLOSED':'CIRCUIT COMPLETE'):backNeeded?'RETURN TO FAP':left?left+' LEFT':'ALL CONNECTED';if($('cbDetectorFill'))$('cbDetectorFill').style.width=(q.total?Math.round(q.done/q.total*100):0)+'%';$('cbProgress').textContent=q.done+' / '+q.total+' devices connected'+(backNeeded?' · return to panel':'');$('cbComplete').disabled=!q.ready||cbCircuit.complete;$('cbComplete').classList.toggle('ready',q.ready&&!cbCircuit.complete);$('cbComplete').textContent=cbCircuit.complete?'Circuit complete ✓':'Complete circuit';$('cbUndoLeg').disabled=!cbCircuit.legs.length;$('cbReset').textContent='Reset circuit';cbDrawBoard()}
 function cbPointInCanvas(e){const r=$('cbCanvas').getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
@@ -904,39 +904,42 @@ function cbChallengePointsBlocked(points,w,h){if(cbCircuit?.type!=='conventional
 function cbMarkBlocked(){if(!cbDrag)return;cbDrag.blocked=true;const now=Date.now();if(!cbMarkBlocked.last||now-cbMarkBlocked.last>320){cbMarkBlocked.last=now;if(uiHaptics)try{navigator.vibrate?.(18)}catch(e){}}}
 function cbPairSegmentsPx(w,h){const out=[],legs=[...(cbCircuit?.legs||[]),...(cbDrag?.previewLegs||[])];for(const leg of legs){const pts=leg.points||[];for(let i=1;i<pts.length;i++){const a=cbBoardPx(pts[i-1],w,h),b=cbBoardPx(pts[i],w,h);if(Math.hypot(b.x-a.x,b.y-a.y)>28)out.push({a,b})}}return out}
 // v0.53 parallel retrace — drawing back over an existing cable creates a clean second lane.
-function cbPairSnapPx(q,last,w,h){
- if(cbDrag){cbDrag.pairSnap=false;cbDrag.pairAxis=null;cbDrag.pairLine=null}
+// v0.55 smooth route engine — shared-grid routing with turn hysteresis and sparse-event sampling.
+function cbRouteCellPx(w,h){
+ const bounds=cbCircuit?.bounds||cbSelectBounds,scale=Math.max(1,cbView.scale),fallback=CB_ROUTE_GRID*scale;
+ const c=typeof cbFieldGridScreenStep==='function'?cbFieldGridScreenStep(bounds,w,h):null;
+ return{x:Math.max(6,Number(c?.x)||fallback),y:Math.max(6,Number(c?.y)||fallback)}
+}
+function cbRouteSnapshot(){return{points:(cbDrag?.points||[]).map(p=>({...p})),routeAxis:cbDrag?.routeAxis||null,turnAnchor:cbDrag?.turnAnchor?{...cbDrag.turnAnchor}:null,pairSide:cbDrag?.pairSide??null,pairSnap:!!cbDrag?.pairSnap,pairAxis:cbDrag?.pairAxis||null,pairLine:Number.isFinite(cbDrag?.pairLine)?cbDrag.pairLine:null,routeInput:cbDrag?.routeInput?{...cbDrag.routeInput}:null}}
+function cbRouteRestore(s){if(!cbDrag||!s)return;cbDrag.points=s.points.map(p=>({...p}));cbDrag.routeAxis=s.routeAxis;cbDrag.turnAnchor=s.turnAnchor?{...s.turnAnchor}:null;cbDrag.pairSide=s.pairSide;cbDrag.pairSnap=s.pairSnap;cbDrag.pairAxis=s.pairAxis;cbDrag.pairLine=s.pairLine;cbDrag.routeInput=s.routeInput?{...s.routeInput}:null}
+function cbPairSnapPx(q,last,w,h,raw=q){
  if(!cbDrag||!last)return q;
- const dx=q.x-last.x,dy=q.y-last.y;if(Math.hypot(dx,dy)<8)return q;
- const wantH=Math.abs(dx)>=Math.abs(dy),scale=Math.max(1,cbView.scale),range=Math.min(38,CB_PAIR_RANGE*scale),gap=CB_PAIR_GAP*scale,nearEnd=Math.max(20,range);
+ const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y),prev=cbDrag.routeInput||last,rx=Number(raw?.x)??q.x,ry=Number(raw?.y)??q.y,dx=rx-prev.x,dy=ry-prev.y,move=Math.hypot(dx,dy);
+ let wantH=Math.abs(dx)>=Math.abs(dy);if(move<grid*.24&&cbDrag.pairAxis)wantH=cbDrag.pairAxis==='h';
+ const scale=Math.max(1,cbView.scale),range=Math.max(10,Math.min(42,grid*1.05,CB_PAIR_RANGE*scale)),gap=CB_PAIR_GAP*scale,reach=Math.max(18,grid*.70);
  let best=null;
  for(const s of cbPairSegmentsPx(w,h)){
-  const sx=s.b.x-s.a.x,sy=s.b.y-s.a.y;if(Math.min(Math.abs(sx),Math.abs(sy))>1)continue;
+  const sx=s.b.x-s.a.x,sy=s.b.y-s.a.y;if(Math.min(Math.abs(sx),Math.abs(sy))>1.25)continue;
   const isH=Math.abs(sx)>=Math.abs(sy);if(isH!==wantH)continue;
-  if(isH){
-   const lo=Math.min(s.a.x,s.b.x),hi=Math.max(s.a.x,s.b.x),d=Math.abs(q.y-s.a.y),ld=Math.abs(last.y-s.a.y);
-   if(q.x<lo-2*scale||q.x>hi+2*scale||last.x<lo-nearEnd||last.x>hi+nearEnd||d>range||ld>range)continue;
-   const score=d+ld*.3;if(!best||score<best.score)best={score,isH:true,line:s.a.y}
-  }else{
-   const lo=Math.min(s.a.y,s.b.y),hi=Math.max(s.a.y,s.b.y),d=Math.abs(q.x-s.a.x),ld=Math.abs(last.x-s.a.x);
-   if(q.y<lo-2*scale||q.y>hi+2*scale||last.y<lo-nearEnd||last.y>hi+nearEnd||d>range||ld>range)continue;
-   const score=d+ld*.3;if(!best||score<best.score)best={score,isH:false,line:s.a.x}
-  }
+  let dist,inside=false,opposite=false;
+  if(isH){inside=q.x>=Math.min(s.a.x,s.b.x)-reach&&q.x<=Math.max(s.a.x,s.b.x)+reach;dist=Math.abs(q.y-s.a.y);opposite=dx*sx<0}
+  else{inside=q.y>=Math.min(s.a.y,s.b.y)-reach&&q.y<=Math.max(s.a.y,s.b.y)+reach;dist=Math.abs(q.x-s.a.x);opposite=dy*sy<0}
+  if(!inside||dist>range)continue;
+  const score=dist+(opposite?0:grid*.10);if(!best||score<best.score)best={s,isH,line:isH?s.a.y:s.a.x,score}
  }
- if(!best)return q;
+ if(!best){cbDrag.pairSnap=false;cbDrag.pairAxis=null;cbDrag.pairLine=null;return q}
  let side,line;
- if(best.isH){const delta=q.y-best.line;side=Math.abs(delta)<3*scale?(cbDrag.pairSide||1):(delta>=0?1:-1);line=best.line+side*gap;q={x:q.x,y:line}}
- else{const delta=q.x-best.line;side=Math.abs(delta)<3*scale?(cbDrag.pairSide||1):(delta>=0?1:-1);line=best.line+side*gap;q={x:line,y:q.y}}
+ if(best.isH){const delta=ry-best.line;side=Math.abs(delta)>Math.max(2,grid*.08)?(delta>=0?1:-1):(cbDrag.pairSide||1);line=best.line+side*gap;q={x:q.x,y:line}}
+ else{const delta=rx-best.line;side=Math.abs(delta)>Math.max(2,grid*.08)?(delta>=0?1:-1):(cbDrag.pairSide||1);line=best.line+side*gap;q={x:line,y:q.y}}
  cbDrag.pairSide=side;cbDrag.pairSnap=true;cbDrag.pairAxis=best.isH?'h':'v';cbDrag.pairLine=line;return q
 }
-function cbRouteGridStep(q,w,h){
+function cbRouteGridStep(q,w,h,intent=q){
  if(!cbDrag?.points?.length)return;
- const pts=cbDrag.points,cell=cbFieldGridScreenStep(cbCircuit?.bounds||cbSelectBounds,w,h),grid=Math.max(8,Math.min(cell.x,cell.y));
- let axis=cbDrag.routeAxis||null,last=pts.at(-1);
+ const pts=cbDrag.points,cell=cbRouteCellPx(w,h);let axis=cbDrag.routeAxis||null,last=pts.at(-1);
  const pairAxis=cbDrag.pairSnap?cbDrag.pairAxis:null,pairLine=cbDrag.pairSnap?cbDrag.pairLine:null,paired=!!pairAxis&&Number.isFinite(pairLine);
  if(!axis){
-  const dx=q.x-last.x,dy=q.y-last.y;if(Math.max(Math.abs(dx),Math.abs(dy))<grid*.55)return;
-  axis=paired?pairAxis:(Math.abs(dx)>=Math.abs(dy)?'h':'v');cbDrag.routeAxis=axis;
+  const dx=q.x-last.x,dy=q.y-last.y,nx=Math.abs(dx)/cell.x,ny=Math.abs(dy)/cell.y;if(Math.max(nx,ny)<.28)return;
+  axis=paired?pairAxis:(nx>=ny?'h':'v');cbDrag.routeAxis=axis;cbDrag.turnAnchor=null;
   if(paired&&axis===pairAxis){
    if(axis==='h'){if(Math.abs(last.y-pairLine)>.5)pts.push({x:last.x,y:pairLine});pts.push({x:q.x,y:pairLine})}
    else{if(Math.abs(last.x-pairLine)>.5)pts.push({x:pairLine,y:last.y});pts.push({x:pairLine,y:q.y})}
@@ -944,31 +947,34 @@ function cbRouteGridStep(q,w,h){
   cbDrag.points=cbSimplify(pts);return
  }
  if(paired&&axis===pairAxis){
-  if(axis==='h'){
-   if(Math.abs(last.y-pairLine)>.5){pts.push({x:last.x,y:pairLine});last=pts.at(-1)}
-   last.x=q.x;last.y=pairLine
-  }else{
-   if(Math.abs(last.x-pairLine)>.5){pts.push({x:pairLine,y:last.y});last=pts.at(-1)}
-   last.x=pairLine;last.y=q.y
-  }
+  cbDrag.turnAnchor=null;
+  if(axis==='h'){if(Math.abs(last.y-pairLine)>.5){pts.push({x:last.x,y:pairLine});last=pts.at(-1)}last.x=q.x;last.y=pairLine}
+  else{if(Math.abs(last.x-pairLine)>.5){pts.push({x:pairLine,y:last.y});last=pts.at(-1)}last.x=pairLine;last.y=q.y}
   cbDrag.points=cbSimplify(pts);return
  }
- const turn=grid*CB_ROUTE_TURN_CELLS,perp=axis==='h'?Math.abs(q.y-last.y):Math.abs(q.x-last.x);
- if(perp>=turn){
-  // Corner starts from the route endpoint already reached. Do not shoot the old leg out
-  // to the latest (possibly sparse) touch event before turning.
-  if(axis==='h'){pts.push({x:last.x,y:q.y});cbDrag.routeAxis='v'}
-  else{pts.push({x:q.x,y:last.y});cbDrag.routeAxis='h'}
+ const raw=intent||q,perpCell=axis==='h'?cell.y:cell.x,perp=axis==='h'?Math.abs(raw.y-last.y):Math.abs(raw.x-last.x),arm=perpCell*CB_ROUTE_ARM_CELLS,turn=perpCell*CB_ROUTE_TURN_CELLS;
+ if(perp<arm){
+  cbDrag.turnAnchor=null;if(axis==='h')last.x=q.x;else last.y=q.y
  }else{
-  if(axis==='h')last.x=q.x;else last.y=q.y
+  if(!cbDrag.turnAnchor)cbDrag.turnAnchor={x:last.x,y:last.y};const a=cbDrag.turnAnchor;last.x=a.x;last.y=a.y;
+  if(perp>=turn){const next=axis==='h'?{x:a.x,y:q.y}:{x:q.x,y:a.y};if(Math.hypot(next.x-a.x,next.y-a.y)>=1)pts.push(next);cbDrag.routeAxis=axis==='h'?'v':'h';cbDrag.turnAnchor=null}
  }
  cbDrag.points=cbSimplify(pts)
 }
-function cbAppendDrag(p,w,h){if(!cbDrag)return false;let q=cbSnapPx(p,w,h),last=cbDrag.points.at(-1);if(!last)return false;const snap={points:cbDrag.points.map(p=>({...p})),routeAxis:cbDrag.routeAxis,pairSide:cbDrag.pairSide,pairSnap:cbDrag.pairSnap,pairAxis:cbDrag.pairAxis,pairLine:cbDrag.pairLine};q=cbPairSnapPx(q,last,w,h);cbRouteGridStep(q,w,h);if(cbChallengePointsBlocked(cbDrag.points,w,h)){cbDrag.points=snap.points;cbDrag.routeAxis=snap.routeAxis;cbDrag.pairSide=snap.pairSide;cbDrag.pairSnap=snap.pairSnap;cbDrag.pairAxis=snap.pairAxis;cbDrag.pairLine=snap.pairLine;cbMarkBlocked();return false}cbDrag.blocked=false;return true}
-function cbCaptureDragTarget(target,w,h){if(!cbDrag?.points?.length||!cbValidTarget(target))return false;const end=cbNodePx(target,w,h),pts=cbDrag.points.slice();if(!end)return false;const last=pts.at(-1),dx=end.x-last.x,dy=end.y-last.y;if(Math.abs(dx)>1&&Math.abs(dy)>1){const prev=pts.at(-2),horizontal=prev?Math.abs(last.y-prev.y)<Math.abs(last.x-prev.x):Math.abs(dx)>=Math.abs(dy);pts.push(horizontal?{x:end.x,y:last.y}:{x:last.x,y:end.y})}pts.push(end);const clean=cbSimplify(pts);if(cbChallengePointsBlocked(clean,w,h)){cbMarkBlocked();return false}cbDrag.blocked=false;cbDrag.previewLegs.push({from:cbDrag.from,to:target,points:clean.map(p=>cbPxBoard(p,w,h))});cbDrag.targets.push(target);cbDrag.from=target;cbDrag.points=[end];cbDrag.routeAxis=null;cbDrag.pairSnap=false;cbHover=target;if(target!==cbCircuit.panelId){const q=cbGameCounts();cbPlayProgressBell(q.done,q.total);cbPulseCounter();cbMilestone(q)}cbUpdateGame();const ready=cbSequenceReady(cbCircuit,[...cbCircuit.sequence,...cbDrag.targets]);if(ready){cbCommitDrag();cbAutoCompleteCircuit();return true}return true}
+function cbAppendDrag(p,w,h){
+ if(!cbDrag)return false;const cell=cbRouteCellPx(w,h),sample=Math.max(4,Math.min(cell.x,cell.y)*CB_ROUTE_SAMPLE_CELLS),start=cbDrag.routeInput||cbDrag.points.at(-1)||p,dist=Math.hypot(p.x-start.x,p.y-start.y),steps=Math.max(1,Math.min(64,Math.ceil(dist/sample)));
+ for(let i=1;i<=steps;i++){
+  const raw={x:start.x+(p.x-start.x)*i/steps,y:start.y+(p.y-start.y)*i/steps},before=cbRouteSnapshot();let q=cbSnapPx(raw,w,h),last=cbDrag.points.at(-1);if(!last)return false;
+  q=cbPairSnapPx(q,last,w,h,raw);cbRouteGridStep(q,w,h,raw);
+  if(cbChallengePointsBlocked(cbDrag.points,w,h)){cbRouteRestore(before);cbDrag.routeInput=raw;cbMarkBlocked();return false}
+  cbDrag.routeInput=raw
+ }
+ cbDrag.blocked=false;return true
+}
+function cbCaptureDragTarget(target,w,h){if(!cbDrag?.points?.length||!cbValidTarget(target))return false;const end=cbNodePx(target,w,h),pts=cbDrag.points.slice();if(!end)return false;const last=pts.at(-1),dx=end.x-last.x,dy=end.y-last.y;if(Math.abs(dx)>1&&Math.abs(dy)>1){const prev=pts.at(-2),horizontal=prev?Math.abs(last.y-prev.y)<Math.abs(last.x-prev.x):Math.abs(dx)>=Math.abs(dy);pts.push(horizontal?{x:end.x,y:last.y}:{x:last.x,y:end.y})}pts.push(end);const clean=cbSimplify(pts);if(cbChallengePointsBlocked(clean,w,h)){cbMarkBlocked();return false}cbDrag.blocked=false;cbDrag.previewLegs.push({from:cbDrag.from,to:target,points:clean.map(p=>cbPxBoard(p,w,h))});cbDrag.targets.push(target);cbDrag.from=target;cbDrag.points=[end];cbDrag.routeAxis=null;cbDrag.turnAnchor=null;cbDrag.routeInput=end;cbDrag.pairSnap=false;cbDrag.pairAxis=null;cbDrag.pairLine=null;cbHover=target;if(target!==cbCircuit.panelId){const q=cbGameCounts();cbPlayProgressBell(q.done,q.total);cbPulseCounter();cbMilestone(q)}cbUpdateGame();const ready=cbSequenceReady(cbCircuit,[...cbCircuit.sequence,...cbDrag.targets]);if(ready){cbCommitDrag();cbAutoCompleteCircuit();return true}return true}
 function cbCommitDrag(){if(!cbCircuit||!cbDrag?.targets?.length)return false;push();state.asFit=null;cbCircuit.legs.push(...cbDrag.previewLegs);cbCircuit.sequence.push(...cbDrag.targets);cbCircuit.complete=false;cbCircuit.updatedAt=Date.now();persist();cbDrag=null;cbHover=null;cbUpdateGame();return true}
 function cbSelectAt(pt,w,h){const id=cbHitNode(pt,w,h,false),s=cbSymbol(id);if(!id||!s||s.type==='panel')return false;cbSelection.add(id);cbUpdateGame();return true}
-function cbCanvasDown(e){if(e.button!==0||!['select','game'].includes(cbScreen)||!$('cbCelebrate').hidden)return;cbEnsureAudio();const c=$('cbCanvas'),r=c.getBoundingClientRect(),w=r.width,h=r.height,p=cbPointInCanvas(e);cbPointers.set(e.pointerId,p);c.setPointerCapture?.(e.pointerId);if(cbPointers.size>=2){if(!cbPinch&&!cbGestureLock)cbBeginPinch(w,h);cbUpdatePinch(w,h);return}if(cbGestureLock)return;if(cbScreen==='select'){cbDrag={select:true,pointerId:e.pointerId,lastPointer:p};cbSelectAt(p,w,h);return}if(!cbCircuit||cbCircuit.complete)return;const start=cbCircuit.sequence.at(-1),sp=cbNodePx(start,w,h);if(!sp||Math.hypot(p.x-sp.x,p.y-sp.y)>34){$('cbBoardHint').textContent='Start on the green-ring device';return}cbDrag={points:[sp],previewLegs:[],targets:[],from:start,routeAxis:null,pointerId:e.pointerId,lastPointer:p};cbHover=null}
+function cbCanvasDown(e){if(e.button!==0||!['select','game'].includes(cbScreen)||!$('cbCelebrate').hidden)return;cbEnsureAudio();const c=$('cbCanvas'),r=c.getBoundingClientRect(),w=r.width,h=r.height,p=cbPointInCanvas(e);cbPointers.set(e.pointerId,p);c.setPointerCapture?.(e.pointerId);if(cbPointers.size>=2){if(!cbPinch&&!cbGestureLock)cbBeginPinch(w,h);cbUpdatePinch(w,h);return}if(cbGestureLock)return;if(cbScreen==='select'){cbDrag={select:true,pointerId:e.pointerId,lastPointer:p};cbSelectAt(p,w,h);return}if(!cbCircuit||cbCircuit.complete)return;const start=cbCircuit.sequence.at(-1),sp=cbNodePx(start,w,h);if(!sp||Math.hypot(p.x-sp.x,p.y-sp.y)>34){$('cbBoardHint').textContent='Start on the green-ring device';return}cbDrag={points:[sp],previewLegs:[],targets:[],from:start,routeAxis:null,turnAnchor:null,routeInput:sp,pointerId:e.pointerId,lastPointer:p};cbHover=null}
 function cbCanvasMove(e){if(!cbPointers.has(e.pointerId))return;const r=$('cbCanvas').getBoundingClientRect(),w=r.width,h=r.height,p=cbPointInCanvas(e);cbPointers.set(e.pointerId,p);if(cbPinch){cbUpdatePinch(w,h);return}if(cbGestureLock||cbDrag?.pointerId!==e.pointerId)return;cbProcessPointer(p,w,h);cbDrawBoard()}
 function cbCanvasUp(e){if(!cbPointers.has(e.pointerId))return;const r=$('cbCanvas').getBoundingClientRect(),p=cbPointInCanvas(e),locked=cbGestureLock||!!cbPinch;cbPointers.delete(e.pointerId);if(locked){if(cbPinch?.ids.includes(e.pointerId))cbPinch=null;if(!cbPointers.size)cbGestureLock=false;return}if(cbDrag?.pointerId!==e.pointerId)return;if(cbScreen==='select'){cbDrag=null;return}cbProcessPointer(p,r.width,r.height);if(cbCircuit?.complete)return;if(!cbCommitDrag()){cbDrag=null;cbHover=null;cbUpdateGame()}}
 function cbCanvasCancel(e){if(!cbPointers.has(e.pointerId))return;cbPointers.delete(e.pointerId);cbPinch=null;cbGestureLock=cbPointers.size>0;cbDrag=null;cbHover=null;cbUpdateGame();cbDrawBoard()}
