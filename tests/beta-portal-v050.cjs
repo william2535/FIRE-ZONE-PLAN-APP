@@ -11,7 +11,10 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert.match(await p.title(),/Beta Tester Portal.*v0\.50.*Will Flood/i);
   assert.match(await p.locator('body').innerText(),/Designed & built by Will Flood/i);
   assert(await p.locator('a[href="./"]').isVisible());
+  const release='https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/v0.50/Zone-Sketch-by-Will-v0.50.apk';
+  assert.equal(await p.locator(`a[href="${release}"]`).count(),1);
   assert.equal(await p.locator('a[href="downloads/Zone-Sketch-by-Will-v0.50.apk"]').count(),1);
+  assert.match(await p.locator('body').innerText(),/GitHub Release server/i);
   assert.equal(await p.locator('#feedback').count(),1);
   assert.equal(await p.locator('.brandPack img').count(),3);
   assert(fs.existsSync('assets/zone-sketch-by-will-flood-wordmark.svg'));
@@ -29,6 +32,6 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert.match(await p.locator('.settingsFooter').innerText(),/WILL FLOOD/i);
   assert.match(await p.locator('.settingsFooter').innerText(),/v0\.50/i);
   assert.deepEqual(errors,[],'No v0.50 portal/app branding runtime errors');
-  console.log('PASS: v0.50 beta portal, brand pack, PWA metadata and Will Flood attribution');
+  console.log('PASS: v0.50 beta portal, reliable Android download, brand pack, PWA metadata and Will Flood attribution');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
