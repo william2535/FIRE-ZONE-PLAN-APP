@@ -1,0 +1,59 @@
+name: Hotfix visible web v0.58 labels
+
+on:
+  push:
+    paths:
+      - '.github/workflows/hotfix-v058-visible-version.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch visible version labels and verify editor controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path('index.html'),
+              Path('Zone-Sketch-by-Will.html'),
+              Path('ZoneSketch.html'),
+              Path('app/src/main/assets/index.html'),
+          ]
+          replacements = {
+              'ZONE SKETCH · v0.57': 'ZONE SKETCH · v0.58',
+              'BETA v0.57': 'BETA v0.58',
+              '<b>v0.57</b>': '<b>v0.58</b>',
+          }
+          required = ['cbEditToggle','cbEditBar','cbEditPencil','cbEditBin','cbEditUndo','cbEditRedo','cbEditBridge','cbEditDone']
+          for p in files:
+              text = p.read_text(encoding='utf-8')
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              missing = [token for token in required if token not in text]
+              if missing:
+                  raise SystemExit(f'{p}: missing v0.58 editor controls: {missing}')
+              p.write_text(text, encoding='utf-8')
+
+          main = Path('index.html').read_text(encoding='utf-8')
+          if 'ZONE SKETCH · v0.57' in main or 'BETA v0.57' in main or '<b>v0.57</b>' in main:
+              raise SystemExit('index.html still contains a visible v0.57 label')
+          if 'ZONE SKETCH · v0.58' not in main or 'BETA v0.58' not in main:
+              raise SystemExit('v0.58 visible labels were not written')
+          print('Visible v0.58 labels patched and editor controls verified.')
+          PY
+      - name: Remove one-shot workflow and commit hotfix
+        run: |
+          rm .github/workflows/hotfix-v058-visible-version.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Fix visible web v0.58 labels"
+          git push origin HEAD:main
