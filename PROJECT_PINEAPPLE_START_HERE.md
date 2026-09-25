@@ -14,7 +14,7 @@ Do **not** start by guessing from old chat messages. Read this file, then read `
 
 Stable web branch: `main`
 
-Deployed web milestone commit:
+Core web-app milestone merge:
 
 `89eee3561d652f510458a172151d1d1cdb849dfd`
 
@@ -46,9 +46,18 @@ A real Bridge-mode coordinate-shadowing defect is also repaired in both generato
 
 ## LIVE WEB STATE
 
-- **LIVE STABLE WEB:** `main` @ `89eee3561d652f510458a172151d1d1cdb849dfd`
-- **DEVELOPMENT / CONTINUOUS SAVE:** `project-pineapple-v058`
-- Never assume the Pineapple branch is live. Only a recorded major-milestone promotion to `main` is the live web state.
+- **CORE WEB APP:** `main/index.html` = v0.58.
+- **BETA PORTAL DELIVERY FIX:** PR `#5`, merged as `34af3e5737c2b1607c09073904df6c69dad373cb`.
+- The portal now explicitly shows **Web v0.58 · Android v0.57**.
+- The web launch uses `./index.html?v=0.58` to avoid stale Safari page reuse.
+- The current packaged Android release remains **v0.57** until a separate v0.58 APK is built and released.
+- **DEVELOPMENT / CONTINUOUS SAVE:** `project-pineapple-v058`.
+
+### Delivery-path lesson recorded
+
+The v0.58 app had been correctly promoted to `main/index.html`, but `beta.html` was still hard-coded to v0.57. This made a refreshed tester portal look like the web milestone had not deployed.
+
+At every future web milestone, check **both** the actual app file and the tester portal/version links before declaring the milestone live.
 
 ## NEXT EXACT STEP
 
@@ -57,7 +66,7 @@ A real Bridge-mode coordinate-shadowing defect is also repaired in both generato
 3. Prove bridge marker coordinates are finite and survive staged replacement, splice, Done/save, reopen and redraw.
 4. Break-test manual editing across small iPhone, large iPhone, Android phone, small tablet and landscape/desktop viewports, including zoomed-in/out and awkward/fast/shaky input.
 5. Keep routing/capture/editor/protected-24-7/generated-copy gates green.
-6. At the next coherent green major milestone, promote that checkpoint to `main` and replace the LIVE STABLE WEB SHA above.
+6. At the next coherent green major milestone, promote that checkpoint to `main`, then verify `index.html`, `beta.html`, visible version text, web launch URL and Android-release labels together.
 
 ## Continuous-save rule
 
@@ -66,7 +75,7 @@ Operation Pineapple must never rely on chat state alone.
 - Commit every meaningful logical change to `project-pineapple-v058` as it is completed.
 - Commit before risky structural edits.
 - Update `.github/PROJECT_PINEAPPLE_CHECKPOINT.md` whenever the active blocker, test result, or next step changes materially.
-- Keep this START HERE file short and current: working branch, live-web SHA, latest known-good milestone and next exact step.
+- Keep this START HERE file short and current: working branch, live-web state, latest known-good milestone and next exact step.
 - Prefer small reproducible changes over one giant unsaved edit.
 - Never leave a long investigation only in conversation history.
 
@@ -80,8 +89,9 @@ When a major milestone is reached:
 2. protected 24/7 verification must remain green;
 3. generated app copies must agree;
 4. publish/merge the known-good milestone to `main` so the web app receives it;
-5. immediately record the deployed `main` commit here and in the checkpoint;
-6. continue experimental work on the Pineapple branch rather than using the live web app as the scratchpad.
+5. verify the live delivery path, including `index.html`, `beta.html`, visible version labels and launch URLs;
+6. immediately record the deployed web state here and in the checkpoint;
+7. continue experimental work on the Pineapple branch rather than using the live web app as the scratchpad.
 
 This gives two layers:
 
