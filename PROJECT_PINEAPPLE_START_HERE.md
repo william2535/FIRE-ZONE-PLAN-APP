@@ -12,11 +12,17 @@ Do **not** start by guessing from old chat messages. Read this file, then read `
 
 **Pineapple v0.58 — Manual Editor Core Green**
 
-Known-good app commit before this handoff rule was added:
+Last fully proven green app milestone:
 
 `6fbd5639df51c6b2b6be892a104c210df47519c2`
 
-At that milestone:
+Current web-milestone candidate after synchronising the visible v0.58 label across all generated app copies:
+
+`f941d9fdf98c453708556e5eef8d7907d34d0ae0`
+
+This START HERE checkpoint commit intentionally triggers the normal Pineapple CI against that candidate before web promotion.
+
+At the proven green milestone:
 
 - inline JavaScript parser: PASS
 - clean browser startup: PASS
@@ -33,14 +39,20 @@ At that milestone:
 - protected 24/7 verification: PASS
 - generated HTML copy equality: PASS
 
-A real Bridge-mode coordinate-shadowing defect was also repaired: bridge crossings now use `hit` as the crossing callback variable so the numeric canvas height `h` is preserved when converting crossing coordinates.
+A real Bridge-mode coordinate-shadowing defect is also repaired in both generator source and generated app: bridge crossings use `hit` as the callback variable so numeric canvas height `h` is preserved.
+
+## LIVE WEB STATE
+
+- Stable web branch: `main`
+- Current Pineapple v0.58 candidate: pending final CI before promotion
+- After promotion, record the exact deployed `main` SHA here immediately.
 
 ## NEXT EXACT STEP
 
-1. Finish a dedicated Bridge-mode behaviour regression using a real crossing.
-2. Confirm bridge marker coordinates are finite and persist after splice, save, reopen and redraw.
-3. Break-test manual editing at phone/tablet sizes with awkward touches and zoom states.
-4. If the complete Pineapple gate remains green, mark it as a **major milestone** and publish that known-good state to the web app (`main`).
+1. Confirm normal Pineapple editor/routing/capture CI is green on this checkpointed v0.58 candidate.
+2. Promote the known-good milestone to `main` for real-device web testing.
+3. Record the deployed `main` SHA here and in `.github/PROJECT_PINEAPPLE_CHECKPOINT.md`.
+4. Continue on Pineapple with a dedicated real-crossing Bridge regression and phone/tablet break-testing.
 
 ## Continuous-save rule
 
