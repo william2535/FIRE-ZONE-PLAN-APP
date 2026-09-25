@@ -1,0 +1,35 @@
+name: Restore original Zone Sketch v0.51 APK
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/restore-v051-release.yml'
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Recover original v0.51 APK from release commit
+        run: |
+          git show 71525f152dfbcb8fa33ca19b93c304468741d294:downloads/Zone-Sketch-by-Will-v0.51.apk > /tmp/Zone-Sketch-by-Will-v0.51.apk
+          echo '30552c8f8e75fa7d229f447770fdbd61490fa2d8ad12f2ea274a11a37cd81be9  /tmp/Zone-Sketch-by-Will-v0.51.apk' | sha256sum -c -
+          test "$(stat -c '%s' /tmp/Zone-Sketch-by-Will-v0.51.apk)" = '575067'
+      - name: Restore GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload v0.51 /tmp/Zone-Sketch-by-Will-v0.51.apk --clobber
+      - name: Restore backup mirror to the same original APK
+        run: |
+          cp /tmp/Zone-Sketch-by-Will-v0.51.apk downloads/Zone-Sketch-by-Will-v0.51.apk
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add downloads/Zone-Sketch-by-Will-v0.51.apk
+          git diff --cached --quiet && exit 0
+          git commit -m 'Restore original Zone Sketch v0.51 APK bytes'
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
