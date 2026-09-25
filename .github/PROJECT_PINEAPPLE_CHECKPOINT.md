@@ -5,8 +5,6 @@ This file is the durable handoff for the ongoing Pineapple work. Update it at ev
 ## Current branch
 
 - Branch: `project-pineapple-v058`
-- Last confirmed branch head before this checkpoint: `364ec3b01b734c636b09d4c96f74fd1e52b57bdf`
-- Head commit message: `Trace exact unmatched editor brace boundary`
 - Protected 24/7 build must remain unchanged.
 
 ## Current objective
@@ -33,47 +31,70 @@ Continue the v0.58 Circuit Builder / manual editor hardening work without waitin
 
 ## Current blocker
 
-The manual-editor CI is currently failing at inline JavaScript parsing before browser tests can run.
+The manual-editor branch currently contains malformed inline JavaScript and cannot initialize the app.
 
 Observed failure:
 
 - `SyntaxError: Unexpected token ')'` at the closing `})();`
-- Parser reports an unclosed `{` inside the main app IIFE.
-- The protected 24/7 build check still passes.
-- The current syntax diagnostic commit is only diagnostic; do not treat its brace-depth trace as definitive where template literals can distort simple token-depth accounting.
-- The wall merge routine around the first reported top-level-loss area was manually inspected and appears structurally balanced, so the next step is commit-level isolation rather than blindly adding a brace there.
+- Browser startup never reaches the ready state.
+- Protected 24/7 verification continues to pass.
+- Simple brace-depth diagnostics can be confused by template-literal `${...}` tokens, so do not blindly add a brace near the wall-merge routine.
 
-## Useful recent commits / checkpoints
+## Confirmed green → bad boundary
 
-- `364ec3b01b734c636b09d4c96f74fd1e52b57bdf` — Trace exact unmatched editor brace boundary
-- `6ad737dca8ee0dc352cdc4a39aa7e4ea8494c089` — Locate swallowed Circuit Builder function after missing brace
-- `b2099a22b902c88b6e5cc93f6ab82d0407154bfb` — Fix manual editor UI synchronizer calls
-- `b389823d868f7f6365283308ec8ac92d3ddaca31` — Scope bridge metadata to edited cable sections
+Commit-level isolation is now complete enough to stop walking history blindly.
+
+### Last confirmed good app
+
+`fcd59d236411c41e48383b774fbc632c4ebf0e16` — `Apply Pineapple v0.58 editor transformation`
+
+CI attached to this exact SHA was green:
+
+- Capture-transition workflow run `36191711835`: **PASS**
+- Routing-compatibility workflow run `36191711836`: **PASS**
+- Editor-apply workflow run `36191711987`: **PASS** and generated the next app commit.
+
+### First app-changing / first-bad candidate
+
+`c8b76b265702b6667fe780fca360c7e68393ce0a` — `Add manual Circuit Builder route editor core`
+
+This is the first commit in the isolated chain that actually changes the four app HTML copies. It adds the v0.58 manual editor UI and editor core. Its parent is the green `fcd59d...` commit above.
+
+Everything between `c8b76...` and the later failing editor runs is either editor follow-up/hotfix logic, tests, workflows, or diagnostics; none provides an earlier app-changing candidate than `c8b76...`.
+
+### Later failure evidence
+
+- Manual-editor run 1 on `ab32804...` failed before generation because the old zoom-dock marker was already gone; the editor had already been injected.
+- Manual-editor runs 4–9 remained red.
+- Run 5 timed out waiting for app readiness.
+- Run 6 explicitly reported `PAGEERROR Unexpected token ')'` during startup.
+- Current syntax gate reproduces the same final-`})();` parse failure.
+
+## Useful commits / checkpoints
+
+- `fcd59d236411c41e48383b774fbc632c4ebf0e16` — last confirmed green app / editor transformation trigger
+- `c8b76b265702b6667fe780fca360c7e68393ce0a` — first app-changing editor-core commit; primary syntax-break candidate
 - `f7a8bf2732c1e4b59be91d975b7612a713adb6cc` — Add bridge-locality regression to manual editor
-
-## Latest CI evidence
-
-Manual editor workflow on head `364ec3...`:
-
-- Protected 24/7 verification: PASS
-- `Parse inline JavaScript before browser startup`: FAIL
-- Browser/editor behaviour tests: skipped because parse gate failed
-- Smart Route compatibility: skipped because parse gate failed
-
-The previous bridge-scope/editor commits were already failing editor CI, so the syntax break predates the newest diagnostic commit and must be isolated to the first green→red app change.
+- `b389823d868f7f6365283308ec8ac92d3ddaca31` — Scope bridge metadata to edited cable sections
+- `b2099a22b902c88b6e5cc93f6ab82d0407154bfb` — Fix manual editor UI synchronizer calls
+- `6ad737dca8ee0dc352cdc4a39aa7e4ea8494c089` — Locate swallowed Circuit Builder function after missing brace
+- `364ec3b01b734c636b09d4c96f74fd1e52b57bdf` — Trace exact unmatched editor brace boundary
 
 ## Immediate next steps
 
-1. Find the last manual-editor workflow run/commit where inline JS parsed successfully.
-2. Compare that commit to the first failing commit and isolate the smallest app diff responsible for the unmatched block / swallowed function.
-3. Fix the structural syntax issue without rolling back bridge-locality work.
+1. Compare `fcd59d...` → `c8b76...` and isolate the malformed inline-JS injection.
+2. Inspect the editor transformation source/workflow that generated `c8b76...`; prefer fixing the reproducible generator/patch rather than hand-editing four HTML copies.
+3. Repair the structural syntax issue without rolling back accepted routing work or the later bridge-locality fix.
 4. Re-run:
    - inline script parse gate
+   - browser startup
    - manual-editor behaviour regression
    - bridge-locality regression
    - Smart Route compatibility
+   - capture-transition regression
    - protected 24/7 verification
-5. Once green, continue deliberate break-testing of the editor rather than rebuilding UI that already exists.
+   - generated-copy equality checks
+5. Once green, continue deliberate break-testing of Pencil splice anchors, bridge persistence, undo/redo topology, cleanup strength, Done/open-route validation, As-Fit, and mobile/tablet behaviour.
 
 ## Pineapple continuity rule
 
