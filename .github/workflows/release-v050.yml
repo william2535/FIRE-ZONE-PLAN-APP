@@ -16,10 +16,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply v0.50 beta portal and branding
-        run: python .github/upgrade_v050_beta_portal.py
-      - name: Keep author branding clear without crowding controls
-        run: python .github/fix_v050_header_fit.py
+      - name: Apply v0.50 beta portal and branding if needed
+        run: |
+          if grep -q "versionName '0.50'" app/build.gradle; then
+            echo 'v0.50 branding already applied'
+          else
+            python .github/upgrade_v050_beta_portal.py
+          fi
+      - name: Keep author branding clear without crowding controls if needed
+        run: |
+          if grep -q 'v0.50 header fit' index.html; then
+            echo 'v0.50 header fit already applied'
+          else
+            python .github/fix_v050_header_fit.py
+          fi
       - name: Route Android download through GitHub Releases
         run: python .github/fix_v050_android_download.py
       - name: Verify v0.50 source
