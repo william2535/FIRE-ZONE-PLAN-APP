@@ -4,9 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/release-v051.yml'
       - '.github/fix_v051_circuit_grid.py'
-      - '.github/sync-beta-portal.py'
       - 'tests/circuit-grid-routing-v051.cjs'
       - 'tests/run-regressions.cjs'
 permissions:
@@ -82,49 +80,69 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Run full regressions
         run: node tests/run-regressions.cjs
+      - name: Check for an existing published APK
+        id: published_apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          if gh release view "$VERSION_TAG" --json assets --jq '.assets[].name' 2>/dev/null | grep -Fxq "$APK_NAME"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$APK_NAME is already published; this run will verify sources but will not replace the APK."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: actions/setup-java@v4
+        if: steps.published_apk.outputs.exists != 'true'
         with:
           distribution: temurin
           java-version: '17'
       - name: Install Android SDK packages
+        if: steps.published_apk.outputs.exists != 'true'
         run: |
           SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
           "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
+        if: steps.published_apk.outputs.exists != 'true'
         with:
           gradle-version: '8.11.1'
       - name: Build Android APK
+        if: steps.published_apk.outputs.exists != 'true'
         run: gradle --no-daemon assembleDebug
       - name: Update public APK mirror
+        if: steps.published_apk.outputs.exists != 'true'
         run: |
           VERSION_TAG="v${ZONE_SKETCH_VERSION}"
           APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
           mkdir -p downloads
           cp app/build/outputs/apk/debug/app-debug.apk "downloads/${APK_NAME}"
-      - name: Commit main build and synced portal
+          cp app/build/outputs/apk/debug/app-debug.apk "/tmp/${APK_NAME}"
+      - name: Commit source and synced portal
         run: |
           VERSION_TAG="v${ZONE_SKETCH_VERSION}"
           APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html "downloads/${APK_NAME}"
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html
+          if [ "${{ steps.published_apk.outputs.exists }}" != 'true' ]; then git add "downloads/${APK_NAME}"; fi
           git commit -m "Release Zone Sketch ${VERSION_TAG} clean grid-snapped Circuit Builder routing" || true
-          cp app/build/outputs/apk/debug/app-debug.apk "/tmp/${APK_NAME}"
           git stash push --include-untracked -m "${VERSION_TAG} runner build state" || true
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
-          mkdir -p app/build/outputs/apk/debug
-          cp "/tmp/${APK_NAME}" app/build/outputs/apk/debug/app-debug.apk
       - name: Publish Android APK release
+        if: steps.published_apk.outputs.exists != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           VERSION_TAG="v${ZONE_SKETCH_VERSION}"
           APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
           gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'Circuit Builder routes now follow a clean visible grid with turn hysteresis to remove accidental extra bends.'
-          gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}" --clobber
+          gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}"
       - uses: actions/upload-artifact@v4
+        if: steps.published_apk.outputs.exists != 'true'
         with:
           name: Zone-Sketch-v0.51-Grid-Routing-APK
           path: app/build/outputs/apk/debug/app-debug.apk
