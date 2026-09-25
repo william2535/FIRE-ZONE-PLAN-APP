@@ -36,6 +36,11 @@ jobs:
               if 'CB_ROUTING_STATES' not in t:
                   if old not in t: raise SystemExit(f'missing routing-state anchor in {p}')
                   t=t.replace(old,new,1)
+              resize_old="window.addEventListener('resize',()=>{if(!$('circuitBuilder').hidden){if(cbScreen==='asfit')cbDrawAsFitPreview();else if(cbScreen==='game'||cbScreen==='select'){cbCheckpointDrag(true);cbDrawBoard()}}});"
+              resize_new="function cbHandleCircuitResize(){if($('circuitBuilder').hidden)return;if(cbScreen==='asfit'){cbDrawAsFitPreview();return}if(cbScreen==='game'||cbScreen==='select'){cbCheckpointDrag(true);cbDrawBoard()}}\nwindow.addEventListener('resize',cbHandleCircuitResize);window.visualViewport?.addEventListener('resize',cbHandleCircuitResize);if(window.ResizeObserver)new ResizeObserver(()=>cbHandleCircuitResize()).observe($('cbBoardWrap'));"
+              if 'function cbHandleCircuitResize' not in t:
+                  if resize_old not in t: raise SystemExit(f'missing Circuit Builder resize anchor in {p}')
+                  t=t.replace(resize_old,resize_new,1)
               p.write_text(t)
           g=Path('app/build.gradle');gt=g.read_text().replace('versionCode 57','versionCode 58').replace("versionName '0.56'","versionName '0.57'");g.write_text(gt)
           for name in ['beta.html','download.html']:
@@ -78,6 +83,9 @@ jobs:
           grep -Fq 'function cbPruneRouteNoise' index.html
           grep -Fq 'captureGuard' index.html
           grep -Fq 'getCoalescedEvents' index.html
+          grep -Fq 'function cbHandleCircuitResize' index.html
+          grep -Fq 'visualViewport?.addEventListener' index.html
+          grep -Fq 'new ResizeObserver' index.html
           grep -Fq "'circuit-routing-state-v057'" tests/run-regressions.cjs
           grep -Fq "'circuit-aggressive-touch-v057'" tests/run-regressions.cjs
           grep -Fq 'Zone-Sketch-by-Will-v0.57.apk' beta.html
@@ -171,7 +179,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view v0.57 >/dev/null 2>&1 || gh release create v0.57 --title 'Zone Sketch v0.57 — Smart Route'
-          gh release edit v0.57 --notes 'Circuit Builder Smart Route is a routing-system generation upgrade. Raw/coalesced pointer input, swept device-hit detection and saved cable geometry are separate layers; fast sparse swipes use a forgiving device corridor, geometry intent is filtered independently, corner states are explicit, same-axis reversal noise is pruned, and a capture guard prevents cable chasing detector overshoot. The v0.56 magnetic return-to-FAP is preserved. Across the deterministic 5-viewport rough/abusive Chromium replay, route points fell 362→217, segments 292→147, corners 148→60, short legs 74→20, immediate reversals 70→15 and self-crossings 4→0, while retaining 60/60 device capture and 10/10 completion. The full 28-file regression suite, WebKit/Safari-engine replay and Android build all pass.'
+          gh release edit v0.57 --notes 'Circuit Builder Smart Route is a routing-system generation upgrade. Raw/coalesced pointer input, swept device-hit detection and saved cable geometry are separate layers; fast sparse swipes use a forgiving device corridor, geometry intent is filtered independently, corner states are explicit, same-axis reversal noise is pruned, a capture guard prevents cable chasing detector overshoot, and viewport/canvas resize now checkpoints the active route before redrawing. The v0.56 magnetic return-to-FAP is preserved. Across the deterministic 5-viewport rough/abusive Chromium replay, route points fell 362→217, segments 292→147, corners 148→60, short legs 74→20, immediate reversals 70→15 and self-crossings 4→0, while retaining 60/60 device capture and 10/10 completion. The full 28-file regression suite, WebKit/Safari-engine replay and Android build all pass.'
           gh release upload v0.57 /tmp/Zone-Sketch-by-Will-v0.57.apk --clobber
       - uses: actions/upload-artifact@v4
         with:
