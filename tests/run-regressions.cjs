@@ -1,0 +1,5 @@
+const {spawn}=require('node:child_process');
+const tests=['canvas-touch-v042','filled-symbols','survey-edit-zoom','survey-favourites-v040','grid-door-shutter-v041','zoom-beam-duplicate-v042','mode-separation-v036','favourites','survey-mode','projects','browser','floors','interactions','v020','circuit-builder-v043','circuit-builder-v046','circuit-builder-v047','circuit-stress-v048','circuit-capacity-v048'];
+let cursor=0;const failures=[];
+async function worker(){while(cursor<tests.length){const name=tests[cursor++];await new Promise(resolve=>{const p=spawn(process.execPath,[...process.execArgv,`tests/${name}.cjs`],{stdio:['ignore','pipe','pipe']}),out=[];p.stdout.on('data',d=>out.push(d));p.stderr.on('data',d=>out.push(d));const timer=setTimeout(()=>p.kill('SIGTERM'),180000);p.on('exit',code=>{clearTimeout(timer);console.log(`${code===0?'PASS':'FAIL'} ${name}`);if(code!==0){failures.push(name);console.log(Buffer.concat(out).toString())}resolve()})})}}
+Promise.all(Array.from({length:3},worker)).then(()=>{console.log(`${tests.length-failures.length}/${tests.length} regression files passed`);if(failures.length)process.exitCode=1});

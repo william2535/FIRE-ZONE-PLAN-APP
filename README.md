@@ -323,3 +323,12 @@ Plan notes can now be made smaller or larger. Select a normal Note or pinned sit
 ## Version 0.39.1 — Separate navigation and device-only surveys
 - Zone Plan retains explicit Move ON/OFF controls. Only Survey supports two-finger navigation while placing devices.
 - Survey shares the live building layout but locks all non-device objects against selection, moving and deletion. Room/note creation is hidden; floor rotation and expansion are restricted to Zone Plan.
+
+## Version 0.48 — Circuit Builder polish and stress testing
+
+- Fast sweeps catch devices between touch events. Pinching, zoom controls and app switching preserve the devices already reached.
+- Fixed stale cancelled-drag counters, unrelated pointer input, third-finger pinch changes and Circuit Builder keyboard Undo.
+- Cleaner progress strip, final-stretch rewards, real completion statistics, saved sound toggle and reduced-motion support. Completion controls fit phone landscape.
+- A changed survey blocks outdated As-Fit output and offers a confirmed route rebuild. Circuits can be removed without deleting surveyed devices.
+- The standard Android build now runs all 19 active regression files, including Circuit Builder. Successful main builds update the public APK download automatically.
+- [Testing details and limits](docs/v0.48-testing.md), including a saved/reloaded 120-device loop and twin-cable checks at 1×, 2× and 6× zoom.

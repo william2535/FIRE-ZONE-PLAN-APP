@@ -5,6 +5,12 @@ on:
     branches: [main]
   push:
     branches: [main]
+    paths-ignore:
+      - 'downloads/**'
+      - 'download.html'
+      - 'README.md'
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,21 +31,9 @@ jobs:
         run: |
           npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-          node tests/canvas-touch-v042.cjs
-          node tests/filled-symbols.cjs
-          node tests/survey-edit-zoom.cjs
-          node tests/survey-favourites-v040.cjs
-          if grep -q 'v0.41' index.html || grep -q 'v0.42' index.html; then node tests/grid-door-shutter-v041.cjs; fi
-          if grep -q 'v0.42' index.html; then node tests/zoom-beam-duplicate-v042.cjs; fi
-          node tests/mode-separation-v036.cjs
-          node tests/favourites.cjs
-          node tests/survey-mode.cjs
-          node tests/projects.cjs
-          node tests/browser.cjs
-          node tests/floors.cjs
-          node tests/interactions.cjs
-          if [ -f tests/v020.cjs ]; then node tests/v020.cjs; fi
+          node tests/run-regressions.cjs
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: Zone-Sketch-by-Will-Browser-Previews
           path: |
@@ -52,3 +46,41 @@ jobs:
           name: Zone-Sketch-by-Will-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+  publish-tested-apk:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Zone-Sketch-by-Will-APK
+          path: tested-apk
+      - name: Publish tested Android download
+        env:
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$TESTED_SHA" ]; then
+            echo 'Main has newer changes; keep this tested APK as an artifact.'
+            exit 0
+          fi
+          python - <<'PY'
+          from pathlib import Path
+          import re, shutil
+          version = re.search(r"versionName '([0-9.]+)'", Path('app/build.gradle').read_text()).group(1)
+          apk = Path('tested-apk/app-debug.apk')
+          assert apk.is_file()
+          Path('downloads').mkdir(exist_ok=True)
+          shutil.copyfile(apk, 'downloads/Zone-Sketch-by-Will-v'+version+'.apk')
+          p = Path('download.html')
+          p.write_text(re.sub(r'v0\.\d+(?:\.\d+)?', 'v'+version, p.read_text()))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add downloads/Zone-Sketch-by-Will-v*.apk download.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Publish tested Circuit Builder Android download [release-assets]'
+          git push origin HEAD:main
