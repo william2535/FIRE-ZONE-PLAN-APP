@@ -38,6 +38,13 @@ def patch(t):
     if old not in t: raise SystemExit('drag intent initialisation anchor missing')
     t=t.replace(old,new,1)
 
+    # Keep the long-standing Twin Cable cue engineers already recognise, while also advertising
+    # that the displayed cable is now smart-routed rather than a literal finger trace.
+    old="challenge?'SMART GRID '+gridStep()+' · NO CROSSING':'SMART ROUTE · GRID '+gridStep()"
+    new="challenge?'SMART GRID '+gridStep()+' · NO CROSSING':'⇄ TWIN CABLE · SMART ROUTE · GRID '+gridStep()"
+    if old not in t: raise SystemExit('pair badge compatibility anchor missing')
+    t=t.replace(old,new,1)
+
     return t
 
 base=paths[0].read_text();updated=patch(base)
