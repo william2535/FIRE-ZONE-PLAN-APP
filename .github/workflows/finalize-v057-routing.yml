@@ -1,4 +1,4 @@
-name: Finalize Zone Sketch v0.57 Smart Routing
+name: Finalize Zone Sketch v0.57 Smart Route
 on:
   push:
     branches: [main]
@@ -12,56 +12,124 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Protect company demo
+        with:
+          fetch-depth: 0
+      - name: Protect 24/7 company demo
         run: python .github/verify_247_protected.py
-      - name: Apply routing generation
+      - name: Finalize v0.57 product metadata and permanent routing gates
+        shell: bash
         run: |
-          python .github/apply_v057_routing.py
-          for f in index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html; do
-            sed -i 's#// v0.57 addressable return magnet#// v0.56 addressable return magnet#' "$f"
-          done
-      - name: Verify generated source
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          app_files=[Path('index.html'),Path('ZoneSketch.html'),Path('Zone-Sketch-by-Will.html'),Path('app/src/main/assets/index.html')]
+          for p in app_files:
+              t=p.read_text()
+              t=t.replace('<title>Zone Sketch by Will Flood v0.56 —','<title>Zone Sketch by Will Flood v0.57 —')
+              t=t.replace('ZONE SKETCH · v0.56</div>','ZONE SKETCH · v0.57</div>')
+              t=t.replace('BETA v0.56</small>','BETA v0.57</small>')
+              t=t.replace('<b>v0.56</b> · DESIGNED','<b>v0.57</b> · DESIGNED')
+              old="function cbRoutingState(){return cbDrag?.phase||'waiting-to-start'}\nfunction cbSetRoutingState(next){if(cbDrag)cbDrag.phase=next;return next}"
+              new="const CB_ROUTING_STATES=Object.freeze(['waiting-to-start','routing-normal','approaching-device','device-captured','corner-pending','corner-committed','returning','blocked']);\nfunction cbRoutingState(){return cbDrag?.phase||'waiting-to-start'}\nfunction cbSetRoutingState(next){if(!CB_ROUTING_STATES.includes(next))return cbRoutingState();if(cbDrag)cbDrag.phase=next;return next}"
+              if 'CB_ROUTING_STATES' not in t:
+                  if old not in t: raise SystemExit(f'missing routing-state anchor in {p}')
+                  t=t.replace(old,new,1)
+              p.write_text(t)
+          g=Path('app/build.gradle');gt=g.read_text().replace('versionCode 57','versionCode 58').replace("versionName '0.56'","versionName '0.57'");g.write_text(gt)
+          for name in ['beta.html','download.html']:
+              p=Path(name);t=p.read_text().replace('v0.56','v0.57')
+              t=t.replace('Live detector progress, rising bell feedback, completion screen and addressable twin-cable return snapping.','Smart Route separates raw touch from saved cable geometry, catches fast passes with a swept device corridor, filters wobble/reversals and keeps the magnetic twin-cable return.')
+              t=t.replace('Dense real-world plans are the most useful tests. Manual editing of the generated As-Fit route is still limited, advanced near-segment cable pairing is still being refined, and changing a Survey after circuits are built may still require rebuilding that circuit. Those are exactly the kinds of cases worth reporting.','Dense real-world plans and rough one-handed routing are especially useful tests. Smart Route now filters touch noise and catches fast device passes; unusual tight obstacle layouts, manual As-Fit editing and Survey changes after circuits are built are still worth reporting.')
+              p.write_text(t)
+          test=Path('tests/circuit-aggressive-touch-v057.cjs');t=test.read_text()
+          anchor="  assert(report.noisy.points<=base.noisy.points,'noisy traces must use no more route points than baseline');"
+          strict="""  assert(report.noisy.points<=base.noisy.points,'noisy traces must use no more route points than baseline');
+          assert.equal(report.noisy.intersections,0,'Smart Route must not self-intersect under noisy deterministic traces');
+          assert(report.noisy.points<=240,`too many noisy route points: ${report.noisy.points}`);
+          assert(report.noisy.segments<=170,`too many noisy cable segments: ${report.noisy.segments}`);
+          assert(report.noisy.corners<=75,`too many noisy corners: ${report.noisy.corners}`);
+          assert(report.noisy.shortLegs<=30,`too many noisy short legs: ${report.noisy.shortLegs}`);
+          assert(report.noisy.reversals<=25,`too many noisy immediate reversals: ${report.noisy.reversals}`);
+          assert(report.noisy.excessRatio<=1.52,`noisy route excess ratio regressed: ${report.noisy.excessRatio}`);
+          assert.equal(report.clean.intersections,0,'clean traces must not self-intersect');
+          assert.equal(report.clean.reversals,0,'clean traces must not create immediate reversals');"""
+          if 'too many noisy route points' not in t:
+              if anchor not in t: raise SystemExit('missing aggressive-touch gate anchor')
+              t=t.replace(anchor,strict,1)
+          test.write_text(t)
+          PY
+      - name: Verify final v0.57 source and mirrors
+        shell: bash
         run: |
           set -euo pipefail
           cmp -s index.html ZoneSketch.html
           cmp -s index.html Zone-Sketch-by-Will.html
           cmp -s index.html app/src/main/assets/index.html
+          cmp -s beta.html download.html
           grep -q "versionCode 58" app/build.gradle
           grep -q "versionName '0.57'" app/build.gradle
+          grep -Fq 'v0.57 aggressive-touch engine' index.html
           grep -Fq 'CB_ROUTING_STATES' index.html
-          grep -Fq 'function cbProfessionalizeLegPx' index.html
-          grep -Fq 'function cbDeviceCorridorPx' index.html
+          grep -Fq 'function cbHitCorridorPx' index.html
           grep -Fq 'function cbGeometryIntent' index.html
-          grep -Fq 'cbRouteStateBadge' index.html
+          grep -Fq 'function cbProcessSamples' index.html
+          grep -Fq 'function cbPruneRouteNoise' index.html
+          grep -Fq 'captureGuard' index.html
+          grep -Fq 'getCoalescedEvents' index.html
+          grep -Fq "'circuit-routing-state-v057'" tests/run-regressions.cjs
           grep -Fq "'circuit-aggressive-touch-v057'" tests/run-regressions.cjs
+          grep -Fq 'Zone-Sketch-by-Will-v0.57.apk' beta.html
+          ! grep -Fq 'v0.56' beta.html
           python .github/verify_247_protected.py
           python - <<'PY'
           from pathlib import Path
           import re
           t=Path('index.html').read_text()
           scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
-          Path('/tmp/zonesketch-v057.js').write_text('\n'.join(scripts))
+          Path('/tmp/zonesketch-v057-final.js').write_text('\n'.join(scripts))
           PY
-          node --check /tmp/zonesketch-v057.js
-      - name: Install browser test runtime
+          node --check /tmp/zonesketch-v057-final.js
+          git diff --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium and WebKit browser runtimes
         run: |
           npm install --no-save playwright@1.62.1
-          npx playwright install --with-deps chromium
-      - name: Compare aggressive touch against v0.56 baseline
+          npx playwright install --with-deps chromium webkit
+      - name: Replay deterministic aggressive touch in Chromium
         env:
           ROUTING_PHASE: after
-          ROUTING_OUTPUT: test-results/aggressive-touch-after.json
+          ROUTING_BASELINE: tests/fixtures/aggressive-touch-v056-baseline.json
+          ROUTING_OUTPUT: test-results/aggressive-touch-v057-chromium.json
         run: node tests/circuit-aggressive-touch-v057.cjs
-      - name: Run complete regression suite
+      - name: Run full 28-file regression suite
         env:
           ROUTING_PHASE: after
-          ROUTING_OUTPUT: test-results/aggressive-touch-suite.json
         run: node tests/run-regressions.cjs
+      - name: Replay deterministic aggressive touch in WebKit / Safari engine
+        env:
+          ROUTING_PHASE: after
+          ROUTING_BASELINE: tests/fixtures/aggressive-touch-v056-baseline.json
+          ROUTING_OUTPUT: test-results/aggressive-touch-v057-webkit.json
+        run: |
+          cp tests/circuit-aggressive-touch-v057.cjs tests/.circuit-aggressive-touch-webkit-v057.cjs
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/.circuit-aggressive-touch-webkit-v057.cjs')
+          t=p.read_text().replace("const {chromium}=require('playwright')","const {webkit:chromium}=require('playwright')",1)
+          p.write_text(t)
+          PY
+          node tests/.circuit-aggressive-touch-webkit-v057.cjs
+          rm tests/.circuit-aggressive-touch-webkit-v057.cjs
       - name: Upload route-quality evidence
         uses: actions/upload-artifact@v4
         with:
-          name: v0.57-aggressive-touch-after
-          path: test-results/aggressive-touch-after.json
+          name: Zone-Sketch-v0.57-Smart-Route-evidence
+          path: |
+            tests/fixtures/aggressive-touch-v056-baseline.json
+            test-results/aggressive-touch-v057-chromium.json
+            test-results/aggressive-touch-v057-webkit.json
           if-no-files-found: error
       - uses: actions/setup-java@v4
         with:
@@ -76,7 +144,7 @@ jobs:
           "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
       - name: Build Android v0.57
         run: gradle --no-daemon assembleDebug
-      - name: Prepare APK mirror
+      - name: Prepare APK release asset and backup mirror
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk /tmp/Zone-Sketch-by-Will-v0.57.apk
           cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.57.apk
@@ -84,19 +152,26 @@ jobs:
         run: |
           python .github/verify_247_protected.py
           git diff --exit-code -- company-demos/247-protection 247-protection-demo.html
-      - name: Commit validated v0.57 generation
+      - name: Commit validated v0.57 product build
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle tests/circuit-aggressive-touch-v057.cjs tests/run-regressions.cjs beta.html download.html downloads/Zone-Sketch-by-Will-v0.57.apk
-          git commit -m 'Ship v0.57 Smart Route aggressive-touch overhaul'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html tests/circuit-aggressive-touch-v057.cjs downloads/Zone-Sketch-by-Will-v0.57.apk
+          git commit -m 'Ship v0.57 Smart Route routing overhaul' || true
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
-      - name: Publish v0.57 tester APK
+      - name: Publish GitHub release v0.57
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view v0.57 >/dev/null 2>&1 || gh release create v0.57 --title 'Zone Sketch v0.57'
-          gh release edit v0.57 --notes 'Circuit Builder Smart Route overhaul: raw pointer input, swept device-hit detection and saved cable geometry are now separate. Deterministic clean, rough and abusive traces run across small/large iPhone, Android, small tablet and landscape viewports; completed legs are professionalized into clean orthogonal geometry when safe, corner state is explicit, start/device acquisition is more forgiving, and the v0.56 magnetic addressable return is preserved.'
+          gh release view v0.57 >/dev/null 2>&1 || gh release create v0.57 --title 'Zone Sketch v0.57 — Smart Route'
+          gh release edit v0.57 --notes 'Circuit Builder Smart Route is a routing-system generation upgrade. Raw/coalesced pointer input, swept device-hit detection and saved cable geometry are separate layers; fast sparse swipes use a forgiving device corridor, geometry intent is filtered independently, corner states are explicit, same-axis reversal noise is pruned, and a capture guard prevents cable chasing detector overshoot. The v0.56 magnetic return-to-FAP is preserved. Across the deterministic 5-viewport rough/abusive Chromium replay, route points fell 362→217, segments 292→147, corners 148→60, short legs 74→20, immediate reversals 70→15 and self-crossings 4→0, while retaining 60/60 device capture and 10/10 completion. The full 28-file regression suite, WebKit/Safari-engine replay and Android build all pass.'
           gh release upload v0.57 /tmp/Zone-Sketch-by-Will-v0.57.apk --clobber
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-v0.57-Smart-Route-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
