@@ -1,0 +1,87 @@
+name: Release Zone Sketch v0.50 Beta Portal
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v050.yml'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v0.50 beta portal and branding
+        run: python .github/upgrade_v050_beta_portal.py
+      - name: Verify v0.50 source
+        shell: bash
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 51" app/build.gradle
+          grep -q "versionName '0.50'" app/build.gradle
+          grep -q 'WILL FLOOD' index.html
+          grep -q 'betaPortalBtn' index.html
+          grep -q 'openBetaPortal' app/src/main/java/com/zonesketch/app/MainActivity.java
+          grep -q 'Beta Tester Portal' beta.html
+          grep -q 'Zone Sketch by Will Flood' manifest.webmanifest
+          test -f assets/zone-sketch-by-will-flood-wordmark.svg
+          test -f assets/zone-sketch-beta-tester-badge.svg
+          test -f assets/zone-sketch-app-icon.svg
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v050.js').write_text('\n'.join(scripts))
+          assert 'v0.50' in t
+          assert 'Designed &amp; built by <strong>Will Flood</strong>' in t
+          assert 'manifest.webmanifest' in t
+          print('v0.50 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v050.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run regressions and beta portal suite
+        run: |
+          node tests/run-regressions.cjs
+          node tests/beta-portal-v050.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build v0.50 Android APK
+        run: gradle --no-daemon assembleDebug
+      - name: Update public v0.50 APK
+        run: |
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.50.apk
+      - name: Commit v0.50 beta release
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/src/main/java/com/zonesketch/app/MainActivity.java app/build.gradle beta.html download.html manifest.webmanifest assets/zone-sketch-app-icon.svg assets/zone-sketch-by-will-flood-wordmark.svg assets/zone-sketch-beta-tester-badge.svg downloads/Zone-Sketch-by-Will-v0.50.apk
+          git commit -m 'Release Zone Sketch v0.50 beta tester portal by Will Flood' || exit 0
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/zone-sketch-v050.apk
+          git stash push --include-untracked -m 'v0.50 runner build state' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          mkdir -p app/build/outputs/apk/debug
+          cp /tmp/zone-sketch-v050.apk app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-v0.50-Beta-Tester-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
