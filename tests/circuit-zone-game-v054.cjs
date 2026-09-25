@@ -13,7 +13,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  await new Promise(r=>server.once('listening',r));const browser=await chromium.launch({headless:true});
  try{
   const p=await browser.newPage({viewport:{width:1100,height:800}}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Zone game test':undefined));
-  await p.goto('http://127.0.0.1:'+server.address().port+'/');assert.match(await p.title(),/v0\.(?:54|55|56)/);
+  await p.goto('http://127.0.0.1:'+server.address().port+'/');assert.match(await p.title(),/v0\.(?:54|55|56|57)/);
   await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
   const xy=async(x,y)=>p.locator('#canvas').evaluate((c,{x,y})=>{const b=c.getBoundingClientRect(),w=3200,h=2000,s=Math.min((b.width-48)/w,(b.height-48)/h);return{x:b.x+b.width/2+(x-.5)*w*s,y:b.y+b.height/2+(y-.5)*h*s}},{x,y});
   const drag=async(a,b)=>{await p.mouse.move(a.x,a.y);await p.mouse.down();await p.mouse.move(b.x,b.y,{steps:8});await p.mouse.up()};
@@ -41,6 +41,6 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   const history=await p.evaluate(id=>zoneGameTest.history(id),nodeInfo.deviceId);
   assert(history.history>=1,'completed previous zone must remain on the challenge board');assert(history.owner,'previous zone device must retain its zone colour owner');assert(history.obstacles>=1,'previous zone cable must become a no-cross obstacle');
   assert.deepEqual(errors,[],'No Zone Challenge runtime errors');
-  console.log('PASS: v0.54-v0.56 Zone Challenge uses zone colours, keeps previous zones visible and blocks crossing geometry');
+  console.log('PASS: v0.54-v0.57 Zone Challenge uses zone colours, keeps previous zones visible and blocks crossing geometry');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
