@@ -14,20 +14,9 @@ Continue the v0.58 Circuit Builder / manual editor hardening work without waitin
 ## What is already established
 
 - Aggressive-touch / capture-transition work had been accepted sufficiently to move on to manual editor hardening.
-- The branch already contains a real manual editor implementation rather than just UI:
-  - Edit mode
-  - Pencil / Bin
-  - Undo / Redo
-  - Bridge
-  - Cleanup control
-  - Done validation
-  - persisted `editDraft`
-  - As-Fit blocked while an unfinished edit exists
-  - bridge rendering into As-Fit
-  - staged replacement geometry followed by deleting the old span to splice it in
-  - crossing/overlap validation
+- The branch already contains a real manual editor implementation rather than just UI: Edit, Pencil/Bin, Undo/Redo, Bridge, Cleanup, Done validation, persisted `editDraft`, As-Fit blocking for unfinished edits, bridge rendering, staged replacement/splice, and crossing/overlap validation.
 - A concrete editor defect was found: deleting one local cable section could remove bridge metadata too broadly on the same detector-to-detector leg.
-- Bridge-locality regression work was added and bridge bookkeeping was changed so bridge markers are intended to be scoped to the edited geometric span/segment rather than the whole leg.
+- Bridge-locality regression work and local bridge bookkeeping changes are already on the branch and must be preserved.
 
 ## Current blocker
 
@@ -35,73 +24,69 @@ The manual-editor branch currently contains malformed inline JavaScript and cann
 
 Observed failure:
 
-- `SyntaxError: Unexpected token ')'` at the closing `})();`
-- Browser startup never reaches the ready state.
+- `SyntaxError: Unexpected token ')'` at final `})();`
+- Browser startup never reaches ready state.
 - Protected 24/7 verification continues to pass.
-- Simple brace-depth diagnostics can be confused by template-literal `${...}` tokens, so do not blindly add a brace near the wall-merge routine.
 
-## Confirmed green → bad boundary
-
-Commit-level isolation is now complete enough to stop walking history blindly.
+## Confirmed baseline
 
 ### Last confirmed good app
 
 `fcd59d236411c41e48383b774fbc632c4ebf0e16` — `Apply Pineapple v0.58 editor transformation`
 
-CI attached to this exact SHA was green:
+CI on this SHA:
+- Capture transition run `36191711835`: PASS
+- Routing compatibility run `36191711836`: PASS
+- Editor apply run `36191711987`: PASS and generated the editor commit.
 
-- Capture-transition workflow run `36191711835`: **PASS**
-- Routing-compatibility workflow run `36191711836`: **PASS**
-- Editor-apply workflow run `36191711987`: **PASS** and generated the next app commit.
-
-### First app-changing / first-bad candidate
+### Generated editor commit under investigation
 
 `c8b76b265702b6667fe780fca360c7e68393ce0a` — `Add manual Circuit Builder route editor core`
 
-This is the first commit in the isolated chain that actually changes the four app HTML copies. It adds the v0.58 manual editor UI and editor core. Its parent is the green `fcd59d...` commit above.
+It changes the four app HTML copies and was generated from `.github/pineapple_v058_editor_patch.py`.
 
-Everything between `c8b76...` and the later failing editor runs is either editor follow-up/hotfix logic, tests, workflows, or diagnostics; none provides an earlier app-changing candidate than `c8b76...`.
+## Exact syntax isolation result
 
-### Later failure evidence
+A deterministic hunk-by-hunk parser bisect was added:
 
-- Manual-editor run 1 on `ab32804...` failed before generation because the old zoom-dock marker was already gone; the editor had already been injected.
-- Manual-editor runs 4–9 remained red.
-- Run 5 timed out waiting for app readiness.
-- Run 6 explicitly reported `PAGEERROR Unexpected token ')'` during startup.
-- Current syntax gate reproduces the same final-`})();` parse failure.
+- Script: `tests/circuit-editor-hunk-bisect-v058.py`
+- Script commit: `502259a7477a377cb858ae99894365406bbc43c0`
+- Workflow wiring commit: `230342111fe594d319873ffb6d17f629f86caca3`
+- Manual editor workflow run: `36195630175`
+- Job: `108270710594`
 
-## Useful commits / checkpoints
+Result:
 
-- `fcd59d236411c41e48383b774fbc632c4ebf0e16` — last confirmed green app / editor transformation trigger
-- `c8b76b265702b6667fe780fca360c7e68393ce0a` — first app-changing editor-core commit; primary syntax-break candidate
-- `f7a8bf2732c1e4b59be91d975b7612a713adb6cc` — Add bridge-locality regression to manual editor
-- `b389823d868f7f6365283308ec8ac92d3ddaca31` — Scope bridge metadata to edited cable sections
-- `b2099a22b902c88b6e5cc93f6ab82d0407154bfb` — Fix manual editor UI synchronizer calls
-- `6ad737dca8ee0dc352cdc4a39aa7e4ea8494c089` — Locate swallowed Circuit Builder function after missing brace
-- `364ec3b01b734c636b09d4c96f74fd1e52b57bdf` — Trace exact unmatched editor brace boundary
+- Known-good `fcd59d...` parses cleanly.
+- Original editor diff contains 8 hunks.
+- Hunks 1–5: PASS.
+- **Hunk 6 is the first syntax-breaking hunk.**
+- Hunk header: `@@ -893,12 +899,57 @@ ...`
+- This is the large editor-engine insertion beginning with `cbEditClone`, `cbEditBoardClose`, `cbEditSimplifyBoard`, `cbEditGapMatches`, `cbEditDraft`, `cbEditVisibleSegments`, `cbEditEnsureDraft`, etc., around the `cbLegSegments` / board-routing area.
+- Failure immediately after applying hunk 6: final `})();` gives `Unexpected token ')'`.
+- Normal parser gate reproduces the same failure.
+
+Important correction: do not blame the landing-page or `cbOpenCircuit` replacement first; those are in earlier/later hunks and hunks 1–5 already parse. The syntax fault is inside hunk 6 itself.
 
 ## Immediate next steps
 
-1. Compare `fcd59d...` → `c8b76...` and isolate the malformed inline-JS injection.
-2. Inspect the editor transformation source/workflow that generated `c8b76...`; prefer fixing the reproducible generator/patch rather than hand-editing four HTML copies.
-3. Repair the structural syntax issue without rolling back accepted routing work or the later bridge-locality fix.
+1. Split hunk 6 into smaller function-level chunks and run syntax checking after each group to identify the exact malformed editor function/block.
+2. Fix the reproducible editor patch source rather than hand-editing four HTML copies where possible.
+3. Apply a small repair to the current branch while preserving later bridge-locality/editor improvements.
 4. Re-run:
-   - inline script parse gate
+   - inline script parser
    - browser startup
-   - manual-editor behaviour regression
-   - bridge-locality regression
+   - manual editor behaviour + bridge locality
    - Smart Route compatibility
-   - capture-transition regression
+   - capture/aggressive-touch/return-magnet gates
    - protected 24/7 verification
-   - generated-copy equality checks
-5. Once green, continue deliberate break-testing of Pencil splice anchors, bridge persistence, undo/redo topology, cleanup strength, Done/open-route validation, As-Fit, and mobile/tablet behaviour.
+   - generated-copy equality
+5. Once green, continue deliberate break-testing of Pencil splice anchors, bridge persistence, undo/redo topology, cleanup strength, Done/open-route validation, As-Fit, and phone/tablet behaviour.
 
 ## Pineapple continuity rule
 
-From this point onward:
-
 - Save meaningful progress to the branch continuously.
 - Update this checkpoint before risky structural edits.
-- Update it again after important CI outcomes or when the active blocker changes.
+- Update it after important CI outcomes or whenever the active blocker changes.
 - Prefer small reproducible patch/generator commits over unsaved broad changes.
 - Never leave a long investigation existing only in chat state.
