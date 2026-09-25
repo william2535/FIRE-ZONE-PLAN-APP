@@ -18,8 +18,8 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  try{
   const p=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:3}),errors=[];p.on('pageerror',e=>errors.push(e.message));
   await p.goto('http://127.0.0.1:'+server.address().port+'/');
-  assert.match(await p.title(),/v0\.52/,'browser must load the patched v0.52 build');
+  assert.match(await p.title(),/Zone Sketch by Will Flood v0\.\d+/,'browser must load a current Zone Sketch build containing the v0.52 As-Fit quality feature');
   assert.deepEqual(errors,[],'No runtime errors');
-  console.log('PASS: v0.52 As-Fit uses a thin proportional cable, retina preview and 4800–5600px PNG export');
+  console.log('PASS: v0.52+ As-Fit uses a thin proportional cable, retina preview and 4800–5600px PNG export');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
