@@ -1,7 +1,7 @@
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
-const phase=process.env.ROUTING_PHASE||'baseline';
-const baselinePath=process.env.ROUTING_BASELINE||'test-results/aggressive-touch-baseline.json';
+const phase=process.env.ROUTING_PHASE||(fs.readFileSync('index.html','utf8').includes('v0.57 aggressive-touch engine')?'after':'baseline');
+const baselinePath=process.env.ROUTING_BASELINE||'tests/fixtures/aggressive-touch-v056-baseline.json';
 const outPath=process.env.ROUTING_OUTPUT||`test-results/aggressive-touch-${phase}.json`;
 const expose=`window.cbAggressiveTest={
  read:()=>JSON.parse(JSON.stringify({c:cbCircuit,drag:cbDrag,view:cbView,screen:cbScreen,state:typeof cbRoutingState==='function'?cbRoutingState():(cbDrag?'routing':'waiting-to-start')})),
