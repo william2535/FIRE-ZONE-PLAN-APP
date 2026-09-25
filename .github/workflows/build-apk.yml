@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify locked 24/7 Protection build
+        run: python .github/verify_247_protected.py
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
