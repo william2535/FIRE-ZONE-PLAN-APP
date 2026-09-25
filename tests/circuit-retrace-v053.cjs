@@ -16,7 +16,7 @@ const source=[
  fn('cbRouteGridStep','cbAppendDrag')
 ].join('\n');
 
-const ctx={console,Math,Number,CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:1.45,cbView:{scale:1},cbCircuit:{type:'conventional',legs:[]},cbDrag:null,cbBoardPx:p=>({...p})};
+const ctx={console,Math,Number,CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:1.45,cbView:{scale:1},cbCircuit:{type:'conventional',legs:[]},cbDrag:null,cbBoardPx:p=>({...p}),cbSelectBounds:null,cbFieldGridScreenStep:()=>({x:24,y:24})};
 vm.createContext(ctx);vm.runInContext(source,ctx);
 
 // Simulate the exact field case: a completed horizontal leg ends at a detector, then the
