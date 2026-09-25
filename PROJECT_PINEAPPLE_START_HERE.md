@@ -8,21 +8,23 @@
 
 Do **not** start by guessing from old chat messages. Read this file, then read `.github/PROJECT_PINEAPPLE_CHECKPOINT.md`, then inspect the latest CI for the branch head.
 
-## Latest known-good major milestone
+## Latest deployed major milestone
 
 **Pineapple v0.58 — Manual Editor Core Green**
 
-Last fully proven green app milestone:
+Stable web branch: `main`
 
-`6fbd5639df51c6b2b6be892a104c210df47519c2`
+Deployed web milestone commit:
 
-Current web-milestone candidate after synchronising the visible v0.58 label across all generated app copies:
+`89eee3561d652f510458a172151d1d1cdb849dfd`
 
-`f941d9fdf98c453708556e5eef8d7907d34d0ae0`
+Milestone PR: `#3 — Publish Pineapple v0.58 web milestone`
 
-This START HERE checkpoint commit intentionally triggers the normal Pineapple CI against that candidate before web promotion.
+The exact pre-merge Pineapple checkpoint that passed the release gates was:
 
-At the proven green milestone:
+`5f4ec568487216648151f1cc84f0a6283649c2d8`
+
+Release-gate results on that checkpoint:
 
 - inline JavaScript parser: PASS
 - clean browser startup: PASS
@@ -38,21 +40,24 @@ At the proven green milestone:
 - Smart Route compatibility: PASS
 - protected 24/7 verification: PASS
 - generated HTML copy equality: PASS
+- visible browser/app title: v0.58
 
 A real Bridge-mode coordinate-shadowing defect is also repaired in both generator source and generated app: bridge crossings use `hit` as the callback variable so numeric canvas height `h` is preserved.
 
 ## LIVE WEB STATE
 
-- Stable web branch: `main`
-- Current Pineapple v0.58 candidate: pending final CI before promotion
-- After promotion, record the exact deployed `main` SHA here immediately.
+- **LIVE STABLE WEB:** `main` @ `89eee3561d652f510458a172151d1d1cdb849dfd`
+- **DEVELOPMENT / CONTINUOUS SAVE:** `project-pineapple-v058`
+- Never assume the Pineapple branch is live. Only a recorded major-milestone promotion to `main` is the live web state.
 
 ## NEXT EXACT STEP
 
-1. Confirm normal Pineapple editor/routing/capture CI is green on this checkpointed v0.58 candidate.
-2. Promote the known-good milestone to `main` for real-device web testing.
-3. Record the deployed `main` SHA here and in `.github/PROJECT_PINEAPPLE_CHECKPOINT.md`.
-4. Continue on Pineapple with a dedicated real-crossing Bridge regression and phone/tablet break-testing.
+1. Continue on `project-pineapple-v058`, not `main`.
+2. Add a dedicated real-crossing Bridge regression.
+3. Prove bridge marker coordinates are finite and survive staged replacement, splice, Done/save, reopen and redraw.
+4. Break-test manual editing across small iPhone, large iPhone, Android phone, small tablet and landscape/desktop viewports, including zoomed-in/out and awkward/fast/shaky input.
+5. Keep routing/capture/editor/protected-24-7/generated-copy gates green.
+6. At the next coherent green major milestone, promote that checkpoint to `main` and replace the LIVE STABLE WEB SHA above.
 
 ## Continuous-save rule
 
@@ -61,7 +66,7 @@ Operation Pineapple must never rely on chat state alone.
 - Commit every meaningful logical change to `project-pineapple-v058` as it is completed.
 - Commit before risky structural edits.
 - Update `.github/PROJECT_PINEAPPLE_CHECKPOINT.md` whenever the active blocker, test result, or next step changes materially.
-- Keep this START HERE file short and current: branch, latest known-good milestone, live-web state and next exact step.
+- Keep this START HERE file short and current: working branch, live-web SHA, latest known-good milestone and next exact step.
 - Prefer small reproducible changes over one giant unsaved edit.
 - Never leave a long investigation only in conversation history.
 
@@ -81,9 +86,9 @@ When a major milestone is reached:
 This gives two layers:
 
 - **Pineapple branch:** continuous saved development/checkpoints.
-- **Web app / `main`:** stable major milestones that are useful to test on real iPhone/Android hardware.
+- **Web app / `main`:** stable major milestones for real iPhone/Android testing.
 
-## How to recognise a major milestone
+## What counts as a major milestone
 
 Publish to web when a coherent chunk is genuinely usable, for example:
 
