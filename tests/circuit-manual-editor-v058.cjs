@@ -17,6 +17,7 @@ const expose=`window.cbEditorTest={
  move:p=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);cbEditMoveStroke(q,r.width,r.height)},
  finish:(anchor)=>{const r=$('cbCanvas').getBoundingClientRect();return cbEditFinishStroke(anchor,r.width,r.height)},
  del:(legIndex,segmentIndex)=>cbEditDeleteSegment({legIndex,segmentIndex}),
+ setBridges:bridges=>{const d=cbEditEnsureDraft();d.bridges=JSON.parse(JSON.stringify(bridges||[]));persist();cbDrawBoard();return d.bridges.length},
  undo:()=>cbEditUndo(),redo:()=>cbEditRedo(),done:()=>cbEditDone(),
  clean:(raw,start,end,strength)=>{const r=$('cbCanvas').getBoundingClientRect(),toPx=p=>cbBoardPx(p,r.width,r.height),pts=cbEditCleanStroke(raw.map(toPx),toPx(start),toPx(end),r.width,r.height,strength);return pts.map(p=>cbPxBoard(p,r.width,r.height))}
 };`;
@@ -27,6 +28,12 @@ function orthogonal(points){return points.every((p,i)=>!i||Math.abs(p.x-points[i
  const page=await browser.newPage({viewport:{width:768,height:1024}});page.on('dialog',d=>d.accept());await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.evaluate(async()=>{document.querySelector('#projectsHome').hidden=true;await cbEditorTest.seed()});await page.waitForTimeout(50);
  for(const id of ['cbEditToggle','cbEditBar','cbEditPencil','cbEditBin','cbEditUndo','cbEditRedo','cbEditBridge','cbEditOptions','cbEditClean','cbEditDone'])assert(await page.locator('#'+id).count(),`missing editor UI #${id}`);
  let s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit?.active,'edit session must start');assert(s.c.editDraft,'edit draft must persist on circuit');assert(/EDITING/.test(s.status),'editing state must be obvious');
+ // Local cable surgery must only remove a bridge marker that sits on the deleted section.
+ const bridgePts=s.c.editDraft.legs[0].points,mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+ const localBridge={legIndex:0,point:mid(bridgePts[0],bridgePts[1]),axis:'h'},remoteBridge={legIndex:0,point:mid(bridgePts[3],bridgePts[4]),axis:'h'};
+ await page.evaluate(b=>cbEditorTest.setBridges(b),[localBridge,remoteBridge]);
+ await page.evaluate(()=>cbEditorTest.del(0,0));s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.bridges.length,1,'deleting one segment must preserve unrelated bridges on the same leg');assert.deepEqual(s.c.editDraft.bridges[0].point,remoteBridge.point,'the unrelated bridge marker must remain exactly where it was');
+ await page.evaluate(()=>cbEditorTest.undo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.bridges.length,2,'undo must restore both bridge markers exactly');await page.evaluate(()=>cbEditorTest.setBridges([]));
  const pts=s.c.editDraft.legs[0].points,start={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2},end={x:(pts.at(-2).x+pts.at(-1).x)/2,y:(pts.at(-2).y+pts.at(-1).y)/2};
  const a=await page.evaluate(p=>cbEditorTest.anchor(p),start),b=await page.evaluate(p=>cbEditorTest.anchor(p),end);assert(a&&b,'cable anchors must be hittable');
  await page.evaluate(({a,start})=>cbEditorTest.start(a,start),{a,start});
@@ -40,5 +47,5 @@ function orthogonal(points){return points.every((p,i)=>!i||Math.abs(p.x-points[i
  await page.evaluate(()=>cbEditorTest.undo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,0,'undo must restore exact connected state');await page.evaluate(()=>cbEditorTest.redo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,1,'redo must restore gap');const rejected=await page.evaluate(()=>cbEditorTest.done());assert.equal(rejected,false,'Done must reject open route');await page.evaluate(()=>cbEditorTest.undo());const done=await page.evaluate(()=>cbEditorTest.done());assert.equal(done,true,'Done should accept repaired route');s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft,null,'valid Done removes draft');assert.equal(s.c.complete,true,'valid Done restores complete');
  // Cleanup is post-stroke geometry: stronger settings must not create more saved points and all outputs stay orthogonal.
  const raw=[{x:.2,y:.2},{x:.22,y:.24},{x:.24,y:.19},{x:.27,y:.25},{x:.30,y:.20},{x:.34,y:.24},{x:.38,y:.2}],cs=raw[0],ce=raw.at(-1),low=await page.evaluate(({raw,cs,ce})=>cbEditorTest.clean(raw,cs,ce,10),{raw,cs,ce}),high=await page.evaluate(({raw,cs,ce})=>cbEditorTest.clean(raw,cs,ce,90),{raw,cs,ce});assert(orthogonal(low)&&orthogonal(high),'cleanup output must remain orthogonal');assert(high.length<=low.length,'strong cleanup must be at least as simple as light cleanup');
- console.log(`EDITOR_CLEANUP low=${low.length} high=${high.length}`);console.log('PASS: v0.58 manual editor stages replacement, deletes locally, exposes route-open state, undoes/redoes and validates Done');
+ console.log(`EDITOR_CLEANUP low=${low.length} high=${high.length}`);console.log('PASS: v0.58 manual editor stages replacement, preserves unrelated bridges, deletes locally, exposes route-open state, undoes/redoes and validates Done');
  }finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exit(1)});
