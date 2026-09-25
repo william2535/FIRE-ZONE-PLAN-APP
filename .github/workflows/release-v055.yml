@@ -1,0 +1,148 @@
+name: Release Zone Sketch v0.55 Shared Survey Grid
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/fix_v055_shared_survey_grid.py'
+      - '.github/verify_247_protected.py'
+      - 'tests/circuit-survey-grid-v055.cjs'
+      - '.github/workflows/release-v055.yml'
+permissions:
+  contents: write
+env:
+  ZONE_SKETCH_VERSION: '0.55'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify locked 24/7 Protection build before release
+        run: python .github/verify_247_protected.py
+      - name: Apply v0.55 shared Survey and Circuit field grid
+        run: |
+          if grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle; then
+            echo "v${ZONE_SKETCH_VERSION} already applied"
+          else
+            python -m py_compile .github/fix_v055_shared_survey_grid.py
+            python .github/fix_v055_shared_survey_grid.py
+          fi
+      - name: Sync beta tester portal delivery
+        run: python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
+      - name: Prove 24/7 Protection build stayed untouched
+        run: |
+          python .github/verify_247_protected.py
+          git diff --exit-code -- company-demos/247-protection 247-protection-demo.html
+      - name: Verify v0.55 source and delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          RELEASE_URL="https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/${VERSION_TAG}/${APK_NAME}"
+          MIRROR_PATH="downloads/${APK_NAME}"
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          cmp -s beta.html download.html
+          grep -q "versionCode 56" app/build.gradle
+          grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle
+          grep -Fq 'function fieldGridPoint' index.html
+          grep -Fq 'function ensureSurveyFieldGrid' index.html
+          grep -Fq 'function cbFieldGridScreenStep' index.html
+          grep -Fq 'return cbPlanPx(fieldGridPoint(plan),bounds,w,h)' index.html
+          grep -Fq 'Device snap · ON' index.html
+          grep -Fq 'Field grid' index.html
+          grep -q "'circuit-survey-grid-v055'" tests/run-regressions.cjs
+          grep -Fq "const BETA_VERSION='${VERSION_TAG}'" beta.html
+          grep -Fq "$RELEASE_URL" beta.html
+          grep -Fq "$MIRROR_PATH" beta.html
+          grep -Fq 'href="./index.html"' beta.html
+          python .github/verify_247_protected.py
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v055.js').write_text('\n'.join(scripts))
+          assert 'Zone Sketch by Will Flood v0.55' in t
+          assert 'v0.55 field grid' in t
+          assert 'function fieldGridPoint' in t
+          assert 'function cbFieldGridScreenStep' in t
+          print('v0.55 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v055.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run full regressions
+        run: node tests/run-regressions.cjs
+      - name: Check for an existing published APK
+        id: published_apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          if gh release view "$VERSION_TAG" --json assets --jq '.assets[].name' 2>/dev/null | grep -Fxq "$APK_NAME"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-java@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        if: steps.published_apk.outputs.exists != 'true'
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          gradle-version: '8.11.1'
+      - name: Build Android APK
+        if: steps.published_apk.outputs.exists != 'true'
+        run: gradle --no-daemon assembleDebug
+      - name: Update public APK mirror
+        if: steps.published_apk.outputs.exists != 'true'
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk "downloads/${APK_NAME}"
+          cp app/build/outputs/apk/debug/app-debug.apk "/tmp/${APK_NAME}"
+      - name: Commit v0.55 main build
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python .github/verify_247_protected.py
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html tests/run-regressions.cjs
+          if [ "${{ steps.published_apk.outputs.exists }}" != 'true' ]; then git add "downloads/${APK_NAME}"; fi
+          git diff --cached --quiet -- company-demos/247-protection 247-protection-demo.html
+          git commit -m "Release Zone Sketch ${VERSION_TAG} shared Survey Circuit grid" || true
+          git stash push --include-untracked -m "${VERSION_TAG} runner build state" || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Publish Android APK release
+        if: steps.published_apk.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'Survey and Circuit Builder now use one shared resizable field grid. Survey devices are locked to its intersections, existing off-grid device points are aligned before Circuit Builder, and cable snapping/visible routing uses the exact same plan-space grid. The separate 24/7 Protection build remains checksum-locked and unchanged.'
+          gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}"
+      - uses: actions/upload-artifact@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          name: Zone-Sketch-v0.55-Shared-Field-Grid-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
