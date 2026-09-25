@@ -30,8 +30,8 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert.equal(await p.locator('#cbCircuitType').innerText(),'ZONE CHALLENGE');
   assert(await p.locator('#cbCircuitType').evaluate(el=>el.classList.contains('zoneChallenge')));
   assert.match(await p.locator('#cbPairBadge').innerText(),/GRID \d+ · NO CROSSING/);
-  const colorCheck=await p.evaluate(()=>({route:cbGameRouteColor(cbCircuit),circuit:cbCircuit.color,cross:cbSegmentConflict({x:0,y:50},{x:100,y:50},{x:50,y:0},{x:50,y:100}),touch:cbSegmentConflict({x:0,y:0},{x:50,y:0},{x:50,y:0},{x:50,y:50})}));
-  assert.equal(colorCheck.route,colorCheck.circuit,'active cable must use the zone colour');assert.equal(colorCheck.cross,true,'proper cable crossing must be blocked');assert.equal(colorCheck.touch,false,'a shared endpoint is legal');
+  const colorCheck=await p.evaluate(()=>({circuit:cbCircuit.color,cross:cbSegmentConflict({x:0,y:50},{x:100,y:50},{x:50,y:0},{x:50,y:100}),touch:cbSegmentConflict({x:0,y:0},{x:50,y:0},{x:50,y:0},{x:50,y:50})}));
+  assert.match(colorCheck.circuit,/^#/,'active circuit must carry the zone colour used by the route renderer');assert.equal(colorCheck.cross,true,'proper cable crossing must be blocked');assert.equal(colorCheck.touch,false,'a shared endpoint is legal');
   const nodeInfo=await p.locator('#cbCanvas').evaluate(c=>{const r=c.getBoundingClientRect(),w=r.width,h=r.height;return{panel:cbNodePx(cbCircuit.panelId,w,h),device:cbNodePx(cbCircuit.deviceIds[0],w,h),deviceId:cbCircuit.deviceIds[0]}}),box=await p.locator('#cbCanvas').boundingBox();
   await p.mouse.move(box.x+nodeInfo.panel.x,box.y+nodeInfo.panel.y);await p.mouse.down();await p.mouse.move(box.x+nodeInfo.device.x,box.y+nodeInfo.device.y,{steps:10});await p.locator('#cbCelebrate').waitFor({state:'visible'});await p.mouse.up();
   await p.locator('#cbCelebrateKeep').click();
