@@ -20,6 +20,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert.match(await p.locator('.homeProductHero').innerText(),/Will Flood/i);
   assert.match(await p.locator('.brand').innerText(),/WILL FLOOD/i);
   await p.locator('#homeNew').click();
+  await p.locator('#projectsHome').waitFor({state:'hidden'});
   await p.locator('#projectMenuBtn').click();
   assert(await p.locator('#betaPortalBtn').isVisible());
   await p.locator('#appSettingsBtn').click();
