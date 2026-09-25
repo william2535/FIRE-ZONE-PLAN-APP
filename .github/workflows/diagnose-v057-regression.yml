@@ -1,0 +1,44 @@
+name: Diagnose v0.57 regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-v057-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Capture regression output
+        shell: bash
+        run: |
+          set +e
+          ROUTING_PHASE=after node tests/run-regressions.cjs > /tmp/v057-regression-diagnostic.txt 2>&1
+          code=$?
+          echo "exit_code=$code" >> /tmp/v057-regression-diagnostic.txt
+          mkdir -p test-results
+          cp /tmp/v057-regression-diagnostic.txt test-results/v057-regression-diagnostic.txt
+          cat /tmp/v057-regression-diagnostic.txt
+          exit 0
+      - name: Commit diagnostic log
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add test-results/v057-regression-diagnostic.txt
+          git commit -m 'Capture v0.57 regression diagnostic' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
