@@ -8,12 +8,12 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   await p.goto('http://127.0.0.1:'+server.address().port);
   assert(await p.locator('.homeProductHero').isVisible());
   assert.equal(await p.locator('.workflowStep').count(),4);
-  assert.match(await p.locator('.homeVersion').innerText(),/v0\.49/);
+  assert.match(await p.locator('.homeVersion').innerText(),/v0\.49/i);
   await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
 
   // Settings live in the Project menu and persist their field preferences.
   await p.locator('#projectMenuBtn').click();await p.locator('#appSettingsBtn').click();await p.locator('#appSettingsModal').waitFor({state:'visible'});
-  assert.match(await p.locator('.settingsFooter').innerText(),/v0\.49/);
+  assert.match(await p.locator('.settingsFooter').innerText(),/v0\.49/i);
   await p.locator('#appHapticsSetting').click();
   assert.equal(await p.evaluate(()=>localStorage.getItem('zoneSketchHaptics')),'off');
   await p.locator('#appMotionSetting').click();
