@@ -7,10 +7,12 @@ OUT_DIR=Path('company-demos/247-protection')
 OUT=OUT_DIR/'index.html'
 
 base=SRC.read_text()
-old=OLD_DEMO.read_text()
+old=OLD_DEMO.read_text() if OLD_DEMO.exists() else ''
 m=re.search(r"const LOGO='(data:image/png;base64,[^']+)'",old)
+if not m and (OUT_DIR/'logo.svg').exists():
+    m=re.search(r'href="(data:image/png;base64,[^"]+)"',(OUT_DIR/'logo.svg').read_text())
 if not m:
-    raise SystemExit('Could not recover the supplied 24/7 Protection logo from the earlier demo')
+    raise SystemExit('Could not recover the supplied 24/7 Protection logo from the earlier demo or generated logo')
 logo=m.group(1)
 t=base
 
@@ -125,7 +127,6 @@ Path('247-protection-demo.html').write_text('''<!doctype html><html><head><meta 
 # Safety assertions: generated copy is branded + isolated; original source remains untouched in memory.
 assert "ZoneSketch-247Protection-v1" in t
 assert "indexedDB.open('ZoneSketch-v1',1)" not in t
-assert '24/7 PROTECTION · '+"'" not in ''  # harmless syntax sentinel for accidental template damage
 assert 'companyBrandLogo' in t and '24/7 PROTECTION' in t
 assert base==SRC.read_text(), 'Main app changed unexpectedly'
 print('Built isolated 24/7 Protection demo; original app untouched')
