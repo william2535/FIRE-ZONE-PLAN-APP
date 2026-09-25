@@ -5,8 +5,8 @@ This file is the durable handoff for the ongoing Pineapple work. Update it at ev
 ## Current branch
 
 - Branch: `project-pineapple-v058`
-- Repaired app head before this checkpoint: `2a35764842c87fa897064b0d9a2e7117f9b5923a`
-- Head message: `Fix manual editor anchor parser break`
+- Current checkpoint-triggering head: `bd1404121a81eea04459ce5468044b260653a482` — `Checkpoint repaired Pineapple editor parser break`
+- Repaired app commit immediately below it: `2a35764842c87fa897064b0d9a2e7117f9b5923a` — `Fix manual editor anchor parser break`
 - Protected 24/7 build must remain unchanged.
 
 ## Current objective
@@ -15,88 +15,75 @@ Continue the v0.58 Circuit Builder / manual editor hardening work without waitin
 
 ## What is already established
 
-- Aggressive-touch / capture-transition work had been accepted sufficiently to move on to manual editor hardening.
+- Aggressive-touch / capture-transition work is still green after the editor parser repair.
 - The branch contains a real manual editor implementation: Edit, Pencil/Bin, Undo/Redo, Bridge, Cleanup, Done validation, persisted `editDraft`, As-Fit blocking for unfinished edits, bridge rendering, staged replacement/splice, and crossing/overlap validation.
 - A concrete editor defect was found earlier: deleting one local cable section could remove bridge metadata too broadly on the same detector-to-detector leg.
 - Bridge-locality regression work and local bridge bookkeeping changes are already on the branch and must be preserved.
 
-## Parser blocker — root cause found and repaired
+## Parser blocker — repaired
 
-The longstanding inline JavaScript failure was:
+The former failure was `SyntaxError: Unexpected token ')'` at final `})();`.
 
-- `SyntaxError: Unexpected token ')'` at final `})();`
-- Browser startup never reached ready state.
-- Protected 24/7 verification continued to pass.
+Exact root cause was `cbEditAnchorAt()` missing the brace that closes its outer leg loop before `return best`:
 
-### Isolation
+- bad: `...d:q.d}}return best}`
+- correct: `...d:q.d}}}return best}`
 
-Confirmed baseline:
-
-- Last good pre-editor app state: `fcd59d236411c41e48383b774fbc632c4ebf0e16`
-- First generated editor app commit: `c8b76b265702b6667fe780fca360c7e68393ce0a`
-
-A deterministic hunk parser bisect showed:
-
-- Hunks 1–5 parse.
-- Hunk 6 is the first syntax-breaking hunk.
-- Hunk 6 is the manual editor-engine insertion around `cbLegSegments`.
-
-### Exact defect
-
-The malformed function was `cbEditAnchorAt()`.
-
-Its segment-search tail ended with only two closing braces before `return best`:
-
-`...d:q.d}}return best}`
-
-It requires three:
-
-`...d:q.d}}}return best}`
-
-The missing brace left the outer segment loop/function structure open, causing following editor functions to be swallowed until the parser finally failed at the app IIFE closing `})();`.
-
-### Repair
-
-A deterministic repair source was added:
+Repair source/workflow:
 
 - `.github/pineapple_v058_editor_syntax_fix.py`
-- commit `f949defdff603b55b1dd298c5b37a277335ca743`
-
-A one-shot repair workflow was added:
-
 - `.github/workflows/pineapple-v058-editor-syntax-fix.yml`
-- commit `82eb97beefc0cc8464b26dfc0722c4e9bf447b27`
-- workflow run `36196044447`: PASS
+- syntax-repair workflow run `36196044447`: PASS
+- generated repair commit `2a35764842c87fa897064b0d9a2e7117f9b5923a`
 
-That workflow:
+The source editor generator was also repaired so it will not regenerate the malformed function.
 
-- repaired `.github/pineapple_v058_editor_patch.py` so the source generator no longer regenerates the bad function;
-- repaired `index.html`;
-- synchronized `ZoneSketch.html`, `Zone-Sketch-by-Will.html`, and `app/src/main/assets/index.html`;
-- verified the protected 24/7 build;
-- ran the Acorn inline-JS parser gate successfully before committing.
+## Post-repair CI on `bd140412...`
 
-Generated repair commit:
+Normal workflows were deliberately retriggered by the API-authored checkpoint commit because the repair workflow's own `GITHUB_TOKEN` commit does not recursively launch the normal push workflows.
 
-- `2a35764842c87fa897064b0d9a2e7117f9b5923a` — `Fix manual editor anchor parser break`
+### Green gates
 
-Important CI detail: GitHub does not recursively trigger normal push workflows for the commit created by the syntax-repair workflow's `GITHUB_TOKEN`, so `2a35764...` itself has zero normal Actions runs. This checkpoint commit is intentionally being used as the follow-up API/user-authored push to trigger the normal editor/routing/capture suites against the repaired app.
+- Capture transition run `36196268805`: **PASS**
+- Routing compatibility run `36196268726`: **PASS**
+- Protected 24/7 verification inside manual-editor run: **PASS**
+- Current inline JavaScript parser gate: **PASS** (`2 inline script(s) parse cleanly`)
+
+### Current manual-editor blocker
+
+Manual editor workflow run `36196268753`: **FAIL**
+Job `108272700311`.
+
+The app now genuinely starts:
+
+`STARTUP_STATE {"ready":true,"title":"Zone Sketch by Will Flood v0.57 — Fire & Security Field Workspace","hasEditor":false,...}`
+
+Failure is no longer a parser/browser crash. Startup test now fails only because it reports:
+
+- `manual editor API missing after startup`
+- `hasEditor: false`
+
+The next task is to determine whether:
+
+1. the editor implementation is present and working inside the app IIFE but the startup test expects an unnecessary global/test API; or
+2. the editor bootstrap/exposure step was genuinely omitted, so the editor cannot be entered at runtime.
+
+Do not weaken the test until this distinction is proven.
+
+## Exact syntax diagnostic history retained
+
+A deterministic historical hunk bisect remains in CI as `continue-on-error` and intentionally continues to show the original `c8b76...` hunk 6 / `cbEditAnchorAt` historical defect. This is diagnostic history, not a current-app parse failure.
 
 ## Immediate next steps
 
-1. Inspect the normal Pineapple workflows triggered by this checkpoint commit.
-2. Confirm:
-   - inline script parser PASS
-   - browser startup PASS
-   - protected 24/7 PASS
-3. If editor behaviour now fails, fix the first real runtime/behaviour defect rather than returning to syntax archaeology.
-4. Re-run/verify:
-   - manual editor behaviour + bridge locality
-   - Smart Route compatibility
-   - capture/aggressive-touch/return-magnet gates
-   - generated-copy equality
-5. Specifically audit Bridge mode once runtime tests execute. `cbEditFinishStroke()` currently deserves scrutiny because its crossing-map callback uses `h` as a callback parameter while `h` is also the canvas-height parameter; this may incorrectly pass the crossing object as height into `cbPxBoard` and should be fixed if confirmed.
-6. Once green, continue deliberate break-testing of Pencil splice anchors, bridge persistence/locality, undo/redo topology, cleanup strength, Done/open-route validation, As-Fit, and phone/tablet behaviour.
+1. Inspect `tests/circuit-editor-startup-v058.cjs` to see precisely what `hasEditor` means.
+2. Inspect current `index.html` / editor generator for the corresponding editor bootstrap/API exposure.
+3. If the editor is present but the test wrongly assumes IIFE-local functions must be globals, change the test to assert real UI/behaviour or expose a deliberately narrow test hook only if that is already the project pattern.
+4. If the editor bootstrap is actually missing, repair it through the reproducible editor patch/hotfix path and synchronize all four app copies.
+5. Re-run manual-editor CI until startup + editor behaviour + bridge locality execute.
+6. Then address the first real editor behaviour defect. Specifically audit `cbEditFinishStroke()` because its crossing-map callback appears to shadow the canvas-height parameter `h`, potentially passing the crossing object into `cbPxBoard` as height.
+7. Keep capture/routing/24-7/generated-copy gates green throughout.
+8. Continue deliberate phone/tablet editor break-testing once deterministic CI is green.
 
 ## Pineapple continuity rule
 
