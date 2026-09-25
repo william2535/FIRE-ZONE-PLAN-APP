@@ -161,6 +161,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html tests/circuit-aggressive-touch-v057.cjs downloads/Zone-Sketch-by-Will-v0.57.apk
           git commit -m 'Ship v0.57 Smart Route routing overhaul' || true
+          git stash push --include-untracked -m 'v0.57 finalizer runner state' || true
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
