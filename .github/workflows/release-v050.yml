@@ -7,6 +7,7 @@ on:
       - '.github/workflows/release-v050.yml'
       - '.github/upgrade_v050_beta_portal.py'
       - '.github/fix_v050_header_fit.py'
+      - '.github/fix_v050_android_download.py'
       - 'tests/beta-portal-v050.cjs'
 permissions:
   contents: write
@@ -19,6 +20,8 @@ jobs:
         run: python .github/upgrade_v050_beta_portal.py
       - name: Keep author branding clear without crowding controls
         run: python .github/fix_v050_header_fit.py
+      - name: Route Android download through GitHub Releases
+        run: python .github/fix_v050_android_download.py
       - name: Verify v0.50 source
         shell: bash
         run: |
@@ -33,6 +36,8 @@ jobs:
           grep -q 'Beta Tester Portal' beta.html
           grep -q 'Zone Sketch by Will Flood' manifest.webmanifest
           grep -q 'v0.50 header fit' index.html
+          grep -q 'releases/download/v0.50/Zone-Sketch-by-Will-v0.50.apk' beta.html
+          grep -q 'GitHub Release server' beta.html
           test -f assets/zone-sketch-by-will-flood-wordmark.svg
           test -f assets/zone-sketch-beta-tester-badge.svg
           test -f assets/zone-sketch-app-icon.svg
@@ -78,7 +83,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/src/main/java/com/zonesketch/app/MainActivity.java app/build.gradle beta.html download.html manifest.webmanifest assets/zone-sketch-app-icon.svg assets/zone-sketch-by-will-flood-wordmark.svg assets/zone-sketch-beta-tester-badge.svg downloads/Zone-Sketch-by-Will-v0.50.apk
-          git commit -m 'Release Zone Sketch v0.50 beta tester portal by Will Flood' || exit 0
+          git commit -m 'Release Zone Sketch v0.50 beta tester portal by Will Flood' || true
           cp app/build/outputs/apk/debug/app-debug.apk /tmp/zone-sketch-v050.apk
           git stash push --include-untracked -m 'v0.50 runner build state' || true
           git fetch origin main
@@ -86,6 +91,13 @@ jobs:
           git push origin HEAD:main
           mkdir -p app/build/outputs/apk/debug
           cp /tmp/zone-sketch-v050.apk app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish reliable Android APK download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/Zone-Sketch-by-Will-v0.50.apk
+          gh release view v0.50 >/dev/null 2>&1 || gh release create v0.50 --title 'Zone Sketch v0.50 Beta' --notes 'Field beta build by Will Flood. Android APK for beta testers.'
+          gh release upload v0.50 /tmp/Zone-Sketch-by-Will-v0.50.apk --clobber
       - uses: actions/upload-artifact@v4
         with:
           name: Zone-Sketch-v0.50-Beta-Tester-APK
