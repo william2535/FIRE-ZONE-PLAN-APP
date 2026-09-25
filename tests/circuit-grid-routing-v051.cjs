@@ -2,7 +2,8 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
 (async()=>{
  const html=fs.readFileSync('index.html','utf8');
  assert.match(html,/CB_ROUTE_GRID=24/);
- assert.match(html,/CB_ROUTE_TURN_CELLS=1\.45/);
+ assert.match(html,/CB_ROUTE_TURN_CELLS=(?:1\.45|\.72)/);
+ if(/v0\.55/.test(html)){assert.match(html,/CB_ROUTE_ARM_CELLS=\.28/);assert.match(html,/CB_ROUTE_SAMPLE_CELLS=\.30/)}
  assert.match(html,/function cbRouteGridStep/);
  assert.match(html,/function cbDrawRouteGrid/);
  assert.match(html,/cable (?:snaps to grid|uses Survey field grid)/);
@@ -32,6 +33,6 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert(pts.length<=3,`minor finger wobble created too many route points: ${pts.length}`);
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];assert(Math.abs(a.x-b.x)<1e-6||Math.abs(a.y-b.y)<1e-6,'every stored cable segment must remain orthogonal')}
   assert.deepEqual(errors,[],'No runtime errors');
-  console.log('PASS: v0.51 real Circuit Builder drag ignores finger wobble and stores a clean grid-snapped route');
+  console.log('PASS: real Circuit Builder drag ignores finger wobble and stores a clean grid-snapped route');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
