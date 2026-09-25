@@ -17,11 +17,13 @@ jobs:
           fetch-depth: 0
       - run: python .github/pineapple_v058_editor_hotfix.py
       - run: python .github/verify_247_protected.py
-      - name: Commit generated app copies
+      - name: Commit generated app copies safely
         run: |
           if git diff --quiet; then exit 0; fi
           git config user.name 'william2535'
           git config user.email '48844093+william2535@users.noreply.github.com'
           git add index.html Zone-Sketch-by-Will.html ZoneSketch.html app/src/main/assets/index.html
           git commit -m 'Fix manual editor UI synchronizer calls'
+          git fetch origin project-pineapple-v058
+          git rebase origin/project-pineapple-v058
           git push origin HEAD:project-pineapple-v058
