@@ -4,13 +4,14 @@ for(const required of ['function cbEnterEdit','function cbEditAnchorAt','functio
 const expose=`window.cbEditorTest={
  seed:async()=>{state=fresh();state.image=blankImage();state.isBlank=true;state.symbols=[
   {id:'panel',type:'panel',scope:'plan',x:.10,y:.25},{id:'d0',type:'smoke',scope:'survey',x:.38,y:.25},{id:'d1',type:'heat',scope:'survey',x:.70,y:.55}
- ];await setImage(state.image,false);ensureFloors();openCircuitBuilder();const c=cbNewCircuit('addressable',cbSurveyDevices());const P=id=>c.layout[id];
+ ];await setImage(state.image,false);ensureFloors();openCircuitBuilder();const c=cbNewCircuit('addressable',cbSurveyDevices());const P=id=>c.layout[id],A=P('panel'),B=P('d0'),C=P('d1'),x1=A.x+(B.x-A.x)*.30,x2=A.x+(B.x-A.x)*.70,yDetour=Math.max(.08,Math.min(.92,(A.y+B.y)/2+(A.y<.75?.10:-.10))),xBC=(B.x+C.x)/2,returnY=(C.y+A.y)/2;
  c.sequence=['panel','d0','d1','panel'];c.legs=[
-  {from:'panel',to:'d0',points:[P('panel'),{x:.18,y:.25},{x:.18,y:.33},{x:.29,y:.33},{x:.29,y:.25},P('d0')]},
-  {from:'d0',to:'d1',points:[P('d0'),{x:.50,y:.25},{x:.50,y:.55},P('d1')]},
-  {from:'d1',to:'panel',points:[P('d1'),{x:.70,y:.72},{x:.10,y:.72},P('panel')]}
+  {from:'panel',to:'d0',points:[A,{x:x1,y:A.y},{x:x1,y:yDetour},{x:x2,y:yDetour},{x:x2,y:B.y},B]},
+  {from:'d0',to:'d1',points:[B,{x:xBC,y:B.y},{x:xBC,y:C.y},C]},
+  {from:'d1',to:'panel',points:[C,{x:C.x,y:returnY},{x:A.x,y:returnY},A]}
  ];c.complete=true;c.updatedAt=Date.now();cbOpenCircuit(c);cbEnterEdit(c);cbDrawBoard();return c.id},
  read:()=>JSON.parse(JSON.stringify({c:cbCircuit,edit:cbEdit,status:document.querySelector('#cbEditStatus')?.textContent||'',draft:cbCircuit?.editDraft||null})),
+ validate:()=>cbEditValidateDraft(),
  px:p=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);return{x:q.x,y:q.y}},
  anchor:p=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);return cbEditAnchorAt(q,r.width,r.height)},
  start:(anchor,p)=>{const r=$('cbCanvas').getBoundingClientRect(),q=cbBoardPx(p,r.width,r.height);return cbEditStartStroke(anchor,q,r.width,r.height)},
@@ -27,7 +28,7 @@ function orthogonal(points){return points.every((p,i)=>!i||Math.abs(p.x-points[i
 (async()=>{await new Promise(ok=>server.once('listening',ok));const browser=await chromium.launch({headless:true});try{
  const page=await browser.newPage({viewport:{width:768,height:1024}});page.on('dialog',d=>d.accept());await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.evaluate(async()=>{document.querySelector('#projectsHome').hidden=true;await cbEditorTest.seed()});await page.waitForTimeout(50);
  for(const id of ['cbEditToggle','cbEditBar','cbEditPencil','cbEditBin','cbEditUndo','cbEditRedo','cbEditBridge','cbEditOptions','cbEditClean','cbEditDone'])assert(await page.locator('#'+id).count(),`missing editor UI #${id}`);
- let s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit?.active,'edit session must start');assert(s.c.editDraft,'edit draft must persist on circuit');assert(/EDITING/.test(s.status),'editing state must be obvious');
+ let s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit?.active,'edit session must start');assert(s.c.editDraft,'edit draft must persist on circuit');assert(/EDITING/.test(s.status),'editing state must be obvious');const initialValidation=await page.evaluate(()=>cbEditorTest.validate());assert.equal(initialValidation.ok,true,'seeded circuit must start valid: '+initialValidation.message);
  // Local cable surgery must only remove a bridge marker that sits on the deleted section.
  const bridgePts=s.c.editDraft.legs[0].points,mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
  const localBridge={legIndex:0,point:mid(bridgePts[0],bridgePts[1]),axis:'h'},remoteBridge={legIndex:0,point:mid(bridgePts[3],bridgePts[4]),axis:'h'};
@@ -37,14 +38,15 @@ function orthogonal(points){return points.every((p,i)=>!i||Math.abs(p.x-points[i
  const pts=s.c.editDraft.legs[0].points,start={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2},end={x:(pts.at(-2).x+pts.at(-1).x)/2,y:(pts.at(-2).y+pts.at(-1).y)/2};
  const a=await page.evaluate(p=>cbEditorTest.anchor(p),start),b=await page.evaluate(p=>cbEditorTest.anchor(p),end);assert(a&&b,'cable anchors must be hittable');
  await page.evaluate(({a,start})=>cbEditorTest.start(a,start),{a,start});
- for(const p of [{x:.20,y:.21},{x:.21,y:.29},{x:.23,y:.22},{x:.27,y:.26},{x:.31,y:.24},{x:.34,y:.25}])await page.evaluate(p=>cbEditorTest.move(p),p);
+ const centerY=(start.y+end.y)/2,replacementY=Math.max(.08,Math.min(.92,centerY+(centerY<.75?.14:-.14))),replacementPoints=[{x:start.x,y:replacementY},{x:(start.x+end.x)/2,y:replacementY},{x:end.x,y:replacementY}];
+ for(const p of replacementPoints)await page.evaluate(p=>cbEditorTest.move(p),p);
  const accepted=await page.evaluate(b=>cbEditorTest.finish(b),b);assert.equal(accepted,true,'replacement should stage successfully');
  s=await page.evaluate(()=>cbEditorTest.read());assert(s.edit.pending,'draw-first workflow must retain replacement before deleting old');assert(orthogonal(s.edit.pending.points),'saved replacement must be orthogonal');
  const oldGeometry=JSON.parse(JSON.stringify(s.c.editDraft.legs[0].points));const midSeg=Math.max(0,Math.min(s.c.editDraft.legs[0].points.length-2,2));await page.evaluate(i=>cbEditorTest.del(0,i),midSeg);
  s=await page.evaluate(()=>cbEditorTest.read());assert(!s.edit.pending,'binning old span should commit staged replacement');assert.notDeepEqual(s.c.editDraft.legs[0].points,oldGeometry,'local leg geometry should actually change');
  // Direct deletion without a replacement must create a safe open-route state, not silently reconnect the line.
  await page.evaluate(()=>cbEditorTest.del(1,1));s=await page.evaluate(()=>cbEditorTest.read());assert(s.c.editDraft.gaps?.length===1,'one local segment deletion should create one explicit gap');assert(/ROUTE OPEN/.test(s.status),'broken edit must read EDITING · ROUTE OPEN');
- await page.evaluate(()=>cbEditorTest.undo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,0,'undo must restore exact connected state');await page.evaluate(()=>cbEditorTest.redo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,1,'redo must restore gap');const rejected=await page.evaluate(()=>cbEditorTest.done());assert.equal(rejected,false,'Done must reject open route');await page.evaluate(()=>cbEditorTest.undo());const done=await page.evaluate(()=>cbEditorTest.done());assert.equal(done,true,'Done should accept repaired route');s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft,null,'valid Done removes draft');assert.equal(s.c.complete,true,'valid Done restores complete');
+ await page.evaluate(()=>cbEditorTest.undo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,0,'undo must restore exact connected state');await page.evaluate(()=>cbEditorTest.redo());s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft.gaps.length,1,'redo must restore gap');const rejected=await page.evaluate(()=>cbEditorTest.done());assert.equal(rejected,false,'Done must reject open route');await page.evaluate(()=>cbEditorTest.undo());const repairedValidation=await page.evaluate(()=>cbEditorTest.validate());assert.equal(repairedValidation.ok,true,'undo-repaired route must validate: '+repairedValidation.message);const done=await page.evaluate(()=>cbEditorTest.done());assert.equal(done,true,'Done should accept repaired route');s=await page.evaluate(()=>cbEditorTest.read());assert.equal(s.c.editDraft,null,'valid Done removes draft');assert.equal(s.c.complete,true,'valid Done restores complete');
  // Cleanup is post-stroke geometry: stronger settings must not create more saved points and all outputs stay orthogonal.
  const raw=[{x:.2,y:.2},{x:.22,y:.24},{x:.24,y:.19},{x:.27,y:.25},{x:.30,y:.20},{x:.34,y:.24},{x:.38,y:.2}],cs=raw[0],ce=raw.at(-1),low=await page.evaluate(({raw,cs,ce})=>cbEditorTest.clean(raw,cs,ce,10),{raw,cs,ce}),high=await page.evaluate(({raw,cs,ce})=>cbEditorTest.clean(raw,cs,ce,90),{raw,cs,ce});assert(orthogonal(low)&&orthogonal(high),'cleanup output must remain orthogonal');assert(high.length<=low.length,'strong cleanup must be at least as simple as light cleanup');
  console.log(`EDITOR_CLEANUP low=${low.length} high=${high.length}`);console.log('PASS: v0.58 manual editor stages replacement, preserves unrelated bridges, deletes locally, exposes route-open state, undoes/redoes and validates Done');
