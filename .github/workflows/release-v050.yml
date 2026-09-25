@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/release-v050.yml'
+      - '.github/upgrade_v050_beta_portal.py'
+      - '.github/fix_v050_header_fit.py'
+      - 'tests/beta-portal-v050.cjs'
 permissions:
   contents: write
 jobs:
