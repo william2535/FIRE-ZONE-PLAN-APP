@@ -4,7 +4,9 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  await new Promise(r=>server.once('listening',r));const browser=await chromium.launch({headless:true});
  try{
   const base='http://127.0.0.1:'+server.address().port;
-  const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+  const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
+  p.on('pageerror',e=>errors.push(e.message));
+  p.on('dialog',d=>d.accept(d.type()==='prompt'?'Beta Portal Test':undefined));
   await p.goto(base+'/beta.html');
   assert.match(await p.title(),/Beta Tester Portal.*v0\.50.*Will Flood/i);
   assert.match(await p.locator('body').innerText(),/Designed & built by Will Flood/i);
