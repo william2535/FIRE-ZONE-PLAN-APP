@@ -26,7 +26,7 @@ function cbRouteSnapshot(){return{points:(cbDrag?.points||[]).map(p=>({...p})),r
 function cbRouteRestore(s){if(!cbDrag||!s)return;cbDrag.points=s.points.map(p=>({...p}));cbDrag.routeAxis=s.routeAxis;cbDrag.turnAnchor=s.turnAnchor?{...s.turnAnchor}:null;cbDrag.pairSide=s.pairSide;cbDrag.pairSnap=s.pairSnap;cbDrag.pairAxis=s.pairAxis;cbDrag.pairLine=s.pairLine;cbDrag.routeInput=s.routeInput?{...s.routeInput}:null}
 function cbPairSnapPx(q,last,w,h,raw=q){
  if(!cbDrag||!last)return q;
- const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y),prev=cbDrag.routeInput||last,rx=Number(raw?.x)??q.x,ry=Number(raw?.y)??q.y,dx=rx-prev.x,dy=ry-prev.y,move=Math.hypot(dx,dy);
+ const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y),prev=cbDrag.routeInput||last,rx=Number.isFinite(Number(raw?.x))?Number(raw.x):q.x,ry=Number.isFinite(Number(raw?.y))?Number(raw.y):q.y,dx=rx-prev.x,dy=ry-prev.y,move=Math.hypot(dx,dy);
  let wantH=Math.abs(dx)>=Math.abs(dy);if(move<grid*.24&&cbDrag.pairAxis)wantH=cbDrag.pairAxis==='h';
  const scale=Math.max(1,cbView.scale),range=Math.max(10,Math.min(42,grid*1.05,CB_PAIR_RANGE*scale)),gap=CB_PAIR_GAP*scale,reach=Math.max(18,grid*.70);
  let best=null;
@@ -78,7 +78,7 @@ function cbAppendDrag(p,w,h){
  for(let i=1;i<=steps;i++){
   const raw={x:start.x+(p.x-start.x)*i/steps,y:start.y+(p.y-start.y)*i/steps},before=cbRouteSnapshot();let q=cbSnapPx(raw,w,h),last=cbDrag.points.at(-1);if(!last)return false;
   q=cbPairSnapPx(q,last,w,h,raw);cbRouteGridStep(q,w,h,raw);
-  if(cbChallengePointsBlocked(cbDrag.points,w,h)){cbRouteRestore(before);cbDrag.routeInput=raw;cbMarkBlocked();return false}
+  if(cbChallengePointsBlocked(cbDrag.points,w,h)){cbRouteRestore(before);cbMarkBlocked();return false}
   cbDrag.routeInput=raw
  }
  cbDrag.blocked=false;return true
@@ -125,4 +125,5 @@ assert 'CB_ROUTE_SAMPLE_CELLS=.30' in t
 assert 'function cbRouteSnapshot' in t
 assert 'gap=CB_PAIR_GAP*scale' in t
 assert 'turnAnchor:null,routeInput:sp' in t
+assert 'cbRouteRestore(before);cbMarkBlocked()' in t
 print('Applied v0.55 smooth shared-grid Circuit Builder routing; 24/7 demo untouched')
