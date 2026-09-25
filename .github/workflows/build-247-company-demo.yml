@@ -1,0 +1,61 @@
+name: Build 24-7 Protection Company Demo
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/build_247_company_demo.py'
+      - '.github/workflows/build-247-company-demo.yml'
+      - 'tests/company-demo-247.cjs'
+permissions:
+  contents: write
+jobs:
+  build-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protect the proven main build
+        run: sha256sum index.html > /tmp/main-index.sha
+      - name: Build isolated company duplicate
+        run: |
+          python -m py_compile .github/build_247_company_demo.py
+          python .github/build_247_company_demo.py
+      - name: Prove original app was not touched
+        run: |
+          sha256sum -c /tmp/main-index.sha
+          git diff --exit-code -- index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle
+      - name: Verify company-demo separation and branding
+        run: |
+          test -f company-demos/247-protection/index.html
+          test -f company-demos/247-protection/logo.svg
+          test -f company-demos/247-protection/manifest.webmanifest
+          grep -q 'ZoneSketch-247Protection-v1' company-demos/247-protection/index.html
+          ! grep -q "indexedDB.open('ZoneSketch-v1',1)" company-demos/247-protection/index.html
+          grep -q '24/7 PROTECTION' company-demos/247-protection/index.html
+          grep -q 'companyBrandLogo' company-demos/247-protection/index.html
+          grep -q '24/7 Protection · Generated from Zone Plan' company-demos/247-protection/index.html
+          grep -q '24/7 PROTECTION ·.*ZONE PLAN' company-demos/247-protection/index.html
+          grep -q 'company-demos/247-protection/' 247-protection-demo.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('company-demos/247-protection/index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/company247.js').write_text('\n'.join(scripts))
+          PY
+          node --check /tmp/company247.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run company-demo regression
+        run: node tests/company-demo-247.cjs
+      - name: Commit generated company demo only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add company-demos/247-protection/index.html company-demos/247-protection/logo.svg company-demos/247-protection/manifest.webmanifest 247-protection-demo.html
+          git commit -m 'Build isolated 24/7 Protection company demo' || exit 0
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
