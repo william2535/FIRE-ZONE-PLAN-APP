@@ -1,0 +1,42 @@
+name: Pineapple v0.58 bridge coordinate repair
+on:
+  push:
+    branches: [project-pineapple-v058]
+    paths:
+      - '.github/pineapple_v058_bridge_coordinate_fix.py'
+      - '.github/workflows/pineapple-v058-bridge-coordinate-fix.yml'
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: project-pineapple-v058
+          fetch-depth: 0
+      - name: Apply exact bridge coordinate repair
+        run: python .github/pineapple_v058_bridge_coordinate_fix.py
+      - name: Verify protected 24/7 build
+        run: python .github/verify_247_protected.py
+      - name: Parse inline JavaScript
+        run: |
+          npm install --no-save acorn@8.15.0
+          node tests/circuit-editor-syntax-v058.cjs
+      - name: Verify generated app copies
+        run: |
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          git diff --check
+      - name: Commit bridge coordinate repair
+        run: |
+          if git diff --quiet; then
+            echo 'No bridge coordinate changes to commit.'
+            exit 0
+          fi
+          git config user.name 'william2535'
+          git config user.email '48844093+william2535@users.noreply.github.com'
+          git add .github/pineapple_v058_editor_patch.py index.html Zone-Sketch-by-Will.html ZoneSketch.html app/src/main/assets/index.html
+          git commit -m 'Fix manual editor bridge coordinate conversion'
+          git push origin HEAD:project-pineapple-v058
