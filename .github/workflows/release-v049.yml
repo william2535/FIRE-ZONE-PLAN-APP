@@ -1,5 +1,5 @@
 name: Release On Site Zone Planner v0.49
-# Retry after preserving legacy UI contracts and fixing project-home load ordering.
+# Retry after preserving legacy UI contracts, fixing project-home load ordering, and correcting the visual regression assertion.
 on:
   workflow_dispatch:
   push:
