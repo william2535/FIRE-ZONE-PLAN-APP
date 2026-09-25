@@ -1,0 +1,145 @@
+name: Release Zone Sketch v0.52 As-Fit Quality
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v052.yml'
+      - '.github/fix_v052_asfit_quality.py'
+      - 'tests/asfit-quality-v052.cjs'
+permissions:
+  contents: write
+env:
+  ZONE_SKETCH_VERSION: '0.52'
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protect separate company demo
+        run: |
+          if [ -f company-demos/247-protection/index.html ]; then sha256sum company-demos/247-protection/index.html > /tmp/company-demo.sha; fi
+      - name: Apply v0.52 As-Fit quality upgrade
+        run: |
+          if grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle; then
+            echo "v${ZONE_SKETCH_VERSION} already applied"
+          else
+            python -m py_compile .github/fix_v052_asfit_quality.py
+            python .github/fix_v052_asfit_quality.py
+          fi
+      - name: Sync beta tester portal delivery
+        run: python .github/sync-beta-portal.py "$ZONE_SKETCH_VERSION"
+      - name: Prove company demo stayed separate
+        run: |
+          if [ -f /tmp/company-demo.sha ]; then sha256sum -c /tmp/company-demo.sha; fi
+          git diff --exit-code -- company-demos/247-protection 247-protection-demo.html
+      - name: Verify v0.52 source and delivery
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          RELEASE_URL="https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/${VERSION_TAG}/${APK_NAME}"
+          MIRROR_PATH="downloads/${APK_NAME}"
+
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          cmp -s beta.html download.html
+          grep -q "versionCode 53" app/build.gradle
+          grep -q "versionName '${ZONE_SKETCH_VERSION}'" app/build.gradle
+          grep -q 'v0.52 As-Fit quality' index.html
+          grep -Fq 'size*.13' index.html
+          grep -Fq 'Math.max(4800,Math.min(5600,sourceW*2))' index.html
+          grep -Fq 'lineWidth=5,bundleGap=7' index.html
+          grep -q "indexedDB.open('ZoneSketch-v1',1)" index.html
+          grep -q "'asfit-quality-v052'" tests/run-regressions.cjs
+          grep -Fq "const BETA_VERSION='${VERSION_TAG}'" beta.html
+          grep -Fq "$RELEASE_URL" beta.html
+          grep -Fq "$MIRROR_PATH" beta.html
+          grep -Fq 'href="./index.html"' beta.html
+          if grep -q 'v0.51' beta.html; then echo 'Stale v0.51 reference found in beta.html' >&2; exit 1; fi
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?![^>]*src=)[^>]*>(.*?)</script>',t,re.S)
+          Path('/tmp/zonesketch-v052.js').write_text('\n'.join(scripts))
+          assert 'v0.52' in t
+          assert 'size*.13' in t
+          assert 'Math.max(4800,Math.min(5600,sourceW*2))' in t
+          print('v0.52 static checks passed')
+          PY
+          node --check /tmp/zonesketch-v052.js
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run full regressions
+        run: node tests/run-regressions.cjs
+      - name: Check for an existing published APK
+        id: published_apk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          if gh release view "$VERSION_TAG" --json assets --jq '.assets[].name' 2>/dev/null | grep -Fxq "$APK_NAME"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-java@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        if: steps.published_apk.outputs.exists != 'true'
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          gradle-version: '8.11.1'
+      - name: Build Android APK
+        if: steps.published_apk.outputs.exists != 'true'
+        run: gradle --no-daemon assembleDebug
+      - name: Update public APK mirror
+        if: steps.published_apk.outputs.exists != 'true'
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk "downloads/${APK_NAME}"
+          cp app/build/outputs/apk/debug/app-debug.apk "/tmp/${APK_NAME}"
+      - name: Commit v0.52 main build
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html tests/run-regressions.cjs
+          if [ "${{ steps.published_apk.outputs.exists }}" != 'true' ]; then git add "downloads/${APK_NAME}"; fi
+          git commit -m "Release Zone Sketch ${VERSION_TAG} high-resolution As-Fit export" || true
+          git stash push --include-untracked -m "${VERSION_TAG} runner build state" || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Publish Android APK release
+        if: steps.published_apk.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION_TAG="v${ZONE_SKETCH_VERSION}"
+          APK_NAME="Zone-Sketch-by-Will-${VERSION_TAG}.apk"
+          gh release view "$VERSION_TAG" >/dev/null 2>&1 || gh release create "$VERSION_TAG" --title "Zone Sketch ${VERSION_TAG}" --notes 'As-Fit upgrade: thinner cable relative to detectors, sharper retina preview and high-resolution 4800–5600px PNG exports.'
+          gh release upload "$VERSION_TAG" "/tmp/${APK_NAME}"
+      - uses: actions/upload-artifact@v4
+        if: steps.published_apk.outputs.exists != 'true'
+        with:
+          name: Zone-Sketch-v0.52-As-Fit-Quality-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
