@@ -1,0 +1,97 @@
+name: Release Zone Sketch v0.57 Smart Route
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v057-smart-route.yml'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Protect 24/7 company demo
+        run: python .github/verify_247_protected.py
+      - name: Verify v0.57 Smart Route source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          grep -q "versionCode 58" app/build.gradle
+          grep -q "versionName '0.57'" app/build.gradle
+          grep -Fq '// v0.57 Smart Route' index.html
+          grep -Fq 'CB_DEVICE_CORRIDOR=30' index.html
+          grep -Fq "Math.max(24,Math.min(cell.x,cell.y)*.85)" index.html
+          grep -Fq "'circuit-aggressive-touch-v057'" tests/run-regressions.cjs
+          grep -Fq "'circuit-routing-state-v057'" tests/run-regressions.cjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run full browser and routing regression suite
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+          node tests/run-regressions.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build v0.57 Android APK
+        run: gradle --no-daemon assembleDebug
+      - name: Prepare APK release asset and backup mirror
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk /tmp/Zone-Sketch-by-Will-v0.57.apk
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.57.apk
+      - name: Update tester portal to v0.57
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in ['beta.html','download.html']:
+              p=Path(name); t=p.read_text()
+              t=t.replace('v0.56','v0.57')
+              t=t.replace('Live detector progress, rising bell feedback, completion screen and addressable twin-cable return snapping.', 'Smart Route separates raw touch from saved cable geometry, catches fast passes with a swept device corridor, filters wobble/reversals and keeps the magnetic twin-cable return.')
+              t=t.replace('Dense real-world plans are the most useful tests. Manual editing of the generated As-Fit route is still limited, advanced near-segment cable pairing is still being refined, and changing a Survey after circuits are built may still require rebuilding that circuit. Those are exactly the kinds of cases worth reporting.', 'Dense real-world plans and rough one-handed routing are especially useful tests. Smart Route now filters touch noise and catches fast device passes, while unusual tight obstacle layouts, manual As-Fit editing and Survey changes after circuits are built are still worth reporting.')
+              p.write_text(t)
+          PY
+          grep -Fq 'v0.57' beta.html
+          grep -Fq 'Zone-Sketch-by-Will-v0.57.apk' beta.html
+          ! grep -Fq 'v0.56' beta.html
+          cmp -s beta.html download.html
+      - name: Verify 24/7 company demo stayed untouched
+        run: python .github/verify_247_protected.py
+      - name: Commit v0.57 tester portal and APK mirror
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add beta.html download.html downloads/Zone-Sketch-by-Will-v0.57.apk
+          git commit -m 'Publish v0.57 Smart Route tester build' || true
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+      - name: Publish GitHub release v0.57
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v0.57 >/dev/null 2>&1 || gh release create v0.57 --title 'Zone Sketch v0.57 — Smart Route'
+          gh release edit v0.57 --notes 'Circuit Builder Smart Route is a routing-system upgrade rather than a sensitivity tweak. Raw pointer input, swept device-hit detection and saved/rendered cable geometry are now separate layers; fast sparse swipes use a 30 px device corridor, corners move through explicit pending/committed states, short accidental reversals are suppressed, same-axis overshoot is collapsed, and a post-device capture guard prevents the cable chasing an overshoot tail. The v0.56 magnetic return-to-FAP remains intact. Deterministic rough/abusive replay across small iPhone, large iPhone, Android, small tablet and landscape reduced route points 362→260, segments 292→190, corners 148→85, short legs 74→26, immediate reversals 70→22 and self-crossings 4→0, while retaining 60/60 device capture and 10/10 completion. Clean traces remained unchanged. The full 28-file regression suite and Android APK build pass.'
+          gh release upload v0.57 /tmp/Zone-Sketch-by-Will-v0.57.apk --clobber
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-v0.57-Smart-Route-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
