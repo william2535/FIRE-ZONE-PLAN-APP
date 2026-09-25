@@ -55,7 +55,11 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add company-demos/247-protection/index.html company-demos/247-protection/logo.svg company-demos/247-protection/manifest.webmanifest 247-protection-demo.html
-          git commit -m 'Build isolated 24/7 Protection company demo' || exit 0
+          git commit -m 'Build isolated 24/7 Protection company demo' || true
+          # npm/browser setup can leave package files behind. Discard runner-only changes before rebasing;
+          # the generated company demo is already safely committed above.
+          git reset --hard HEAD
+          git clean -fd
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
