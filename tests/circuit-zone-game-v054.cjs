@@ -1,13 +1,15 @@
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict'),path=require('path');
 (async()=>{
- const html=fs.readFileSync('index.html','utf8');
+ let html=fs.readFileSync('index.html','utf8');
  assert.match(html,/ZONE CHALLENGE · NO CROSSING/);
  assert.match(html,/function cbChallengePointsBlocked/);
  assert.match(html,/function cbSegmentConflict/);
  assert.match(html,/symbolColor\|\|s\.color/);
  assert.match(html,/return c\?\.color\|\|'#df3f36'/);
  assert.match(html,/NO CROSSING/);assert.match(html,/gridStep\(\)/);
- const server=http.createServer((q,r)=>{let rel=decodeURIComponent((q.url||'/').split('?')[0]);if(rel.endsWith('/'))rel+='index.html';rel=rel.replace(/^\//,'');const file=path.join(process.cwd(),rel);try{const data=fs.readFileSync(file);if(file.endsWith('.js'))r.setHeader('Content-Type','text/javascript');else if(file.endsWith('.svg'))r.setHeader('Content-Type','image/svg+xml');else if(file.endsWith('.webmanifest'))r.setHeader('Content-Type','application/manifest+json');else r.setHeader('Content-Type','text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
+ const hooks=`window.zoneGameTest={color:()=>({route:cbGameRouteColor(cbCircuit),circuit:cbCircuit.color,cross:cbSegmentConflict({x:0,y:50},{x:100,y:50},{x:50,y:0},{x:50,y:100}),touch:cbSegmentConflict({x:0,y:0},{x:50,y:0},{x:50,y:0},{x:50,y:50})}),nodes:()=>{const c=$('cbCanvas'),r=c.getBoundingClientRect(),w=r.width,h=r.height;return{panel:cbNodePx(cbCircuit.panelId,w,h),device:cbNodePx(cbCircuit.deviceIds[0],w,h),deviceId:cbCircuit.deviceIds[0]}},history:id=>{const c=$('cbCanvas'),r=c.getBoundingClientRect();return{history:cbChallengeCircuits().length,owner:cbChallengeOwner(id)?.color||null,obstacles:cbChallengeObstacleSegmentsPx(r.width,r.height).length}}};`;
+ html=html.replace('ensureUiState();renderFloors();renderSymbolColors();',hooks+'ensureUiState();renderFloors();renderSymbolColors();');
+ const server=http.createServer((q,r)=>{let rel=decodeURIComponent((q.url||'/').split('?')[0]);if(rel.endsWith('/'))rel+='index.html';rel=rel.replace(/^\//,'');const file=path.join(process.cwd(),rel);try{const data=rel==='index.html'?Buffer.from(html):fs.readFileSync(file);if(file.endsWith('.js'))r.setHeader('Content-Type','text/javascript');else if(file.endsWith('.svg'))r.setHeader('Content-Type','image/svg+xml');else if(file.endsWith('.webmanifest'))r.setHeader('Content-Type','application/manifest+json');else r.setHeader('Content-Type','text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
  await new Promise(r=>server.once('listening',r));const browser=await chromium.launch({headless:true});
  try{
   const p=await browser.newPage({viewport:{width:1100,height:800}}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Zone game test':undefined));
@@ -30,15 +32,15 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert.equal(await p.locator('#cbCircuitType').innerText(),'ZONE CHALLENGE');
   assert(await p.locator('#cbCircuitType').evaluate(el=>el.classList.contains('zoneChallenge')));
   assert.match(await p.locator('#cbPairBadge').innerText(),/GRID \d+ · NO CROSSING/);
-  const colorCheck=await p.evaluate(()=>({circuit:cbCircuit.color,cross:cbSegmentConflict({x:0,y:50},{x:100,y:50},{x:50,y:0},{x:50,y:100}),touch:cbSegmentConflict({x:0,y:0},{x:50,y:0},{x:50,y:0},{x:50,y:50})}));
-  assert.match(colorCheck.circuit,/^#/,'active circuit must carry the zone colour used by the route renderer');assert.equal(colorCheck.cross,true,'proper cable crossing must be blocked');assert.equal(colorCheck.touch,false,'a shared endpoint is legal');
-  const nodeInfo=await p.locator('#cbCanvas').evaluate(c=>{const r=c.getBoundingClientRect(),w=r.width,h=r.height;return{panel:cbNodePx(cbCircuit.panelId,w,h),device:cbNodePx(cbCircuit.deviceIds[0],w,h),deviceId:cbCircuit.deviceIds[0]}}),box=await p.locator('#cbCanvas').boundingBox();
+  const colorCheck=await p.evaluate(()=>zoneGameTest.color());
+  assert.equal(colorCheck.route,colorCheck.circuit,'active cable must use the zone colour');assert.equal(colorCheck.cross,true,'proper cable crossing must be blocked');assert.equal(colorCheck.touch,false,'a shared endpoint is legal');
+  const nodeInfo=await p.evaluate(()=>zoneGameTest.nodes()),box=await p.locator('#cbCanvas').boundingBox();
   await p.mouse.move(box.x+nodeInfo.panel.x,box.y+nodeInfo.panel.y);await p.mouse.down();await p.mouse.move(box.x+nodeInfo.device.x,box.y+nodeInfo.device.y,{steps:10});await p.locator('#cbCelebrate').waitFor({state:'visible'});await p.mouse.up();
   await p.locator('#cbCelebrateKeep').click();
   await p.locator('#cbConventionalZones .cbZoneButton').nth(1).click();
-  const history=await p.evaluate(id=>({history:cbChallengeCircuits().length,owner:cbChallengeOwner(id)?.color||null,obstacles:(()=>{const c=document.querySelector('#cbCanvas'),r=c.getBoundingClientRect();return cbChallengeObstacleSegmentsPx(r.width,r.height).length})()}),nodeInfo.deviceId);
+  const history=await p.evaluate(id=>zoneGameTest.history(id),nodeInfo.deviceId);
   assert(history.history>=1,'completed previous zone must remain on the challenge board');assert(history.owner,'previous zone device must retain its zone colour owner');assert(history.obstacles>=1,'previous zone cable must become a no-cross obstacle');
   assert.deepEqual(errors,[],'No Zone Challenge runtime errors');
-  console.log('PASS: v0.54 Zone Challenge uses zone colours, keeps previous zones visible and blocks crossing geometry');
+  console.log('PASS: v0.54/v0.55 Zone Challenge uses zone colours, keeps previous zones visible and blocks crossing geometry');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
