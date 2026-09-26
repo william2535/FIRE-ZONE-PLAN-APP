@@ -32,6 +32,8 @@ jobs:
         run: node tests/circuit-bridge-crossing-v058.cjs
       - name: Stress Manual Edit on mobile viewports
         run: node tests/circuit-editor-mobile-stress-v058.cjs
+      - name: Commit rough Manual Edit gestures at zoom extremes
+        run: node tests/circuit-editor-gesture-zoom-v058.cjs
       - name: Re-run Smart Route compatibility
         run: |
           node tests/circuit-capture-transition-v058.cjs
