@@ -14,15 +14,11 @@ Read `/PROJECT_PINEAPPLE_START_HERE.md` first. It is the short, obvious entry po
 - Core milestone merge: `89eee3561d652f510458a172151d1d1cdb849dfd`
 - Exact original release-gate checkpoint: `5f4ec568487216648151f1cc84f0a6283649c2d8`
 - Protected 24/7 build must remain unchanged.
-- Do not promote the development branch blindly: at the 2026-09-26 hardening checkpoint it was still **6 commits behind `main`** and must be reconciled with current `main` before any future milestone publication.
-
-## Current objective
-
-Continue v0.58 Circuit Builder/manual-editor hardening autonomously while preserving accepted Smart Route/capture behaviour. Save continuously to Pineapple. The real-crossing Bridge regression and first multi-viewport Manual Edit stress pass are now complete and green.
+- Do not promote the development branch blindly: it still needs reconciliation with current `main` before any future milestone publication.
 
 ## Latest known-green development checkpoint
 
-`3f1d1ebb91fca27824fd4ad0cbc8c0cf829366ff`
+**TESTED APP/TEST HEAD:** `ea7b0255b6e01d195f36b286f4e69e909a83f12a`
 
 All three Pineapple lanes passed on this exact head:
 
@@ -38,68 +34,62 @@ The editor lane additionally passed:
 - draft-first manual editor behaviour
 - dedicated real Bridge crossing persistence
 - Manual Edit mobile stress across 320×568, 375×667, 430×932, 412×915 and 768×1024 viewports plus orientation changes
+- committed rough Pencil → Bin splice at 1× zoom
+- committed shaky/direction-changing Pencil → Bin splice at 6× zoom
 - Cleanup extremes and mode switching
 - touch cancellation cleanup
 - Smart Route compatibility
 - generated app-copy equality
 
-## What was hardened in this pass
+## Hardening completed
 
 ### Dedicated real-crossing Bridge regression — GREEN
 
-`tests/circuit-bridge-crossing-v058.cjs` now proves:
+`tests/circuit-bridge-crossing-v058.cjs` proves a real crossing is rejected with Bridge OFF, accepted with Bridge ON, keeps finite bridge coordinates, survives staged replacement/splice, Done/save, reopen and redraw.
 
-1. a genuine crossing is rejected with Bridge OFF;
-2. the same crossing is accepted with Bridge ON;
-3. bridge marker coordinates are finite;
-4. bridge metadata survives staged replacement and splice commit;
-5. Done/save succeeds;
-6. the saved circuit can be reopened and redrawn with the bridge intact.
+### Multi-viewport Manual Edit stress — GREEN
 
-This protects the repaired Bridge coordinate-shadowing defect where a crossing callback previously shadowed numeric canvas height `h`.
+`tests/circuit-editor-mobile-stress-v058.cjs` covers tiny/small/large iPhone sizes, Android phone, small tablet, orientation changes, real control hit boxes, overflow, rapid mode changes, Cleanup extremes, touch cancellation and Done/save.
 
-### Multi-viewport Manual Edit stress harness — GREEN
+### Committed gesture + zoom regression — GREEN
 
-`tests/circuit-editor-mobile-stress-v058.cjs` now covers:
+`tests/circuit-editor-gesture-zoom-v058.cjs` now proves Manual Edit can perform real saved route surgery rather than cancellation-only interaction:
 
-- tiny iPhone: 320×568
-- small iPhone: 375×667
-- large iPhone: 430×932
-- typical Android: 412×915
-- small tablet: 768×1024
-- portrait → landscape → portrait resizing
-- real control hit boxes and viewport overflow
-- rapid Pencil/Bin and Bridge mode switching
-- Cleanup 0 / 100 / 45 states
-- pointer cancellation and stale-pointer cleanup
-- Done/save after the stress sequence
+1. at 1× zoom, a sparse/fast rough Pencil gesture stages a replacement;
+2. Bin hits the intended old cable segment and commits the splice;
+3. resulting geometry is finite, orthogonal, materially changed, valid and saveable;
+4. at 6× zoom, a larger shaky/direction-changing gesture follows the same full Pencil → Bin → validate → Done path;
+5. both scenarios preserve the expected device-to-device leg structure.
 
-Two false alarms in the new harness were explicitly corrected instead of being misdiagnosed as app bugs:
+### False alarms deliberately separated from product defects
 
-1. Cleanup is `.cbEditOptionsPanel` inside `#cbEditOptions`; the first harness revision incorrectly looked for a nonexistent `#cbEditOptionsPanel` ID.
-2. JavaScript-created PointerEvents are not real browser-active pointers, so the harness now follows the existing repo convention of stubbing pointer capture for synthetic touch input.
-3. The original seeded orthogonal route could create a duplicate elbow on a horizontally aligned leg; fixture legs now pass through `cbEditSimplifyBoard()` and the harness asserts the seeded route is valid before any stress action.
+During harness development we caught and corrected test/setup mistakes instead of patching the app blindly:
 
-These were test-harness defects. No unnecessary product-code change was made for them.
+- wrong Cleanup selector (`#cbEditOptionsPanel` vs `.cbEditOptionsPanel` inside `#cbEditOptions`);
+- synthetic PointerEvents needing test-only pointer-capture stubs;
+- a seeded duplicate elbow creating a zero-length segment;
+- a 6× rough gesture that legitimately cleaned back to the original straight route, making a “geometry changed” assertion invalid until the fixture was made materially distinct.
+
+No product-code change was made for these harness defects.
 
 ## Green foundations retained
 
-- Parser repair remains green.
-- Browser startup reaches the normal ready state with editor controls mounted.
+- Parser/startup remain green.
+- Manual editor Pencil/Bin splice, gaps, Undo/Redo, ROUTE OPEN protection, Cleanup, Bridge and Done remain green.
 - Routing compatibility remains green.
 - Aggressive-touch / capture transition remains green.
+- Smart Route compatibility remains green.
 - Generated app copies remain synchronized.
 - Protected 24/7 remains unchanged.
-- Manual editor Pencil/Bin splice, gaps, Undo/Redo, ROUTE OPEN protection, Cleanup, Bridge and Done remain green.
 
 ## NEXT EXACT STEP
 
 1. Continue from `project-pineapple-v058`, not `main`.
-2. Deepen Manual Edit gesture stress beyond cancellation-only input: committed Pencil edits and Bin operations under fast, shaky, diagonal and direction-changing touch paths.
-3. Add explicit zoomed-in and zoomed-out Manual Edit coverage so coordinate conversion and hit tolerances are tested at realistic extremes.
-4. Preserve Bridge persistence, Smart Route, routing, capture, generated-copy and protected-24/7 gates while doing this.
-5. Before the next web milestone, reconcile the Pineapple branch with the current `main` because `main` has delivery/version-launcher commits not present in the branch.
-6. Only after reconciliation and a completely green release gate should a coherent next milestone be promoted to `main`; then verify Pages, `index.html`, `beta.html`, visible versions and the fresh launcher together.
+2. Inspect the exact commits/files that exist on current `main` but not Pineapple; do not assume they are delivery-only.
+3. Reconcile `main` into Pineapple carefully, preserving both the green v0.58 editor/routing work and current live delivery/version-launcher changes.
+4. Rerun all Pineapple gates after reconciliation and verify generated copies + protected 24/7.
+5. Do **not** publish a new web milestone merely because tests were hardened; publish only when the resulting product change is a coherent usable milestone.
+6. Before any future promotion, verify `index.html`, `beta.html`, visible version labels, fresh launcher and Pages together.
 
 ## Continuous-save rule
 
@@ -117,10 +107,10 @@ At each major milestone:
 1. require relevant Pineapple tests to be green;
 2. require protected 24/7 verification to stay green;
 3. require generated app copies to agree;
-4. reconcile current `main` into the development line before promotion if the branches have diverged;
-5. promote/merge the known-good milestone to `main`;
-6. record the exact deployed `main` SHA in START HERE and this checkpoint;
-7. verify the actual GitHub Pages deployment/run and, where practical, its artifact;
+4. reconcile current `main` into development if branches have diverged;
+5. promote only a known-good coherent milestone to `main`;
+6. record exact deployed `main` SHA;
+7. verify Pages deployment/artifact where practical;
 8. verify `index.html`, `beta.html`, visible version labels and launch URLs together.
 
-Do not publish every diagnostic/test-only commit to the web app; publish coherent, usable milestones.
+Do not publish every diagnostic/test-only commit to the web app.
