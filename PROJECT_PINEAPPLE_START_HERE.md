@@ -28,7 +28,7 @@ The v0.58 manual editor includes Pencil, Bin, Undo, Redo, Bridge, Cleanup and Do
 
 ## Latest known-green development hardening point
 
-`3f1d1ebb91fca27824fd4ad0cbc8c0cf829366ff`
+**TESTED APP/TEST HEAD:** `ea7b0255b6e01d195f36b286f4e69e909a83f12a`
 
 On that exact development checkpoint:
 
@@ -38,13 +38,13 @@ On that exact development checkpoint:
 - protected 24/7 verification: PASS
 - inline parser and browser startup: PASS
 - dedicated real-crossing Bridge persistence regression: PASS
-- Manual Edit mobile stress: PASS
+- multi-viewport Manual Edit stress: PASS
+- committed rough Pencil/Bin splice at 1× zoom: PASS
+- committed shaky/direction-changing Pencil/Bin splice at 6× zoom: PASS
 - Smart Route compatibility: PASS
 - generated HTML copy equality: PASS
 
-The real Bridge regression proves finite crossing coordinates survive staged replacement, splice, Done/save, reopen and redraw.
-
-The mobile stress harness covers tiny/small/large iPhone-sized viewports, Android phone, small tablet and orientation changes. Its fixture now validates itself before testing so a broken synthetic setup cannot masquerade as an app regression.
+The 1× and 6× gesture regression now performs actual saved route surgery: stage replacement → Bin old span → validate → Done. Test-fixture false alarms were corrected without unnecessary product-code changes.
 
 ## LIVE WEB STATE
 
@@ -54,38 +54,25 @@ The mobile stress harness covers tiny/small/large iPhone-sized viewports, Androi
 - Fresh-launch PR: `#6 — Publish fresh v0.58 web launcher`.
 - Fresh-launch main commit: `406dfdcc0bec0507825a0da9635147975b9bd7b1`.
 - Public real-device entry point: `https://william2535.github.io/FIRE-ZONE-PLAN-APP/web-v058.html`.
-- `web-v058.html` redirects to `index.html?pineapple=v058&fresh=<timestamp>` on every load, deliberately defeating reuse of an older v0.57 document.
+- `web-v058.html` redirects to `index.html?pineapple=v058&fresh=<timestamp>` on every load.
 - The portal explicitly shows **Web v0.58 · Android v0.57**.
 - The current packaged Android release remains **v0.57** until a separate v0.58 APK is built and released.
 - **DEVELOPMENT / CONTINUOUS SAVE:** `project-pineapple-v058`.
 
-### Delivery verification already performed
-
-The GitHub Pages deployment artifact for the v0.58 site was inspected and contained:
-
-- `index.html` titled v0.58;
-- `cbEditToggle`;
-- `cbEditBar`;
-- `cbEditBridge`;
-- the full manual-editor code;
-- `beta.html` labelled Web v0.58 / Android v0.57.
-
-Therefore, if an old bookmark/tab still shows v0.57 or lacks the editor, do **not** diagnose the repo from that tab. First open the fresh `web-v058.html` entry point above.
-
-## Branch divergence warning
+## Branch reconciliation warning
 
 Before the next publication, reconcile `project-pineapple-v058` with current `main`.
 
-At the 2026-09-26 hardening checkpoint the Pineapple branch was **6 commits behind `main`**. Those `main` changes include delivery/version-launcher work that must not be accidentally discarded by a future promotion.
+Do not assume the commits missing from Pineapple are harmless delivery-only changes. Inspect the exact commit/file differences first, then preserve both sides deliberately.
 
 ## NEXT EXACT STEP
 
 1. Continue on `project-pineapple-v058`, not `main`.
-2. Deepen Manual Edit stress with **committed** Pencil/Bin edits using fast, shaky, diagonal and direction-changing touch paths — the current mobile stress pass mainly proves controls, cancellation, mode switching and resize/orientation safety.
-3. Add explicit zoomed-in and zoomed-out Manual Edit coverage for coordinate conversion and hit tolerances.
-4. Keep Bridge persistence, Smart Route, routing, capture, protected-24/7 and generated-copy gates green.
-5. Before the next coherent web milestone, reconcile the branch with current `main`, rerun all gates, then promote only the known-good result.
-6. After any future promotion, verify GitHub Pages, `index.html`, `beta.html`, visible version labels and the fresh launcher together.
+2. Inspect every current `main`-only commit/file change that Pineapple is missing.
+3. Reconcile `main` into Pineapple carefully while preserving the green editor/routing/capture state and the live delivery/version-launcher work.
+4. Rerun all three Pineapple lanes after reconciliation.
+5. Do **not** publish a new web milestone just because test coverage improved; wait for a coherent product milestone.
+6. Before any future promotion, verify Pages, `index.html`, `beta.html`, visible version labels and the fresh launcher together.
 
 ## Continuous-save rule
 
@@ -94,7 +81,7 @@ Operation Pineapple must never rely on chat state alone.
 - Commit every meaningful logical change to `project-pineapple-v058` as it is completed.
 - Commit before risky structural edits.
 - Update `.github/PROJECT_PINEAPPLE_CHECKPOINT.md` whenever the active blocker, test result, deployment result or next step changes materially.
-- Keep this START HERE file short and current: working branch, live-web state, latest known-good milestone/development checkpoint and next exact step.
+- Keep this START HERE file short and current.
 - Prefer small reproducible changes over one giant unsaved edit.
 - Never leave a long investigation only in conversation history.
 
@@ -107,15 +94,15 @@ When a major milestone is reached:
 1. all relevant Pineapple CI must be green;
 2. protected 24/7 verification must remain green;
 3. generated app copies must agree;
-4. reconcile current `main` into the development line if the branches have diverged;
-5. publish/merge the known-good milestone to `main`;
-6. verify the actual Pages deployment/run and, where practical, its built artifact;
+4. reconcile current `main` into development if branches have diverged;
+5. publish/merge only a known-good coherent milestone to `main`;
+6. verify the actual Pages deployment/run and, where practical, its artifact;
 7. verify `index.html`, `beta.html`, visible version labels and launch URLs;
-8. publish/update a version-specific fresh launcher for real-device testing;
+8. update the fresh launcher when appropriate;
 9. immediately record the deployed web state here and in the checkpoint;
-10. continue experimental work on the Pineapple branch rather than using the live web app as the scratchpad.
+10. continue experimental work on Pineapple rather than using the live web app as the scratchpad.
 
-Do **not** publish every tiny diagnostic/test-only commit to the web app.
+Do **not** publish every diagnostic/test-only commit to the web app.
 
 ## Safety invariant
 
