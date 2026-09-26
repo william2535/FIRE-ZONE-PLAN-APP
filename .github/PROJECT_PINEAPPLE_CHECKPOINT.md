@@ -10,100 +10,104 @@ Read `/PROJECT_PINEAPPLE_START_HERE.md` first. It is the short, obvious entry po
 
 - Development branch: `project-pineapple-v058`
 - Stable web branch: `main`
-- **Current live web milestone:** `89eee3561d652f510458a172151d1d1cdb849dfd`
-- Milestone PR: `#3 — Publish Pineapple v0.58 web milestone`
-- Exact release-gate checkpoint before merge: `5f4ec568487216648151f1cc84f0a6283649c2d8`
+- Current live web milestone remains Pineapple v0.58.
+- Core milestone merge: `89eee3561d652f510458a172151d1d1cdb849dfd`
+- Exact original release-gate checkpoint: `5f4ec568487216648151f1cc84f0a6283649c2d8`
 - Protected 24/7 build must remain unchanged.
+- Do not promote the development branch blindly: at the 2026-09-26 hardening checkpoint it was still **6 commits behind `main`** and must be reconciled with current `main` before any future milestone publication.
 
 ## Current objective
 
-Continue v0.58 Circuit Builder/manual-editor hardening autonomously while preserving accepted Smart Route/capture behaviour. Save continuously to Pineapple. Promote only coherent green major milestones to `main` for real-device web testing.
+Continue v0.58 Circuit Builder/manual-editor hardening autonomously while preserving accepted Smart Route/capture behaviour. Save continuously to Pineapple. The real-crossing Bridge regression and first multi-viewport Manual Edit stress pass are now complete and green.
 
-## First formal web milestone — DEPLOYED
+## Latest known-green development checkpoint
 
-**Pineapple v0.58 — Manual Editor Core Green** was promoted to `main` at:
+`3f1d1ebb91fca27824fd4ad0cbc8c0cf829366ff`
 
-`89eee3561d652f510458a172151d1d1cdb849dfd`
-
-Before promotion, checkpoint `5f4ec568487216648151f1cc84f0a6283649c2d8` passed all three normal Pineapple release lanes:
+All three Pineapple lanes passed on this exact head:
 
 - manual editor: PASS
 - routing compatibility: PASS
 - aggressive-touch / capture transition: PASS
 
-The Pineapple release checks also preserve:
+The editor lane additionally passed:
 
-- protected 24/7 verification: PASS
-- inline JavaScript parser: PASS
-- clean browser startup: PASS
-- generated app-copy equality: PASS
-- visible browser/app title: v0.58
+- protected 24/7 verification
+- inline JavaScript parser
+- clean browser startup
+- draft-first manual editor behaviour
+- dedicated real Bridge crossing persistence
+- Manual Edit mobile stress across 320×568, 375×667, 430×932, 412×915 and 768×1024 viewports plus orientation changes
+- Cleanup extremes and mode switching
+- touch cancellation cleanup
+- Smart Route compatibility
+- generated app-copy equality
 
-## Green foundations
+## What was hardened in this pass
 
-- Former parser crash is fixed. Root cause was `cbEditAnchorAt()` missing the brace closing its outer leg loop before `return best`.
-- Parser repair commit: `2a35764842c87fa897064b0d9a2e7117f9b5923a`.
+### Dedicated real-crossing Bridge regression — GREEN
+
+`tests/circuit-bridge-crossing-v058.cjs` now proves:
+
+1. a genuine crossing is rejected with Bridge OFF;
+2. the same crossing is accepted with Bridge ON;
+3. bridge marker coordinates are finite;
+4. bridge metadata survives staged replacement and splice commit;
+5. Done/save succeeds;
+6. the saved circuit can be reopened and redrawn with the bridge intact.
+
+This protects the repaired Bridge coordinate-shadowing defect where a crossing callback previously shadowed numeric canvas height `h`.
+
+### Multi-viewport Manual Edit stress harness — GREEN
+
+`tests/circuit-editor-mobile-stress-v058.cjs` now covers:
+
+- tiny iPhone: 320×568
+- small iPhone: 375×667
+- large iPhone: 430×932
+- typical Android: 412×915
+- small tablet: 768×1024
+- portrait → landscape → portrait resizing
+- real control hit boxes and viewport overflow
+- rapid Pencil/Bin and Bridge mode switching
+- Cleanup 0 / 100 / 45 states
+- pointer cancellation and stale-pointer cleanup
+- Done/save after the stress sequence
+
+Two false alarms in the new harness were explicitly corrected instead of being misdiagnosed as app bugs:
+
+1. Cleanup is `.cbEditOptionsPanel` inside `#cbEditOptions`; the first harness revision incorrectly looked for a nonexistent `#cbEditOptionsPanel` ID.
+2. JavaScript-created PointerEvents are not real browser-active pointers, so the harness now follows the existing repo convention of stubbing pointer capture for synthetic touch input.
+3. The original seeded orthogonal route could create a duplicate elbow on a horizontally aligned leg; fixture legs now pass through `cbEditSimplifyBoard()` and the harness asserts the seeded route is valid before any stress action.
+
+These were test-harness defects. No unnecessary product-code change was made for them.
+
+## Green foundations retained
+
+- Parser repair remains green.
 - Browser startup reaches the normal ready state with editor controls mounted.
 - Routing compatibility remains green.
 - Aggressive-touch / capture transition remains green.
-- Generated app copies remain synchronized by Pineapple checks.
-
-## Manual editor milestone — GREEN
-
-The manual-editor regression covers:
-
-1. persisted draft-first edit session;
-2. Pencil replacement staging;
-3. Bin committing the staged replacement;
-4. actual route-coordinate change;
-5. local bridge bookkeeping;
-6. explicit `ROUTE OPEN` state after local deletion;
-7. Undo restoring connectivity;
-8. Redo restoring the gap;
-9. Done rejecting an open route;
-10. Undo repairing the route;
-11. validation passing on the repaired route;
-12. Done successfully committing the repaired route and clearing the draft;
-13. cleanup remaining orthogonal and non-increasing in complexity;
-14. Smart Route compatibility and generated-copy equality.
-
-## Bridge coordinate defect — repaired
-
-A genuine app bug was confirmed in Bridge mode:
-
-`conflict.crossings.map(h => ({ point: cbPxBoard(h.point, w, h), ... }))`
-
-The callback parameter `h` shadowed the numeric canvas-height argument `h`, so a crossing object could be passed to `cbPxBoard()` where height was expected.
-
-The generated app and generator source now use:
-
-`conflict.crossings.map(hit => ({ point: cbPxBoard(hit.point, w, h), ... }))`
-
-This preserves the real canvas height during coordinate conversion.
+- Generated app copies remain synchronized.
+- Protected 24/7 remains unchanged.
+- Manual editor Pencil/Bin splice, gaps, Undo/Redo, ROUTE OPEN protection, Cleanup, Bridge and Done remain green.
 
 ## NEXT EXACT STEP
 
 1. Continue from `project-pineapple-v058`, not `main`.
-2. Add a dedicated real-crossing Bridge regression rather than relying only on source inspection.
-3. Prove bridge markers are finite and survive staged replacement, splice commit, Done/save, reopen and redraw.
-4. Break-test manual editing across:
-   - small iPhone portrait;
-   - larger iPhone portrait;
-   - typical Android phone;
-   - small tablet;
-   - landscape/desktop;
-   - zoomed in/out;
-   - fast, shaky, diagonal and awkward input.
-5. Keep editor/routing/capture/protected-24-7/generated-copy gates green.
-6. When the next coherent feature set is green, publish a new major milestone to `main` and replace the live-web SHA in START HERE and this checkpoint.
+2. Deepen Manual Edit gesture stress beyond cancellation-only input: committed Pencil edits and Bin operations under fast, shaky, diagonal and direction-changing touch paths.
+3. Add explicit zoomed-in and zoomed-out Manual Edit coverage so coordinate conversion and hit tolerances are tested at realistic extremes.
+4. Preserve Bridge persistence, Smart Route, routing, capture, generated-copy and protected-24/7 gates while doing this.
+5. Before the next web milestone, reconcile the Pineapple branch with the current `main` because `main` has delivery/version-launcher commits not present in the branch.
+6. Only after reconciliation and a completely green release gate should a coherent next milestone be promoted to `main`; then verify Pages, `index.html`, `beta.html`, visible versions and the fresh launcher together.
 
 ## Continuous-save rule
 
 - Save every meaningful logical change to `project-pineapple-v058` continuously.
 - Commit before risky structural edits.
 - Update this checkpoint whenever the active blocker, CI outcome, known-good commit or next exact step changes materially.
-- Update `/PROJECT_PINEAPPLE_START_HERE.md` at major milestones so a new session has one obvious entry point.
-- Prefer small reproducible commits/patchers over broad unsaved changes.
+- Update `/PROJECT_PINEAPPLE_START_HERE.md` when the handoff/next step materially changes or at major milestones.
+- Prefer small reproducible changes over broad unsaved changes.
 - Never leave a long investigation existing only in chat state.
 
 ## Web milestone rule
@@ -113,8 +117,10 @@ At each major milestone:
 1. require relevant Pineapple tests to be green;
 2. require protected 24/7 verification to stay green;
 3. require generated app copies to agree;
-4. promote/merge the known-good milestone to `main`;
-5. record the exact deployed `main` SHA in START HERE and this checkpoint;
-6. return experimental work to the Pineapple branch.
+4. reconcile current `main` into the development line before promotion if the branches have diverged;
+5. promote/merge the known-good milestone to `main`;
+6. record the exact deployed `main` SHA in START HERE and this checkpoint;
+7. verify the actual GitHub Pages deployment/run and, where practical, its artifact;
+8. verify `index.html`, `beta.html`, visible version labels and launch URLs together.
 
-Do not publish every diagnostic commit to the web app; publish coherent, usable milestones.
+Do not publish every diagnostic/test-only commit to the web app; publish coherent, usable milestones.
