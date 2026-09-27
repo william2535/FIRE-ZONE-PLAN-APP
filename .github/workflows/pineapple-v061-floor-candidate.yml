@@ -9,6 +9,7 @@ on:
       - '.github/workflows/publish-v061-release.yml'
       - 'tests/floor-workflow-v061.cjs'
       - 'tests/release-v061.cjs'
+      - 'tests/circuit-zone-game-v054.cjs'
 permissions:
   contents: write
 jobs:
