@@ -6,6 +6,7 @@ on:
       - '.github/pineapple_v059_release.py'
       - '.github/workflows/pineapple-v059-release-candidate.yml'
       - 'tests/run-regressions.cjs'
+      - 'tests/circuit-zone-game-v054.cjs'
       - 'tests/circuit-editor-rebase-v058.cjs'
       - 'tests/circuit-editor-interruptions-v058.cjs'
 permissions:
