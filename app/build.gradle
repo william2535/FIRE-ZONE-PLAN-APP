@@ -6,8 +6,8 @@ android {
  applicationId 'com.zonesketch.app'
  minSdk 26
  targetSdk 34
- versionCode 60
- versionName '0.59'
+ versionCode 61
+ versionName '0.60'
  }
  compileOptions {
  sourceCompatibility JavaVersion.VERSION_17
