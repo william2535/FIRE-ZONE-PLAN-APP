@@ -1,0 +1,30 @@
+name: Publish Zone Sketch v0.60 release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'downloads/Zone-Sketch-by-Will-v0.60.apk'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify v0.60 release candidate
+        run: |
+          test -f downloads/Zone-Sketch-by-Will-v0.60.apk
+          node tests/release-v060.cjs
+          python .github/verify_247_protected.py
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.60 >/dev/null 2>&1; then
+            gh release upload v0.60 downloads/Zone-Sketch-by-Will-v0.60.apk --clobber
+          else
+            gh release create v0.60 downloads/Zone-Sketch-by-Will-v0.60.apk \
+              --target "${GITHUB_SHA}" \
+              --title "Zone Sketch by Will v0.60" \
+              --notes "Pineapple v0.60: completed conventional circuits now recover safe stale device/panel references instead of falsely reporting missing surveyed devices, while genuine survey moves still require attention. Includes refreshed symbol lookup invalidation and matched web/Android delivery."
+          fi
