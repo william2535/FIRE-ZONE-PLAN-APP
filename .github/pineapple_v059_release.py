@@ -42,10 +42,18 @@ master = replace_once(
 )
 
 # Keep Circuit Builder confirmation toasts clear of the bottom action row and iOS safe area.
-# This is intentionally scoped to the full-screen builder so ordinary app notices keep their
-# normal low-screen position. The guard makes repeated release-candidate runs idempotent.
-toast_guard = '#circuitBuilder:not([hidden])~.uiToastStack{bottom:calc(72px + env(safe-area-inset-bottom))}'
-if toast_guard not in master:
+# The earlier 72px release candidate still clipped the action row by 6px at 375px wide,
+# so migrate that guard to 96px and preserve idempotence on repeated candidate runs.
+old_toast_guard = '#circuitBuilder:not([hidden])~.uiToastStack{bottom:calc(72px + env(safe-area-inset-bottom))}'
+toast_guard = '#circuitBuilder:not([hidden])~.uiToastStack{bottom:calc(96px + env(safe-area-inset-bottom))}'
+if old_toast_guard in master:
+    master = replace_once(
+        master,
+        old_toast_guard,
+        toast_guard,
+        'Circuit Builder toast clearance migration',
+    )
+elif toast_guard not in master:
     circuit_css_anchor = '/* Circuit Builder — more like a finished field product, still uncluttered. */'
     master = replace_once(
         master,
