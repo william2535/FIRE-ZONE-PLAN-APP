@@ -68,6 +68,14 @@ jobs:
             test-results/*.png
             test-results/*.pdf
           if-no-files-found: error
+      - name: Verify branch did not move during candidate build
+        run: |
+          git fetch origin project-pineapple-v058
+          REMOTE_SHA=$(git rev-parse origin/project-pineapple-v058)
+          if [ "$REMOTE_SHA" != "$GITHUB_SHA" ]; then
+            echo "Development branch moved from $GITHUB_SHA to $REMOTE_SHA while the candidate was testing. Refusing to publish stale generated files."
+            exit 1
+          fi
       - name: Commit tested v0.59 candidate
         run: |
           git config user.name 'william2535'
