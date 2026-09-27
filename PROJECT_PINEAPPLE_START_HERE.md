@@ -65,6 +65,18 @@ The 1× and 6× gesture regression now performs actual saved route surgery: stag
 
 All three CI lanes passed on the exact remote merge commit: manual editor run `36331032811`, routing compatibility run `36331032678`, and capture transition run `36331032776`. The editor lane also verifies the protected build, parser, browser startup, Bridge crossing, mobile stress, committed zoom gestures and generated-copy equality.
 
+## Active pass — 27 September 2026: mobile editor interruption safety
+
+Development branch: `project-pineapple-v058`. Starting checkpoint: `3fc08209f638d02ddfbde844706d1de39114ba2d`; current live milestone is web v0.58 / packaged Android v0.57.
+
+Completed work from earlier passes: post-capture rubber-band fix, draft-first Pencil/Bin/Bridge/Cleanup/Done editor, real Bridge persistence, mobile/zoom gesture stress, and reconciliation with main through `37bb435`. Do not redo those implementations. The historical requirements below remain acceptance criteria.
+
+This active pass reproduced two production defects before changing code: view/app interruption left a live editor stroke/tap armed, and an out-and-back Bin drag was mistaken for a deliberate deletion tap. The baseline input-state regression failed 3 of 4 assertions. Both are fixed locally (4/4 pass), with explicit lost-pointer-capture recovery and mode-specific hints added. Earlier staged replacements are preserved.
+
+Validation pending: new Chromium/WebKit interruption/30-cycle/save-reload/As-Fit regression, full serial suite (now including all v0.58 editor gates), Android build, visual audit and second fresh-eyes pass. No new public milestone yet. If interrupted, inspect current branch CI and fix failures before promotion; do not describe this as the premium loop being complete.
+
+Continuation rule confirmed by Will: keep making useful improvements within the session after the first green CI run, and update this brief, NEXT_PROMPT, START_HERE and the checkpoint at meaningful steps. Do not end a pass merely by recording an unspecified future task.
+
 ## NEXT EXACT STEP
 
 1. Continue on `project-pineapple-v058`, not `main`; the development branch now includes the current main history.

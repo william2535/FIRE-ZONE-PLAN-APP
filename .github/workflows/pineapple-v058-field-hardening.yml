@@ -1,0 +1,73 @@
+name: Pineapple field hardening
+on:
+  push:
+    branches: [project-pineapple-v058]
+    paths:
+      - 'index.html'
+      - 'tests/**'
+      - 'app/**'
+      - '.github/workflows/pineapple-v058-field-hardening.yml'
+permissions:
+  contents: read
+jobs:
+  full-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify protected demo and generated copies
+        run: |
+          python .github/verify_247_protected.py
+          cmp index.html ZoneSketch.html
+          cmp index.html Zone-Sketch-by-Will.html
+          cmp index.html app/src/main/assets/index.html
+      - name: Install browser runtime
+        run: |
+          npm install --no-save acorn@8.15.0 playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Run the complete serial regression suite
+        run: node tests/run-regressions.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Pineapple-field-previews
+          path: test-results/pineapple-input*.png
+  webkit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install WebKit runtime
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps webkit
+      - name: Replay mobile editor interruptions in WebKit
+        env:
+          PINEAPPLE_BROWSER: webkit
+        run: node tests/circuit-editor-interruptions-v058.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Pineapple-webkit-previews
+          path: test-results/pineapple-input*.png
+  android:
+    needs: [full-regression, webkit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build development APK without releasing it
+        run: gradle --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Pineapple-development-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
