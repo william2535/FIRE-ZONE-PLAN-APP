@@ -29,6 +29,10 @@ replace("$('cbCanvas').onpointercancel=cbCanvasCancel;$('cbCanvas').addEventList
         "$('cbCanvas').onpointercancel=cbCanvasCancel;$('cbCanvas').onlostpointercapture=cbCanvasCancel;$('cbCanvas').addEventListener('wheel'")
 replace("$(id)?.classList.toggle('active',on);if($('cbEditBridge'))",
         "{$(id)?.classList.toggle('active',on);$(id)?.setAttribute('aria-pressed',String(on))}if($('cbEditBridge'))")
+replace("if($('cbComplete'))$('cbComplete').hidden=true}",
+        "if($('cbComplete'))$('cbComplete').hidden=true;cbUpdateGame()}")
+replace("$('cbDetectorLeft').textContent=cbCircuit.complete?",
+        "$('cbDetectorLeft').textContent=cbEdit?.active?(cbEditRouteOpen()?'ROUTE OPEN':cbCircuit.editDraft?.pending?'REPLACEMENT READY':'EDITING'):cbCircuit.complete?")
 hint = "function cbEditHint(){const d=cbCircuit?.editDraft;if(cbEdit?.stroke)return 'Pencil · keep drawing, then finish on cable or a device on this leg';if(d?.pending)return 'Replacement ready · use Bin on the old section, then Done';if(cbEdit?.mode==='bin')return 'Bin · tap one cable section to remove it · Undo restores it';if(d?.gaps?.length)return 'Route open · Pencil across the gap, then Done to validate';return 'Pencil · start on cable or a device, then finish on the same leg'}"
 if hint not in text:
     replace('function cbPaintBoard(){', hint + '\nfunction cbPaintBoard(){')

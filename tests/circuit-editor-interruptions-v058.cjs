@@ -7,11 +7,11 @@ const expose = `window.inputTest={
  {id:'panel',type:'panel',scope:'plan',x:.12,y:.20,reference:'FAP'},
  {id:'d0',type:'smoke',scope:'survey',x:.78,y:.20,reference:'L1/001'},
  {id:'d1',type:'heat',scope:'survey',x:.78,y:.80,reference:'L1/002'}];
- await setImage(state.image,false);ensureFloors();openCircuitBuilder();const c=cbNewCircuit('addressable',cbSurveyDevices()),A=c.layout.panel,B=c.layout.d0,C=c.layout.d1;
+ await activateProject(uid(),state);hideProjects();openCircuitBuilder();const c=cbNewCircuit('addressable',cbSurveyDevices()),A=c.layout.panel,B=c.layout.d0,C=c.layout.d1;
  c.sequence=['panel','d0','d1','panel'];c.legs=[{from:'panel',to:'d0',points:[A,B]},{from:'d0',to:'d1',points:[B,C]},{from:'d1',to:'panel',points:[C,{x:A.x,y:C.y},A]}];
  c.complete=true;c.bridges=[];c.updatedAt=Date.now();cbOpenCircuit(c);cbEnterEdit(c);return c.id},
  point:(t=.5)=>{const r=$('cbCanvas').getBoundingClientRect(),pts=cbCircuit.editDraft.legs[0].points,a=pts[0],b=pts.at(-1),q=cbBoardPx({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t},r.width,r.height);return{x:r.left+q.x,y:r.top+q.y}},
- read:()=>JSON.parse(JSON.stringify({draft:cbCircuit?.editDraft,legs:cbCircuit?.legs,edit:cbEdit,ids:[...cbPointers.keys()],lock:cbGestureLock,pinch:!!cbPinch,hint:$('cbBoardHint').textContent,status:$('cbEditStatus').textContent})),
+ read:()=>JSON.parse(JSON.stringify({draft:cbCircuit?.editDraft,legs:cbCircuit?.legs,edit:cbEdit,ids:[...cbPointers.keys()],lock:cbGestureLock,pinch:!!cbPinch,hint:$('cbBoardHint').textContent,status:$('cbEditStatus').textContent,hud:$('cbDetectorLeft').textContent})),
  save:()=>saveNow(),
  reopen:()=>{openCircuitBuilder();cbOpenCircuit(cbCircuits()[0]);return cbCircuits().length},
  exportData:()=>({segments:cbAsFitSegments(),expected:cbCircuit.legs.flatMap(leg=>{const pts=cbPlanPathForLeg(cbCircuit,leg);return pts.slice(1).map((p,i)=>({a:pts[i],b:p,color:cbCircuit.color||'#2675db'}))})}),
@@ -55,9 +55,9 @@ async function run(browser,viewport){
  assert.deepEqual((await read(page)).draft,original,'out-and-back Bin drag must not delete');
  // A real tap still deletes exactly one local section, followed by repeated history cycles.
  await touch(page,'pointerdown',12,p);await touch(page,'pointerup',12,p,0);await settle(page);
- assert.equal((await read(page)).draft.gaps.length,1);assert.match((await read(page)).status,/ROUTE OPEN/);
+ assert.equal((await read(page)).draft.gaps.length,1);assert.match((await read(page)).status,/ROUTE OPEN/);assert.equal((await read(page)).hud,'ROUTE OPEN');
  for(let i=0;i<30;i++){
-  await page.locator('#cbEditUndo').click();assert.deepEqual((await read(page)).draft,original,`undo cycle ${i}`);
+  await page.locator('#cbEditUndo').click();assert.deepEqual((await read(page)).draft,original,`undo cycle ${i}`);assert.equal((await read(page)).hud,'EDITING');
   await page.locator('#cbEditRedo').click();assert.equal((await read(page)).draft.gaps.length,1,`redo cycle ${i}`);
  }
  await page.locator('#cbEditUndo').click();await page.locator('#cbEditPencil').click();await settle(page);
@@ -67,10 +67,10 @@ async function run(browser,viewport){
  await touch(page,'pointerdown',13,a);
  for(const p of [{x:a.x,y:a.y+50},{x:b.x,y:b.y+50},b])await touch(page,'pointermove',13,p);
  await touch(page,'pointerup',13,b,0);await settle(page);
- const staged=(await read(page)).draft;assert(staged.pending,'Pencil must stage real replacement');assert.match((await read(page)).hint,/Replacement ready/);
+ const staged=(await read(page)).draft;assert(staged.pending,'Pencil must stage real replacement');assert.match((await read(page)).hint,/Replacement ready/);assert.equal((await read(page)).hud,'REPLACEMENT READY');
  await begin(page,14);await page.evaluate(()=>window.dispatchEvent(new Event('blur')));await touch(page,'pointerup',14,a,0);
  assert.deepEqual((await read(page)).draft,staged,'blur must preserve earlier staged replacement');
- await page.evaluate(()=>inputTest.save());await page.reload();await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
+ assert.equal(await page.evaluate(()=>inputTest.save()),true,'named project must save successfully');await page.reload();await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
  await page.evaluate(()=>{document.querySelector('#projectsHome').hidden=true;inputTest.reopen()});await settle(page);
  assert.deepEqual((await read(page)).draft,staged,'reload must restore exact staged route');
  await page.locator('#cbEditBin').click();p=await page.evaluate(()=>inputTest.point());await touch(page,'pointerdown',15,p);await touch(page,'pointerup',15,p,0);

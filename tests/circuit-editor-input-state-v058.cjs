@@ -44,3 +44,23 @@ test('Bin still accepts a deliberate tap with minor finger wobble', () => {
   s.cbEditPointerUp({pointerId: 7}, {x: 51, y: 52}, 300, 400);
   assert.equal(s.deletions, 1);
 });
+test('editing an open route must not keep the LOOP CLOSED completion badge', () => {
+  const s = fixture(), elements = new Map();
+  s.cbScreen = 'game';
+  s.cbCircuit = {complete: true, type: 'addressable', panelId: 'p', sequence: ['p','d','p'], legs: [{}], editDraft: {gaps: [{}]}};
+  s.cbGameCounts = () => ({total: 1, done: 1, ready: true});
+  s.cbEditRouteOpen = () => s.cbCircuit.editDraft.gaps.length > 0;
+  s.$ = id => {
+    if (!elements.has(id)) elements.set(id, {textContent: '', style: {}, classList: {toggle(){}}, setAttribute(){}, querySelector:()=>({textContent:''})});
+    return elements.get(id);
+  };
+  vm.runInContext(source.split('\n').find(line=>line.startsWith('function cbUpdateGame(')), s);
+  s.cbUpdateGame();
+  assert.equal(s.$('cbDetectorLeft').textContent, 'ROUTE OPEN');
+  s.cbCircuit.editDraft.gaps = [];
+  s.cbUpdateGame();
+  assert.equal(s.$('cbDetectorLeft').textContent, 'EDITING');
+  s.cbEdit = null;
+  s.cbUpdateGame();
+  assert.equal(s.$('cbDetectorLeft').textContent, 'LOOP CLOSED');
+});
