@@ -1,3 +1,4 @@
+# Full release gate for the v0.60 circuit-reference recovery candidate.
 name: Pineapple v0.60 release candidate
 on:
   push:
