@@ -439,3 +439,12 @@ The long-term test is simple:
 > Give a competent fire-alarm engineer a tablet and a finished installation. Can they produce a clean, traceable, professional As-Fitted drawing locally before leaving site, quickly enough that sending marked-up paper back to an office CAD technician feels unnecessarily slow for ordinary jobs?
 
 Circuit Builder, Survey and As-Fit work should keep moving toward that target on every premium-hardening pass.
+
+
+## 27 September 2026 reference and input-safety review
+
+Revisited QDOS As-Fitted Drawings and Fire Alarm CAD As-Fitted Diagrams pages above; visually inspected the latter’s public Falkland Primary School sample (small preview, not detailed dimensional evidence). The general drawing convention remains a restrained building plan, explicit coloured system routes, concise device references and a separate legend/title/revision column. This is a product-quality reference, not a new claim about standards compliance.
+
+This pass’s adoption is route fidelity: interrupted Pencil input must not alter a previously staged route; undo/reload and As-Fit generation must preserve the committed route. The benchmark exports now compare every As-Fit segment against the committed edited circuit. A fuller used-symbol legend, drawing/revision title panel and dense label-placement audit remain next output priorities; the simple header/circuit key is not yet CAD parity.
+
+For input lifecycle semantics, checked W3C Pointer Events (https://www.w3.org/TR/pointerevents/): capture loss also follows ordinary pointerup/pointercancel. Recovery therefore ignores already-removed pointer IDs so normal release cannot cancel committed edits.
