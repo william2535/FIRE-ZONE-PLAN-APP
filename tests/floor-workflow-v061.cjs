@@ -14,13 +14,15 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     await page.locator('#projectsHome').waitFor({state:'hidden'});
 
     async function addZone(number,name){
-      await page.evaluate(()=>openModal());
+      await page.locator('#zoneMenuBtn').click();
+      await page.locator('#zoneCreate').click();
       await page.locator('#zoneNo').fill(String(number));
       await page.locator('#zoneName').fill(name);
       await page.locator('#saveZone').click();
     }
     async function drawZoneBox(x1,y1,x2,y2){
-      await page.evaluate(()=>setTool('rect'));
+      await page.locator('#zoneMenuBtn').click();
+      await page.locator('[data-menu-tool="rect"]').click();
       const b=await page.locator('#canvas').boundingBox();
       await page.mouse.move(b.x+x1,b.y+y1);await page.mouse.down();await page.mouse.move(b.x+x2,b.y+y2,{steps:5});await page.mouse.up();
     }
