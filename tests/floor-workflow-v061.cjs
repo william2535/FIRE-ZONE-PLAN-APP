@@ -1,9 +1,10 @@
-const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
+const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
 (async()=>{
   const server=http.createServer((q,r)=>{const p=(q.url||'/').split('?')[0],file=p==='/'?'index.html':p.slice(1);try{const data=fs.readFileSync(file);r.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':'text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
   await new Promise(r=>server.once('listening',r));
-  const browser=await chromium.launch({headless:true});
+  const engine=process.env.PINEAPPLE_BROWSER==='webkit'?webkit:chromium;
+  const browser=await engine.launch({headless:true});
   try{
     const page=await browser.newPage({viewport:{width:1180,height:820}}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));
@@ -86,8 +87,8 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
     const floorSwitch=await page.locator('.cbFloorSwitch').boundingBox();
     assert(floorSwitch&&floorSwitch.width>300,'Circuit floor switch should remain usable on phone/tablet widths');
     fs.mkdirSync('test-results',{recursive:true});
-    await page.screenshot({path:'test-results/floor-workflow-v061.png'});
+    await page.screenshot({path:`test-results/floor-workflow-v061-${process.env.PINEAPPLE_BROWSER||'chromium'}.png`});
     assert.deepEqual(errors,[]);
-    console.log('PASS v0.61: zone data and selected zone survive floor switches; Circuit Builder can switch floors in place');
+    console.log(`PASS v0.61 (${process.env.PINEAPPLE_BROWSER||'chromium'}): zone data and selected zone survive floor switches; Circuit Builder can switch floors in place`);
   }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
