@@ -1,0 +1,30 @@
+name: Publish Zone Sketch v0.61 release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'downloads/Zone-Sketch-by-Will-v0.61.apk'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify v0.61 release candidate
+        run: |
+          test -f downloads/Zone-Sketch-by-Will-v0.61.apk
+          node tests/release-v061.cjs
+          python .github/verify_247_protected.py
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.61 >/dev/null 2>&1; then
+            gh release upload v0.61 downloads/Zone-Sketch-by-Will-v0.61.apk --clobber
+          else
+            gh release create v0.61 downloads/Zone-Sketch-by-Will-v0.61.apk \
+              --target "${GITHUB_SHA}" \
+              --title "Zone Sketch by Will v0.61" \
+              --notes "Pineapple v0.61: multi-floor workflow release. Circuit Builder now lets engineers switch floors without leaving the wiring workflow, with zones, surveyed devices, circuits and As-Fit state kept floor-specific. Zone Plan floor changes now snapshot zone data immediately and restore each floor's last selected zone instead of resetting it. Includes the v0.60 completed-circuit recovery and matched web/Android delivery."
+          fi
