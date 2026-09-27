@@ -55,6 +55,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
 
     await page.locator('#floorMenuBtn').click();await page.locator('.floorChoice').filter({hasText:'Ground floor'}).click();
     await page.waitForFunction(id=>document.querySelector('#floorSelect').value===id,groundId);
+    await page.waitForFunction(()=>[...document.querySelectorAll('#zones .zone b')].map(n=>n.textContent).join('|')==='Zone 1|Zone 2');
     assert.deepEqual(await page.locator('#zones .zone b').allTextContents(),['Zone 1','Zone 2']);
     assert.match(await page.locator('#zones .zone.active').innerText(),/Zone 2/,'Ground floor should restore its last selected zone instead of resetting to Zone 1');
     s=await saved();
@@ -62,6 +63,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
 
     await page.locator('#floorMenuBtn').click();await page.locator('.floorChoice').filter({hasText:'First floor'}).click();
     await page.waitForFunction(id=>document.querySelector('#floorSelect').value===id,firstId);
+    await page.waitForFunction(()=>[...document.querySelectorAll('#zones .zone b')].map(n=>n.textContent).join('|')==='Zone 11');
     assert.deepEqual(await page.locator('#zones .zone b').allTextContents(),['Zone 11']);
     s=await saved();
     assert.equal(s.shapes.length,1,'First floor zone geometry should remain isolated and saved');
