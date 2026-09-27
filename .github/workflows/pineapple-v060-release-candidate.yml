@@ -9,6 +9,7 @@ on:
       - 'tests/release-v060.cjs'
       - 'tests/run-regressions.cjs'
       - 'tests/circuit-reference-repair-v060.cjs'
+      - 'tests/projects.cjs'
 permissions:
   contents: write
 jobs:
