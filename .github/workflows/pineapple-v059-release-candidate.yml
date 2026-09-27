@@ -7,6 +7,7 @@ on:
       - '.github/workflows/pineapple-v059-release-candidate.yml'
       - 'tests/run-regressions.cjs'
       - 'tests/circuit-editor-rebase-v058.cjs'
+      - 'tests/circuit-editor-interruptions-v058.cjs'
 permissions:
   contents: write
 jobs:
