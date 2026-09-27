@@ -28,7 +28,7 @@ The v0.58 manual editor includes Pencil, Bin, Undo, Redo, Bridge, Cleanup and Do
 
 ## Latest known-green development hardening point
 
-**TESTED APP/TEST HEAD:** `ea7b0255b6e01d195f36b286f4e69e909a83f12a`
+**TESTED APP/TEST HEAD:** `4e7cf392d35d962923cba4c859fd66eb9824ca2a` (reconciled merge; same app/test tree as `7b0ed951fb758d05090d5bc364472bd493239b61`)
 
 On that exact development checkpoint:
 
@@ -59,20 +59,19 @@ The 1× and 6× gesture regression now performs actual saved route surgery: stag
 - The current packaged Android release remains **v0.57** until a separate v0.58 APK is built and released.
 - **DEVELOPMENT / CONTINUOUS SAVE:** `project-pineapple-v058`.
 
-## Branch reconciliation warning
+## Reconciled development checkpoint
 
-Before the next publication, reconcile `project-pineapple-v058` with current `main`.
+`main` at `37bb435ad82ef48d7cecf5d1da29231631af4140` was merged into Pineapple as `4e7cf392d35d962923cba4c859fd66eb9824ca2a` on 27 September 2026. The merge tree is identical to the prior Pineapple tree: the three visible v0.58 label corrections had already landed independently on both branches. The four generated app copies, beta portal, fresh launcher and protected 24/7 build were unchanged by the merge.
 
-Do not assume the commits missing from Pineapple are harmless delivery-only changes. Inspect the exact commit/file differences first, then preserve both sides deliberately.
+All three CI lanes passed on the exact remote merge commit: manual editor run `36331032811`, routing compatibility run `36331032678`, and capture transition run `36331032776`. The editor lane also verifies the protected build, parser, browser startup, Bridge crossing, mobile stress, committed zoom gestures and generated-copy equality.
 
 ## NEXT EXACT STEP
 
-1. Continue on `project-pineapple-v058`, not `main`.
-2. Inspect every current `main`-only commit/file change that Pineapple is missing.
-3. Reconcile `main` into Pineapple carefully while preserving the green editor/routing/capture state and the live delivery/version-launcher work.
-4. Rerun all three Pineapple lanes after reconciliation.
-5. Do **not** publish a new web milestone just because test coverage improved; wait for a coherent product milestone.
-6. Before any future promotion, verify Pages, `index.html`, `beta.html`, visible version labels and the fresh launcher together.
+1. Continue on `project-pineapple-v058`, not `main`; the development branch now includes the current main history.
+2. Choose the next concrete mobile/editor product improvement from real-device feedback, implement it in a small reproducible change, and run the relevant regressions.
+3. Keep all three Pineapple lanes, generated copies and protected 24/7 verification green.
+4. Do **not** publish a new web milestone merely for test or handoff changes; wait for a coherent usable product milestone.
+5. Before any future promotion, recheck divergence from `main`, then verify Pages, `index.html`, `beta.html`, visible version labels and the fresh launcher together.
 
 ## Continuous-save rule
 

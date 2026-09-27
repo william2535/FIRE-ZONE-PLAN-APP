@@ -14,11 +14,19 @@ Read `/PROJECT_PINEAPPLE_START_HERE.md` first. It is the short, obvious entry po
 - Core milestone merge: `89eee3561d652f510458a172151d1d1cdb849dfd`
 - Exact original release-gate checkpoint: `5f4ec568487216648151f1cc84f0a6283649c2d8`
 - Protected 24/7 build must remain unchanged.
-- Do not promote the development branch blindly: it still needs reconciliation with current `main` before any future milestone publication.
+- Current `main` history through `37bb435ad82ef48d7cecf5d1da29231631af4140` was reconciled into Pineapple as `4e7cf392d35d962923cba4c859fd66eb9824ca2a`; check again for later divergence before future publication.
+
+## Reconciliation completed — 27 September 2026
+
+- The latest two main-only commits added a one-shot visible-version hotfix and then removed it after correcting the four app copies. Pineapple had independently made the same three visible v0.58 text corrections.
+- The merge tree equals the preceding Pineapple tree byte for byte. No app, beta portal, fresh launcher, Android package or protected 24/7 content changed in the merge.
+- GitHub CI on the exact remote merge commit passed: manual editor `36331032811`, routing compatibility `36331032678`, capture transition `36331032776`.
+- The manual editor lane includes protected 24/7 verification, parser/startup, real Bridge crossing, mobile stress, committed 1× and 6× route surgery, Smart Route compatibility and generated-copy equality.
+- Local parser and protected build checks passed. Local browser tests could not start because this workspace could not download Playwright Chromium; the three GitHub CI lanes supply the browser results.
 
 ## Latest known-green development checkpoint
 
-**TESTED APP/TEST HEAD:** `ea7b0255b6e01d195f36b286f4e69e909a83f12a`
+**TESTED APP/TEST HEAD:** `4e7cf392d35d962923cba4c859fd66eb9824ca2a` (reconciled merge; same app/test tree as `7b0ed951fb758d05090d5bc364472bd493239b61`)
 
 All three Pineapple lanes passed on this exact head:
 
@@ -84,12 +92,10 @@ No product-code change was made for these harness defects.
 
 ## NEXT EXACT STEP
 
-1. Continue from `project-pineapple-v058`, not `main`.
-2. Inspect the exact commits/files that exist on current `main` but not Pineapple; do not assume they are delivery-only.
-3. Reconcile `main` into Pineapple carefully, preserving both the green v0.58 editor/routing work and current live delivery/version-launcher changes.
-4. Rerun all Pineapple gates after reconciliation and verify generated copies + protected 24/7.
-5. Do **not** publish a new web milestone merely because tests were hardened; publish only when the resulting product change is a coherent usable milestone.
-6. Before any future promotion, verify `index.html`, `beta.html`, visible version labels, fresh launcher and Pages together.
+1. Continue from `project-pineapple-v058`; reconciliation with `main` through `37bb435` and its three CI lanes are complete.
+2. Select a concrete mobile/editor improvement from real-device feedback and make a small reproducible product change.
+3. Run relevant Pineapple gates, generated-copy equality and protected 24/7 verification on the changed head.
+4. Publish only a coherent usable product milestone, then verify `index.html`, `beta.html`, visible version labels, fresh launcher and Pages together.
 
 ## Continuous-save rule
 
