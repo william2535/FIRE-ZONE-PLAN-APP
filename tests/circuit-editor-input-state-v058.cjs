@@ -64,3 +64,30 @@ test('editing an open route must not keep the LOOP CLOSED completion badge', () 
   s.cbUpdateGame();
   assert.equal(s.$('cbDetectorLeft').textContent, 'LOOP CLOSED');
 });
+function openFixture() {
+  const s=fixture();
+  Object.assign(s, {state:{zones:[],asFit:null},cbSelection:new Set(),
+    cbCircuitIssue:()=>false,cbResetView(){},cbShow(){},cbRenderLanding(){},cbEditSyncUi(){},
+    cbEnterEdit(){throw Error('A clean circuit must not inherit another circuit edit')},
+    $:()=>({textContent:'',hidden:false,classList:{toggle(){}},style:{setProperty(){}}})});
+  vm.runInContext(source.split('\n').find(line=>line.startsWith('function cbOpenCircuit(')),s);
+  return s;
+}
+test('opening another circuit clears the prior editor session without touching its draft',()=>{
+  const s=openFixture(),old=s.cbCircuit,saved=JSON.stringify(old.editDraft),next={id:'next',type:'addressable',complete:true,legs:[{}],name:'Loop 2'};
+  s.cbOpenCircuit(next);
+  assert.equal(s.cbCircuit,next);
+  assert.equal(s.cbEdit,null,'old editor must never handle input for the new circuit');
+  assert.equal(JSON.stringify(old.editDraft),saved);
+  assert.equal(next.editDraft,undefined);
+});
+test('confirmed survey rebuild removes obsolete edit geometry and bridges',()=>{
+  const s=openFixture(),c={id:'changed',type:'addressable',panelId:'p',deviceIds:['d'],sequence:['p','d','p'],legs:[{}],complete:true,bridges:[{}],editDraft:{legs:[{}],gaps:[{}]}};
+  Object.assign(s,{cbCircuitIssue:()=>true,cbSymbol:id=>({id,type:id==='p'?'panel':'smoke',scope:'survey'}),symbolScope:d=>d.scope,confirm:()=>true,push(){},persist(){},cbBoundsFor:()=>({x1:0,y1:0,x2:1,y2:1}),cbMakeLayout:()=>({})});
+  s.cbEnterEdit=()=>false;
+  s.cbOpenCircuit(c);
+  assert.equal(c.editDraft,undefined,'old manual edit must not survive an explicitly confirmed circuit rebuild');
+  assert.equal(c.bridges.length,0);
+  assert.equal(c.legs.length,0);
+  assert.equal(c.complete,false);
+});

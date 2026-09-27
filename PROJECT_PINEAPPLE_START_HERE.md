@@ -75,6 +75,8 @@ This active pass reproduced two production defects before changing code: view/ap
 
 Second audit: reproduced and fixed a stale LOOP CLOSED counter while the editor has an open route; it now follows EDITING / ROUTE OPEN / REPLACEMENT READY. Local production-function regression is 5/5. First browser run on `a2a4b5c8` passed the interruptions and 30 history cycles but failed reload because the synthetic fixture had no named project; the fixture now uses the real project activation path. Prior editor/Bridge/mobile/zoom tests remained green.
 
+Third audit: on `46ca44a6`, the editor/routing/capture lanes and new WebKit interruption/reload test passed. Full suite had only the pre-existing v0.58 title allow-list failure. Reproduced two further lifecycle defects: switching circuits retained the old editor session, and a confirmed survey rebuild retained obsolete editDraft/bridges. Both fixed; local production-function checks 7/7. Circuit list completion ticks now respect editing status. Browser regression extended to switch away/back and rebuild.
+
 Validation pending: new Chromium/WebKit interruption/30-cycle/save-reload/As-Fit regression, full serial suite (now including all v0.58 editor gates), Android build, visual audit and second fresh-eyes pass. No new public milestone yet. If interrupted, inspect current branch CI and fix failures before promotion; do not describe this as the premium loop being complete.
 
 Continuation rule confirmed by Will: keep making useful improvements within the session after the first green CI run, and update this brief, NEXT_PROMPT, START_HERE and the checkpoint at meaningful steps. Do not end a pass merely by recording an unspecified future task.

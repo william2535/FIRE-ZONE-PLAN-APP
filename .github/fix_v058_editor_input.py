@@ -33,6 +33,18 @@ replace("if($('cbComplete'))$('cbComplete').hidden=true}",
         "if($('cbComplete'))$('cbComplete').hidden=true;cbUpdateGame()}")
 replace("$('cbDetectorLeft').textContent=cbCircuit.complete?",
         "$('cbDetectorLeft').textContent=cbEdit?.active?(cbEditRouteOpen()?'ROUTE OPEN':cbCircuit.editDraft?.pending?'REPLACEMENT READY':'EDITING'):cbCircuit.complete?")
+replace("}cbCircuit=c;cbDrag=null;cbHover=null;cbSelection.clear();",
+        "}cbEdit=null;cbCircuit=c;cbEditSyncUi();cbDrag=null;cbHover=null;cbSelection.clear();")
+replace("c.legs=[];c.complete=false;c.eolId=null;state.asFit=null;persist()}",
+        "c.legs=[];delete c.editDraft;c.bridges=[];c.complete=false;c.eolId=null;state.asFit=null;persist()}")
+replace("b.className='cbZoneButton'+(c?.complete?' done':'')",
+        "b.className='cbZoneButton'+(c?.complete&&!c.editDraft?' done':'')")
+replace("c?.complete?'Complete':c?.legs?.length?'In progress':'Ready'",
+        "c?.editDraft?(c.editDraft.gaps?.length?'Route open':'Editing'):c?.complete?'Complete':c?.legs?.length?'In progress':'Ready'")
+replace("status.textContent=c?.complete?'✓':c?.legs?.length?'•':'›'",
+        "status.textContent=c?.editDraft?'✎':c?.complete?'✓':c?.legs?.length?'•':'›'")
+replace("row.className='cbCircuitRow'+(c.complete?' done':'')",
+        "row.className='cbCircuitRow'+(c.complete&&!c.editDraft?' done':'')")
 hint = "function cbEditHint(){const d=cbCircuit?.editDraft;if(cbEdit?.stroke)return 'Pencil · keep drawing, then finish on cable or a device on this leg';if(d?.pending)return 'Replacement ready · use Bin on the old section, then Done';if(cbEdit?.mode==='bin')return 'Bin · tap one cable section to remove it · Undo restores it';if(d?.gaps?.length)return 'Route open · Pencil across the gap, then Done to validate';return 'Pencil · start on cable or a device, then finish on the same leg'}"
 if hint not in text:
     replace('function cbPaintBoard(){', hint + '\nfunction cbPaintBoard(){')
