@@ -15,7 +15,7 @@ jobs:
         with:
           ref: project-pineapple-v058
           fetch-depth: 0
-      - name: Apply exact bridge coordinate repair
+      - name: Apply coordinate and mobile-edge repairs
         run: python .github/pineapple_v058_bridge_coordinate_fix.py
       - name: Verify protected 24/7 build
         run: python .github/verify_247_protected.py
@@ -23,20 +23,24 @@ jobs:
         run: |
           npm install --no-save acorn@8.15.0
           node tests/circuit-editor-syntax-v058.cjs
+      - name: Verify bounds rebase and editor state invariants
+        run: |
+          node tests/circuit-editor-rebase-v058.cjs
+          node tests/circuit-editor-input-state-v058.cjs
       - name: Verify generated app copies
         run: |
           cmp -s index.html ZoneSketch.html
           cmp -s index.html Zone-Sketch-by-Will.html
           cmp -s index.html app/src/main/assets/index.html
           git diff --check
-      - name: Commit bridge coordinate repair
+      - name: Commit repaired app copies
         run: |
           if git diff --quiet; then
-            echo 'No bridge coordinate changes to commit.'
+            echo 'No coordinate or bottom-edge changes to commit.'
             exit 0
           fi
           git config user.name 'william2535'
           git config user.email '48844093+william2535@users.noreply.github.com'
           git add .github/pineapple_v058_editor_patch.py index.html Zone-Sketch-by-Will.html ZoneSketch.html app/src/main/assets/index.html
-          git commit -m 'Fix manual editor bridge coordinate conversion'
+          git commit -m 'Preserve editor geometry across bounds changes and protect iPhone bottom edge'
           git push origin HEAD:project-pineapple-v058
