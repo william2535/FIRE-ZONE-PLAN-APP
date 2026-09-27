@@ -21,7 +21,7 @@ const expose = `window.inputTest={
  rebuild:()=>{cbSymbol('d0').x+=.05;cbOpenCircuit(cbCircuit);return{legs:cbCircuit.legs.length,draft:cbCircuit.editDraft||null,bridges:cbCircuit.bridges,complete:cbCircuit.complete,edit:cbEdit}}
 };`;
 const source = fs.readFileSync('index.html','utf8');
-const releaseToastGuard = '#circuitBuilder:not([hidden])~.uiToastStack{bottom:calc(72px + env(safe-area-inset-bottom))}';
+const releaseToastGuard = '#circuitBuilder:not([hidden])~.uiToastStack{bottom:calc(96px + env(safe-area-inset-bottom))}';
 const enforceReleaseToastClearance = source.includes(releaseToastGuard);
 const html = source.replace('ensureUiState();renderFloors();renderSymbolColors();', expose+'ensureUiState();renderFloors();renderSymbolColors();');
 const server=http.createServer((q,r)=>{const f=(q.url||'/').split('?')[0].replace(/^\//,'')||'index.html';try{r.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':'text/html');r.end(f==='index.html'?html:fs.readFileSync(f))}catch{r.statusCode=404;r.end()}});
