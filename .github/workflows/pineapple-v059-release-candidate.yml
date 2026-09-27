@@ -4,6 +4,9 @@ on:
     branches: [project-pineapple-v058]
     paths:
       - '.github/pineapple_v059_release.py'
+      - '.github/workflows/pineapple-v059-release-candidate.yml'
+      - 'tests/run-regressions.cjs'
+      - 'tests/circuit-editor-rebase-v058.cjs'
 permissions:
   contents: write
 jobs:
