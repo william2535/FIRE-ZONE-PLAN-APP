@@ -34,7 +34,7 @@ jobs:
           gradle-version: '8.11.1'
       - name: Check Zone Sketch by Will drawing and export in browser
         run: |
-          npm install --no-save playwright@1.62.1
+          npm install --no-save playwright@1.62.1 acorn
           npx playwright install --with-deps chromium
           node tests/run-regressions.cjs
       - uses: actions/upload-artifact@v4
