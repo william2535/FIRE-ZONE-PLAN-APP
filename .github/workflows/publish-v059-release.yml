@@ -1,0 +1,30 @@
+name: Publish Zone Sketch v0.59 release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'downloads/Zone-Sketch-by-Will-v0.59.apk'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify v0.59 release candidate
+        run: |
+          test -f downloads/Zone-Sketch-by-Will-v0.59.apk
+          node tests/release-v059.cjs
+          python .github/verify_247_protected.py
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.59 >/dev/null 2>&1; then
+            gh release upload v0.59 downloads/Zone-Sketch-by-Will-v0.59.apk --clobber
+          else
+            gh release create v0.59 downloads/Zone-Sketch-by-Will-v0.59.apk \
+              --target "${GITHUB_SHA}" \
+              --title "Zone Sketch by Will v0.59" \
+              --notes "Pineapple v0.59: mobile-safe Manual Edit, stronger interruption recovery, circuit lifecycle protection, coordinate-safe editor rebasing and matched web/Android delivery."
+          fi
