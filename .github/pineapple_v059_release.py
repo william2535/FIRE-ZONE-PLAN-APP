@@ -6,6 +6,7 @@ version metadata without touching the protected 24/7 company/demo build.
 """
 from pathlib import Path
 
+# Release gate note: legacy Zone Challenge title compatibility now explicitly accepts v0.59.
 APP_COPIES = [
     Path('index.html'),
     Path('ZoneSketch.html'),
