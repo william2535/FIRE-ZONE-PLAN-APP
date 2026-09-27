@@ -31,6 +31,9 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   await p.locator('#cbConventionalZones .cbZoneButton').nth(0).click();
   assert.equal(await p.locator('#cbCircuitType').innerText(),'ZONE CHALLENGE');
   assert(await p.locator('#cbCircuitType').evaluate(el=>el.classList.contains('zoneChallenge')));
+  // The board badge is painted on requestAnimationFrame. Wait for the first real game paint
+  // instead of racing the static HTML placeholder ("TWIN CABLE SNAP") on faster runners.
+  await p.waitForFunction(()=>/GRID \d+ · NO CROSSING/.test(document.querySelector('#cbPairBadge')?.textContent||''));
   assert.match(await p.locator('#cbPairBadge').innerText(),/GRID \d+ · NO CROSSING/);
   const active=await p.evaluate(()=>zoneGameTest.active());
   assert.match(active.circuit,/^#/,'active circuit must carry the zone colour used by the route renderer');assert.equal(active.cross,true,'proper cable crossing must be blocked');assert.equal(active.touch,false,'a shared endpoint is legal');
