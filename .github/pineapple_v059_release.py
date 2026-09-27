@@ -52,8 +52,9 @@ gradle_path.write_text(gradle)
 # Matched tester portal: one web milestone and one Android milestone.
 beta_path = Path('beta.html')
 beta = beta_path.read_text()
+# The launch URL uses ?v=0.58 (not the textual v0.58 form), so promote it explicitly.
+beta = beta.replace('./index.html?v=0.58', './web-v059.html')
 beta = beta.replace('v0.58', 'v0.59').replace('v0.57', 'v0.59')
-beta = beta.replace('./index.html?v=0.59', './web-v059.html')
 beta = beta.replace(
     'The browser build is v0.59. The Android APK remains v0.59 until the next Android package is built and released.',
     'Web and Android now match at v0.59. This milestone includes the hardened Manual Edit workflow and the latest mobile safety fixes.',
