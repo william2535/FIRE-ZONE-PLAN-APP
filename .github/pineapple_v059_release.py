@@ -40,6 +40,20 @@ master = replace_once(
     'BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.59',
     'visible app version',
 )
+
+# Keep Circuit Builder confirmation toasts clear of the bottom action row and iOS safe area.
+# This is intentionally scoped to the full-screen builder so ordinary app notices keep their
+# normal low-screen position. The guard makes repeated release-candidate runs idempotent.
+toast_guard = '#circuitBuilder:not([hidden])~.uiToastStack{bottom:calc(72px + env(safe-area-inset-bottom))}'
+if toast_guard not in master:
+    circuit_css_anchor = '/* Circuit Builder — more like a finished field product, still uncluttered. */'
+    master = replace_once(
+        master,
+        circuit_css_anchor,
+        toast_guard + '\n\n' + circuit_css_anchor,
+        'Circuit Builder toast safe area',
+    )
+
 for path in APP_COPIES:
     path.write_text(master)
 
