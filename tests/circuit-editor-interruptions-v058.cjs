@@ -78,6 +78,9 @@ async function run(browser,viewport){
  assert.deepEqual((await read(page)).draft,staged,'reload must restore exact staged route');
  await page.locator('#cbEditBin').click();p=await page.evaluate(()=>inputTest.point());await touch(page,'pointerdown',15,p);await touch(page,'pointerup',15,p,0);
  await page.locator('#cbEditDone').click();await settle(page);assert.equal((await read(page)).edit,null,'Done must validate after interruption recovery');
+ const toastLayout=await page.evaluate(()=>{const toast=[...document.querySelectorAll('.uiToast')].find(el=>el.textContent.includes('Route edit validated and saved')),actions=document.querySelector('#cbGame .cbActions');if(!toast||!actions)return null;const t=toast.getBoundingClientRect(),a=actions.getBoundingClientRect();return{toastBottom:t.bottom,actionsTop:a.top,gap:a.top-t.bottom,text:toast.textContent}});
+ assert(toastLayout,'successful route edit must show its confirmation toast');
+ assert(toastLayout.toastBottom<=toastLayout.actionsTop+1,`confirmation toast overlaps Circuit Builder actions by ${Math.ceil(toastLayout.toastBottom-toastLayout.actionsTop)}px at ${viewport.width}px`);
  const data=await page.evaluate(()=>inputTest.exportData());assert.deepEqual(data.segments,data.expected,'As-Fit must use the committed edited route');
  fs.mkdirSync('test-results',{recursive:true});
  const png=await page.evaluate(()=>inputTest.renderExport());fs.writeFileSync(`test-results/pineapple-input-asfit-${engine}-${viewport.width}.png`,Buffer.from(png.split(',')[1],'base64'));
@@ -85,6 +88,6 @@ async function run(browser,viewport){
  const switched=await page.evaluate(()=>inputTest.switchAway());assert.equal(switched.edit,null,'switching circuits must leave the old edit session');assert.equal(switched.draft,null,'new circuit must not inherit a draft');assert.equal(switched.current,switched.nextId);
  const returned=await page.evaluate(id=>inputTest.switchBack(id),switched.oldId);assert.equal(returned.draft,switched.saved,'returning to old circuit must preserve its open edit');assert.equal(returned.bridge,false,'Bridge must reopen safely OFF');
  const rebuilt=await page.evaluate(()=>inputTest.rebuild());assert.equal(rebuilt.draft,null,'confirmed survey rebuild must remove obsolete draft');assert.equal(rebuilt.legs,0);assert.equal(rebuilt.bridges.length,0);assert.equal(rebuilt.complete,false);assert.equal(rebuilt.edit,null);
- assert.deepEqual(errors,[]);await page.close();console.log(`PASS ${engine} ${viewport.width}: eight interruptions, Bin gestures, 30 history cycles, staged reload and As-Fit fidelity`);
+ assert.deepEqual(errors,[]);await page.close();console.log(`PASS ${engine} ${viewport.width}: eight interruptions, Bin gestures, 30 history cycles, staged reload, toast clearance and As-Fit fidelity`);
 }
 (async()=>{await new Promise(ok=>server.listen(0,'127.0.0.1',ok));const browser=await browserType.launch({headless:true});try{for(const viewport of [{width:375,height:667},{width:768,height:1024}])await run(browser,viewport)}finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exit(1)});
