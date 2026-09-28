@@ -58,7 +58,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html assets/zone-sketch-header-mark.png assets/zone-sketch-header-mark.svg app/src/main/assets/assets/zone-sketch-header-mark.png app/src/main/assets/assets/zone-sketch-header-mark.svg
+          git add -A -- index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html assets/zone-sketch-header-mark.png assets/zone-sketch-header-mark.svg app/src/main/assets/assets
           if git diff --cached --quiet; then
             echo 'Approved header logo is already current.'
           else
