@@ -68,7 +68,7 @@ replace_once(
 'combined zone pointer move')
 replace_once(
 "else if((tool==='group'||tool==='select')&&drawing?.mode==='moveSelection'){const moved=drawing.moved;drawing=null;if(moved){changed();setHint(selectionState().allSame?'Grouped object moved':'Object moved');setTimeout(hint,800)}else draw()}",
-"else if(((tool==='group'||tool==='select')||drawing?.combinedZone)&&drawing?.mode==='moveSelection'){const combined=!!drawing.combinedZone,moved=drawing.moved;drawing=null;if(moved){changed();setHint(combined?'Zone moved · placement tool still active':(selectionState().allSame?'Grouped object moved':'Object moved'));setTimeout(hint,800)}else draw()}",
+"else if(((tool==='group'||tool==='select')||drawing?.combinedZone)&&drawing?.mode==='moveSelection'){const combined=!!drawing.combinedZone,moved=drawing.moved;drawing=null;if(moved){changed();setHint(combined?'Zone moved · placement tool still active':(selectionState().allSame?'Grouped object moved':'Object moved'));setTimeout(hint,800)}else draw();if(combined)return}",
 'combined zone pointer up')
 replace_once(
 "if(tool==='group'||tool==='select')drawSelection(ctx,map)",
