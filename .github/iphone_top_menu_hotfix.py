@@ -29,6 +29,7 @@ css = '''/* iPhone top menu close control */
 @media(max-width:720px){
   .app>.top #topCollapseBtn{
     min-width:88px;
+    min-height:44px;
     padding-inline:12px;
     white-space:nowrap;
     flex:0 0 auto;
