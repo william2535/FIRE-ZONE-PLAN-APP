@@ -1,4 +1,4 @@
-name: Apply iPad standalone viewport fix
+name: Apply iOS standalone viewport fix
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
         with:
           ref: main
 
-      - name: Install iPadOS standalone viewport fill
+      - name: Install iOS/iPadOS standalone viewport fill
         run: python .github/ipados_standalone_viewport.py
 
       - name: Sync app mirrors and Android asset
@@ -37,9 +37,12 @@ jobs:
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
           grep -q 'viewport-fit=cover' index.html
-          grep -q 'iPadOS standalone viewport fill' index.html
+          grep -q 'iOS/iPadOS standalone viewport fill' index.html
           grep -q '@media (display-mode:standalone)' index.html
+          grep -q 'height:100dvh' index.html
+          grep -q 'max-height:100dvh' index.html
           grep -q 'min-height:-webkit-fill-available' index.html
+          grep -q 'background:#020a10' index.html
           grep -q '"display": "standalone"' manifest.webmanifest
           test "$(git hash-object beta.html)" = "0cda84d2c0907160c63366922330c43586f7b191"
           cmp --silent index.html ZoneSketch.html
@@ -52,8 +55,8 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
           if git diff --cached --quiet; then
-            echo 'iPadOS standalone viewport fix already current.'
+            echo 'iOS standalone viewport fix already current.'
           else
-            git commit -m 'Fix iPad standalone bottom viewport strip'
+            git commit -m 'Fix iPhone standalone bottom viewport strip'
             git push origin HEAD:main
           fi
