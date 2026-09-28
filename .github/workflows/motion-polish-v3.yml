@@ -26,6 +26,8 @@ jobs:
           cp index.html Zone-Sketch-by-Will.html
           cp index.html app/src/main/assets/index.html
           cp beta.html download.html
+      - name: Install syntax test dependency
+        run: npm install --no-save acorn
       - name: Verify mirrors and protected company demo
         run: |
           python .github/verify_247_protected.py
