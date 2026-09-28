@@ -1,0 +1,60 @@
+name: Remove Projects Home logo only
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/remove_home_page_logo.py'
+      - '.github/workflows/remove-home-page-logo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Remove Projects Home hero logo only
+        run: python .github/remove_home_page_logo.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify targeted removal and release safety
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          ! grep -q 'class="homeBrandMark"' index.html
+          grep -q 'id="zsSplash"' index.html
+          grep -q 'assets/on-site-zone-planner-icon.webp' index.html
+          grep -q 'id="headerHomeBtn"' index.html
+          grep -q 'assets/zone-sketch-header-mark.png' index.html
+          grep -q 'class="homeEyebrow">YOUR FIELD WORKSPACE' index.html
+          grep -q '<h1><span>ZONE</span> SKETCH</h1>' index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+
+      - name: Commit targeted home-page logo removal
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Home-page hero logo already removed.'
+          else
+            git commit -m 'Remove logo from Projects Home hero only'
+            git push origin HEAD:main
+          fi
