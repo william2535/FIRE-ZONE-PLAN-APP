@@ -36,7 +36,23 @@ jobs:
           PY
 
       - name: Apply tech-grid aesthetic and approved defaults
-        run: python .github/workspace_ui_shell_v3.py
+        run: |
+          python .github/workspace_ui_shell_v3.py
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          old = 'syncModeUi();setMoveMode(false);if(surveyMode){'
+          new = 'syncModeUi();setMoveMode(!surveyMode);if(surveyMode){'
+          if old in text:
+              text = text.replace(old, new, 1)
+              p.write_text(text, encoding='utf-8')
+              print('Zone Plan now opens with Move ON; Survey still opens ready to place devices.')
+          elif new in text:
+              print('Zone Plan Move default already correct.')
+          else:
+              raise SystemExit('Zone Plan Move-mode transition anchor not found')
+          PY
 
       - name: Prove no behaviour changed except approved Move defaults
         run: |
