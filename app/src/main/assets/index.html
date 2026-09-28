@@ -491,52 +491,41 @@ body.zsMotionActive.brandPortal main>.panel:nth-child(5){animation-delay:.24s!im
 
 
 
-/* Header logo home button — transparent mark + restrained gloss sweep. */
+
+/* Header logo home button — approved original artwork + gloss only. */
 @keyframes zsHeaderHomeShine{
-  0%,68%,100%{transform:translateX(-175%) skewX(-18deg);opacity:0}
-  73%{opacity:.08}
-  78%{opacity:.8}
-  88%{transform:translateX(245%) skewX(-18deg);opacity:.12}
+  0%,70%,100%{transform:translateX(-190%) skewX(-18deg);opacity:0}
+  75%{opacity:0}
+  79%{opacity:.9}
+  88%{transform:translateX(285%) skewX(-18deg);opacity:.10}
   90%{opacity:0}
 }
-@keyframes zsHeaderHomeGlow{
-  0%,100%{filter:drop-shadow(0 0 6px rgba(0,194,255,.16)) drop-shadow(0 0 9px rgba(155,255,63,.08))}
-  50%{filter:drop-shadow(0 0 9px rgba(0,194,255,.28)) drop-shadow(0 0 13px rgba(155,255,63,.15))}
-}
 .top .zsHeaderHomeBtn{
-  position:relative;display:grid;place-items:center;flex:none;width:46px;height:46px;padding:0!important;
-  border:0!important;border-radius:14px;background:transparent!important;box-shadow:none!important;
-  overflow:hidden;isolation:isolate;cursor:pointer;touch-action:manipulation;
-  transition:transform .15s ease,filter .15s ease!important;
+  position:relative;display:grid;place-items:center;flex:none;width:48px;height:48px;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  overflow:visible;cursor:pointer;touch-action:manipulation;transition:transform .14s ease!important;
 }
 .top .zsHeaderHomeBtn img{
-  width:42px;height:42px;display:block;object-fit:contain;border-radius:0!important;
-  filter:drop-shadow(0 0 7px rgba(0,194,255,.2)) drop-shadow(0 0 10px rgba(155,255,63,.1));
-  pointer-events:none;position:relative;z-index:1;
-}
-.top .zsHeaderHomeBtn:before{
-  content:'';position:absolute;inset:5px;border-radius:13px;
-  background:radial-gradient(circle at 50% 56%,rgba(0,194,255,.08),transparent 66%);
-  opacity:.55;pointer-events:none;z-index:0;
-}
-.top .zsHeaderHomeBtn:after{
-  content:'';position:absolute;inset:3px;border-radius:13px;
-  box-shadow:inset 0 0 0 1px rgba(126,229,255,.05);pointer-events:none;z-index:3;
+  width:46px;height:46px;display:block;object-fit:contain;border-radius:0!important;
+  filter:none!important;box-shadow:none!important;pointer-events:none;position:relative;z-index:1;
 }
 .zsHeaderHomeShine{
-  position:absolute;z-index:2;top:-15%;bottom:-15%;left:-36%;width:34%;pointer-events:none;opacity:0;
-  background:linear-gradient(105deg,transparent 0,rgba(255,255,255,.04) 28%,rgba(255,255,255,.82) 49%,rgba(193,252,255,.3) 60%,transparent 100%);
-  filter:blur(.2px);transform:translateX(-175%) skewX(-18deg);
+  position:absolute;z-index:2;inset:1px;pointer-events:none;overflow:hidden;
+  -webkit-mask:url('assets/zone-sketch-header-mark.png') center/contain no-repeat;
+  mask:url('assets/zone-sketch-header-mark.png') center/contain no-repeat;
 }
-body.zsMotionActive .zsHeaderHomeShine{animation:zsHeaderHomeShine 9.6s ease-in-out infinite}
-body.zsMotionActive .zsHeaderHomeBtn img{animation:zsHeaderHomeGlow 8.4s ease-in-out infinite}
-body.zsMotionPaused .zsHeaderHomeShine,body.zsMotionPaused .zsHeaderHomeBtn img{animation-play-state:paused!important}
-.top .zsHeaderHomeBtn:hover{filter:brightness(1.08)}
-.top .zsHeaderHomeBtn:active{transform:scale(.955)}
+.zsHeaderHomeShine:before{
+  content:'';position:absolute;top:-28%;bottom:-28%;left:-55%;width:30%;opacity:0;
+  background:linear-gradient(105deg,transparent 0,rgba(255,255,255,.06) 28%,rgba(255,255,255,.92) 49%,rgba(225,253,255,.24) 62%,transparent 100%);
+  transform:translateX(-190%) skewX(-18deg);
+}
+body.zsMotionActive .zsHeaderHomeShine:before{animation:zsHeaderHomeShine 9.6s ease-in-out infinite}
+body.zsMotionPaused .zsHeaderHomeShine:before{animation-play-state:paused!important}
+.top .zsHeaderHomeBtn:active{transform:scale(.97)}
 .top .zsHeaderHomeBtn:focus-visible{outline:2px solid #8eeaff!important;outline-offset:2px}
 @media(max-width:720px){
-  .top .zsHeaderHomeBtn{width:42px;height:42px;border-radius:13px}
-  .top .zsHeaderHomeBtn img{width:38px;height:38px}
+  .top .zsHeaderHomeBtn{width:44px;height:44px}
+  .top .zsHeaderHomeBtn img{width:42px;height:42px}
 }
 
 </style>
@@ -555,7 +544,7 @@ body.zsMotionPaused .zsHeaderHomeShine,body.zsMotionPaused .zsHeaderHomeBtn img{
 <section id="cbAsFit" class="cbAsFit" hidden><div class="cbGameHeader"><button id="cbAsFitBack">← Circuits</button><strong>As-Fit preview</strong><span class="cbGrow"></span><button id="cbExportAsFit" class="primary">Export As-Fit PNG</button></div><div id="cbAsFitSummary" class="cbAsFitSummary">Validated from completed circuits</div><div class="cbAsFitWrap"><canvas id="cbAsFitCanvas"></canvas></div></section>
 </main></div></section>
 <div class="app">
-<header class="top" id="topBar"><div class="topMain" id="topMain"><div class="zsBrandLockup"><button type="button" id="headerHomeBtn" class="zsHeaderHomeBtn" aria-label="Home / Projects" title="Home / Projects"><span class="zsHeaderHomeShine" aria-hidden="true"></span><img src="assets/zone-sketch-header-mark.svg" alt="" aria-hidden="true"></button><div class="brand">ZONE SKETCH<small>BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.62</small></div></div><input id="site" placeholder="Site / building name" aria-label="Site name"><div class="spacer"></div><button id="surveyModeBtn" aria-pressed="false">Survey mode</button><button id="circuitModeBtn">Circuit Builder</button><button id="projectMenuBtn" aria-haspopup="true">Project ▾</button><button id="settingsMenuBtn" aria-haspopup="true">Drawing ▾</button><button id="importBtn">Import plan</button><button id="newBtn">New</button><button id="blankBtn">Blank this floor</button><button id="locksMenuBtn">Locks</button><button id="layersMenuBtn">Layers</button><button id="countsMenuBtn">Devices · 0</button><button id="gridBtn">Grid off</button><button id="snapGridBtn">Snap off</button><button id="buildModeBtn" class="toggleItem active" aria-pressed="true" title="Build mode ON keeps zone placement and moving separate"><span>Build mode</span><span>ON · Separate</span></button><label class="wallControl" title="Grid spacing on the plan">Grid <input id="gridSize" type="range" min="2" max="250" step="1" value="100"><output id="gridSizeValue">100</output></label><label class="wallControl" title="Building wall line thickness">Wall <input id="wallSize" type="range" min="0.75" max="5" step="0.25" value="3"><output id="wallSizeValue">3.00</output></label><button class="primary" id="shareBtn">Export</button></div><div class="topEssential" id="topEssential"><button id="moveModeTop" title="When on, the canvas only pans/zooms and cannot edit">Move OFF</button><button class="iconBtn" id="deleteTop" data-tool="erase" aria-label="Delete" title="Delete">⌫</button><button class="iconBtn" id="undoTop" aria-label="Undo" title="Undo">↶</button><button class="iconBtn" id="redoTop" aria-label="Redo" title="Redo">↷</button><button class="iconBtn" id="topCollapseBtn" aria-label="Collapse top controls" title="Collapse top controls">▲</button></div></header><button id="zonesPanelBtn" hidden aria-hidden="true"></button>
+<header class="top" id="topBar"><div class="topMain" id="topMain"><div class="zsBrandLockup"><button type="button" id="headerHomeBtn" class="zsHeaderHomeBtn" aria-label="Home / Projects" title="Home / Projects"><span class="zsHeaderHomeShine" aria-hidden="true"></span><img src="assets/zone-sketch-header-mark.png" alt="" aria-hidden="true"></button><div class="brand">ZONE SKETCH<small>BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.62</small></div></div><input id="site" placeholder="Site / building name" aria-label="Site name"><div class="spacer"></div><button id="surveyModeBtn" aria-pressed="false">Survey mode</button><button id="circuitModeBtn">Circuit Builder</button><button id="projectMenuBtn" aria-haspopup="true">Project ▾</button><button id="settingsMenuBtn" aria-haspopup="true">Drawing ▾</button><button id="importBtn">Import plan</button><button id="newBtn">New</button><button id="blankBtn">Blank this floor</button><button id="locksMenuBtn">Locks</button><button id="layersMenuBtn">Layers</button><button id="countsMenuBtn">Devices · 0</button><button id="gridBtn">Grid off</button><button id="snapGridBtn">Snap off</button><button id="buildModeBtn" class="toggleItem active" aria-pressed="true" title="Build mode ON keeps zone placement and moving separate"><span>Build mode</span><span>ON · Separate</span></button><label class="wallControl" title="Grid spacing on the plan">Grid <input id="gridSize" type="range" min="2" max="250" step="1" value="100"><output id="gridSizeValue">100</output></label><label class="wallControl" title="Building wall line thickness">Wall <input id="wallSize" type="range" min="0.75" max="5" step="0.25" value="3"><output id="wallSizeValue">3.00</output></label><button class="primary" id="shareBtn">Export</button></div><div class="topEssential" id="topEssential"><button id="moveModeTop" title="When on, the canvas only pans/zooms and cannot edit">Move OFF</button><button class="iconBtn" id="deleteTop" data-tool="erase" aria-label="Delete" title="Delete">⌫</button><button class="iconBtn" id="undoTop" aria-label="Undo" title="Undo">↶</button><button class="iconBtn" id="redoTop" aria-label="Redo" title="Redo">↷</button><button class="iconBtn" id="topCollapseBtn" aria-label="Collapse top controls" title="Collapse top controls">▲</button></div></header><button id="zonesPanelBtn" hidden aria-hidden="true"></button>
 <div class="backgroundBar" id="floorBar"><button id="floorMenuBtn" class="menuTool">Floor · Ground floor</button><select id="floorSelect" aria-label="Current floor" hidden></select><small class="draftBadge">PLAN / ZONE MAKER</small><span id="saveIndicator" class="saveIndicator" role="status">Ready</span></div>
 <div class="modal" id="floorModal"><div class="box"><h2>Add floor</h2><label>Floor name</label><div id="floorPresets" class="floorPresetList"></div><select id="floorPreset" hidden><option>Ground floor</option><option>First floor</option><option>Second floor</option><option>Third floor</option><option>Fourth floor</option><option>Basement</option><option>Mezzanine</option><option>Custom</option></select><input id="floorName" aria-label="Custom floor name" placeholder="e.g. West wing" maxlength="40" hidden><label for="floorCopy"><input id="floorCopy" type="checkbox" style="width:auto"> Copy current building layout</label><p class="small">Copies walls, doors, double doors, windows, shutters, stairs and room labels onto a blank plan. Zones, notes and the photo stay on the original floor.</p><div class="row"><button id="cancelFloor">Cancel</button><button id="saveFloor" class="primary">Add floor</button></div></div></div>
 <div class="backgroundBar" id="backgroundBar" hidden><label for="opacity">Picture opacity <input id="opacity" type="range" min="0" max="100" value="100"><output id="opacityValue">100%</output></label><button id="togglePicture">Hide picture</button><button id="cleanupPicture" class="planEdit">Clean up</button><button id="straightenPicture" class="planEdit">Perspective</button><small id="backgroundHelp">Opacity also applies to the exported PNG.</small></div>
