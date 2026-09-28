@@ -20,36 +20,36 @@ CSS = r'''
 .brandPortal .panel:before{right:auto}
 
 body.zsMotionActive #projectsHome .homeProductHero:before,
-body.zsMotionActive.brandPortal .approvedHeroBrand:before{animation:zsEdgeRun 8.5s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .approvedHeroBrand:before{animation:zsEdgeRun 10.2s ease-in-out infinite!important}
 body.zsMotionActive #projectsHome .homeBrandMark,
-body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation:zsLogoGlow 5.8s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation:zsLogoGlow 7s ease-in-out infinite!important}
 body.zsMotionActive #projectsHome .homeHeroBadge,
-body.zsMotionActive.brandPortal .statusPill.live{animation:zsLiveHalo 4.6s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .statusPill.live{animation:zsLiveHalo 5.5s ease-in-out infinite!important}
 
-body.zsMotionActive #projectsHome .workflowStep{animation:zsStepSignal 8s ease-in-out infinite!important}
-body.zsMotionActive #projectsHome .workflowStep:nth-child(2){animation-delay:2s!important}
-body.zsMotionActive #projectsHome .workflowStep:nth-child(3){animation-delay:4s!important}
-body.zsMotionActive #projectsHome .workflowStep:nth-child(4){animation-delay:6s!important}
+body.zsMotionActive #projectsHome .workflowStep{animation:zsStepSignal 9.6s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(2){animation-delay:2.4s!important}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(3){animation-delay:4.8s!important}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(4){animation-delay:7.2s!important}
 
-body.zsMotionActive #projectsHome .projectCard:after{animation:zsCardScan 12s ease-in-out infinite!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(2):after{animation-delay:1.4s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(3):after{animation-delay:2.8s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(4):after{animation-delay:4.2s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(5):after{animation-delay:5.6s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(6):after{animation-delay:7s!important}
+body.zsMotionActive #projectsHome .projectCard:after{animation:zsCardScan 14.4s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .projectCard:nth-child(2):after{animation-delay:1.7s!important}
+body.zsMotionActive #projectsHome .projectCard:nth-child(3):after{animation-delay:3.4s!important}
+body.zsMotionActive #projectsHome .projectCard:nth-child(4):after{animation-delay:5s!important}
+body.zsMotionActive #projectsHome .projectCard:nth-child(5):after{animation-delay:6.7s!important}
+body.zsMotionActive #projectsHome .projectCard:nth-child(6):after{animation-delay:8.4s!important}
 
-body.zsMotionActive.brandPortal .signalCard:after{animation:zsSignalRail 7s ease-in-out infinite alternate!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(2):after{animation-delay:.8s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(3):after{animation-delay:1.6s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(4):after{animation-delay:2.4s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(5):after{animation-delay:3.2s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(6):after{animation-delay:4s!important}
-body.zsMotionActive.brandPortal main>.panel:before{animation:zsPanelTrace 13s ease-in-out infinite alternate!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(2):before{animation-delay:1.2s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(3):before{animation-delay:2.4s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(4):before{animation-delay:3.6s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(5):before{animation-delay:4.8s!important}
-body.zsMotionActive.brandPortal .nodeRow .good{animation:zsGoodPulse 4s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .signalCard:after{animation:zsSignalRail 8.4s ease-in-out infinite alternate!important}
+body.zsMotionActive.brandPortal .signalCard:nth-child(2):after{animation-delay:1s!important}
+body.zsMotionActive.brandPortal .signalCard:nth-child(3):after{animation-delay:1.9s!important}
+body.zsMotionActive.brandPortal .signalCard:nth-child(4):after{animation-delay:2.9s!important}
+body.zsMotionActive.brandPortal .signalCard:nth-child(5):after{animation-delay:3.8s!important}
+body.zsMotionActive.brandPortal .signalCard:nth-child(6):after{animation-delay:4.8s!important}
+body.zsMotionActive.brandPortal main>.panel:before{animation:zsPanelTrace 15.6s ease-in-out infinite alternate!important}
+body.zsMotionActive.brandPortal main>.panel:nth-child(2):before{animation-delay:1.4s!important}
+body.zsMotionActive.brandPortal main>.panel:nth-child(3):before{animation-delay:2.9s!important}
+body.zsMotionActive.brandPortal main>.panel:nth-child(4):before{animation-delay:4.3s!important}
+body.zsMotionActive.brandPortal main>.panel:nth-child(5):before{animation-delay:5.8s!important}
+body.zsMotionActive.brandPortal .nodeRow .good{animation:zsGoodPulse 4.8s ease-in-out infinite!important}
 
 /* One restrained reveal when motion is enabled or the page first opens with motion active. */
 body.zsMotionActive #projectsHome .homeProductHero,
@@ -68,18 +68,55 @@ body.zsMotionActive.brandPortal main>.panel:nth-child(5){animation-delay:.24s!im
 @media(max-width:720px){
  #projectsHome .projectCard:after{width:15%}
  body.zsMotionActive #projectsHome .homeBrandMark,
- body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation-duration:6.5s!important}
- body.zsMotionActive.brandPortal main>.panel:before{animation-duration:15s!important}
+ body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation-duration:7.8s!important}
+ body.zsMotionActive.brandPortal main>.panel:before{animation-duration:18s!important}
 }
 '''
 
 MARKER = '/* Motion polish v3 — quiet ambient movement, never the drawing workspace. */'
 
+REPLACEMENTS = {
+    'animation:zsEdgeRun 8.5s ease-in-out infinite!important': 'animation:zsEdgeRun 10.2s ease-in-out infinite!important',
+    'animation:zsLogoGlow 5.8s ease-in-out infinite!important': 'animation:zsLogoGlow 7s ease-in-out infinite!important',
+    'animation:zsLiveHalo 4.6s ease-in-out infinite!important': 'animation:zsLiveHalo 5.5s ease-in-out infinite!important',
+    'animation:zsStepSignal 8s ease-in-out infinite!important': 'animation:zsStepSignal 9.6s ease-in-out infinite!important',
+    '.workflowStep:nth-child(2){animation-delay:2s!important}': '.workflowStep:nth-child(2){animation-delay:2.4s!important}',
+    '.workflowStep:nth-child(3){animation-delay:4s!important}': '.workflowStep:nth-child(3){animation-delay:4.8s!important}',
+    '.workflowStep:nth-child(4){animation-delay:6s!important}': '.workflowStep:nth-child(4){animation-delay:7.2s!important}',
+    'animation:zsCardScan 12s ease-in-out infinite!important': 'animation:zsCardScan 14.4s ease-in-out infinite!important',
+    '.projectCard:nth-child(2):after{animation-delay:1.4s!important}': '.projectCard:nth-child(2):after{animation-delay:1.7s!important}',
+    '.projectCard:nth-child(3):after{animation-delay:2.8s!important}': '.projectCard:nth-child(3):after{animation-delay:3.4s!important}',
+    '.projectCard:nth-child(4):after{animation-delay:4.2s!important}': '.projectCard:nth-child(4):after{animation-delay:5s!important}',
+    '.projectCard:nth-child(5):after{animation-delay:5.6s!important}': '.projectCard:nth-child(5):after{animation-delay:6.7s!important}',
+    '.projectCard:nth-child(6):after{animation-delay:7s!important}': '.projectCard:nth-child(6):after{animation-delay:8.4s!important}',
+    'animation:zsSignalRail 7s ease-in-out infinite alternate!important': 'animation:zsSignalRail 8.4s ease-in-out infinite alternate!important',
+    '.signalCard:nth-child(2):after{animation-delay:.8s!important}': '.signalCard:nth-child(2):after{animation-delay:1s!important}',
+    '.signalCard:nth-child(3):after{animation-delay:1.6s!important}': '.signalCard:nth-child(3):after{animation-delay:1.9s!important}',
+    '.signalCard:nth-child(4):after{animation-delay:2.4s!important}': '.signalCard:nth-child(4):after{animation-delay:2.9s!important}',
+    '.signalCard:nth-child(5):after{animation-delay:3.2s!important}': '.signalCard:nth-child(5):after{animation-delay:3.8s!important}',
+    '.signalCard:nth-child(6):after{animation-delay:4s!important}': '.signalCard:nth-child(6):after{animation-delay:4.8s!important}',
+    'animation:zsPanelTrace 13s ease-in-out infinite alternate!important': 'animation:zsPanelTrace 15.6s ease-in-out infinite alternate!important',
+    'main>.panel:nth-child(2):before{animation-delay:1.2s!important}': 'main>.panel:nth-child(2):before{animation-delay:1.4s!important}',
+    'main>.panel:nth-child(3):before{animation-delay:2.4s!important}': 'main>.panel:nth-child(3):before{animation-delay:2.9s!important}',
+    'main>.panel:nth-child(4):before{animation-delay:3.6s!important}': 'main>.panel:nth-child(4):before{animation-delay:4.3s!important}',
+    'main>.panel:nth-child(5):before{animation-delay:4.8s!important}': 'main>.panel:nth-child(5):before{animation-delay:5.8s!important}',
+    'animation:zsGoodPulse 4s ease-in-out infinite!important': 'animation:zsGoodPulse 4.8s ease-in-out infinite!important',
+    'animation-duration:6.5s!important': 'animation-duration:7.8s!important',
+    'animation-duration:15s!important': 'animation-duration:18s!important',
+}
+
 for name in ('index.html', 'beta.html'):
     p = Path(name)
     text = p.read_text(encoding='utf-8')
     if MARKER in text:
-        print(f'{name}: already polished')
+        updated = text
+        for old, new in REPLACEMENTS.items():
+            updated = updated.replace(old, new)
+        if updated != text:
+            p.write_text(updated, encoding='utf-8')
+            print(f'{name}: ambient motion slowed')
+        else:
+            print(f'{name}: motion timing already current')
         continue
     if '</style>' not in text:
         raise SystemExit(f'{name}: closing style tag not found')
