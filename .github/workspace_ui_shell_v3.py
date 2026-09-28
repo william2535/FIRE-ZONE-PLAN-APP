@@ -104,6 +104,32 @@ body.zsMotionPaused .top .zsHeaderHomeShine:before{animation-play-state:paused!i
   #circuitBuilder .cbTop{background-size:8px 8px,8px 8px,24px 24px,24px 24px,100% 100%}
   #circuitBuilder .cbSide{background-size:20px 20px,20px 20px,100% 100%}
 }
+
+/* Portrait phones: keep Export in the same action row instead of letting it create a full extra row.
+   This is layout-only — the existing Export button, menu and click handler are unchanged. */
+@media(max-width:720px) and (orientation:portrait){
+  .app>.top .topMain{
+    display:grid;
+    grid-template-columns:minmax(0,1.20fr) minmax(0,1.42fr) minmax(0,.88fr) minmax(0,.92fr) minmax(0,.72fr);
+    gap:6px;
+    width:100%;
+    align-items:stretch;
+  }
+  .app>.top .topMain>.zsBrandLockup{grid-column:1/4;min-width:0}
+  .app>.top .topMain>#site{grid-column:4/6;width:100%;max-width:none;min-width:0}
+  .app>.top .topMain>#surveyModeBtn{grid-column:1}
+  .app>.top .topMain>#circuitModeBtn{grid-column:2}
+  .app>.top .topMain>#projectMenuBtn{grid-column:3}
+  .app>.top .topMain>#settingsMenuBtn{grid-column:4}
+  .app>.top .topMain>#shareBtn{grid-column:5;margin:0}
+  .app>.top .topMain>#surveyModeBtn,
+  .app>.top .topMain>#circuitModeBtn,
+  .app>.top .topMain>#projectMenuBtn,
+  .app>.top .topMain>#settingsMenuBtn,
+  .app>.top .topMain>#shareBtn{
+    width:100%;min-width:0;padding-left:7px;padding-right:7px;white-space:nowrap
+  }
+}
 /* End workspace UI shell v3. */
 '''
 
