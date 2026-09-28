@@ -2,6 +2,7 @@ from pathlib import Path
 
 p = Path('index.html')
 text = p.read_text(encoding='utf-8')
+original = text
 
 START = '/* Workspace UI shell v3 — tech-grid aesthetic only; no behaviour changes. */'
 END = '/* End workspace UI shell v3. */'
@@ -91,37 +92,49 @@ body:not(.zsMotionPaused) .top .zsHeaderHomeShine:before{
 }
 body.zsMotionPaused .top .zsHeaderHomeShine:before{animation-play-state:paused!important}
 
-/* Favourites should sit inside the dark tool dock, not shout brighter than the drawing.
-   Keep the same button and behaviour, then give it the same slow gloss language as Home. */
+/* Favourites stays dark and clean, but keeps its yellow star identity and a restrained yellow edge.
+   The button's real text and click target are unchanged; pseudo labels are purely visual. */
 .app>.tools #favouriteMenuBtn{
   position:relative;
   overflow:hidden;
   isolation:isolate;
-  background:linear-gradient(145deg,#102b3a,#0b2230);
+  font-size:0!important;
+  border:1px solid rgba(246,198,74,.42);
   color:#d7edf9;
-  border-color:#2a5065;
-  box-shadow:inset 0 1px rgba(255,255,255,.035),0 0 0 1px rgba(0,194,255,.025);
+  background-image:
+    linear-gradient(110deg,transparent 34%,rgba(255,255,255,.04) 42%,rgba(255,255,255,.34) 49%,rgba(255,255,255,.06) 56%,transparent 64%),
+    linear-gradient(145deg,#102b3a,#0b2230);
+  background-size:260% 100%,100% 100%;
+  background-position:220% 0,0 0;
+  background-repeat:no-repeat;
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 0 0 1px rgba(246,198,74,.035);
 }
 .app>.tools #favouriteMenuBtn::before{
-  content:'';
-  position:absolute;
-  top:-45%;bottom:-45%;left:-42%;
-  width:30%;
-  pointer-events:none;
-  opacity:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),rgba(255,255,255,.5),rgba(255,255,255,.12),transparent);
-  transform:skewX(-18deg) translateX(-260%);
-  filter:blur(.2px);
-  will-change:transform,opacity;
+  content:'★';
+  position:relative;
+  z-index:1;
+  display:inline-block;
+  margin-right:6px;
+  font-size:13px;
+  line-height:1;
+  color:#f6c64a;
+  text-shadow:0 0 8px rgba(246,198,74,.16);
+}
+.app>.tools #favouriteMenuBtn::after{
+  content:'Favourites';
+  position:relative;
+  z-index:1;
+  font-size:13px;
+  line-height:1;
+  color:#d7edf9;
 }
 @keyframes zsFavouriteShine{
-  0%,72%{transform:skewX(-18deg) translateX(-260%);opacity:0}
-  76%{opacity:.72}
-  96%{transform:skewX(-18deg) translateX(720%);opacity:.55}
-  100%{transform:skewX(-18deg) translateX(760%);opacity:0}
+  0%,72%{background-position:220% 0,0 0}
+  96%{background-position:-120% 0,0 0}
+  100%{background-position:-140% 0,0 0}
 }
-body:not(.zsMotionPaused) .app>.tools #favouriteMenuBtn::before{animation:zsFavouriteShine 9.6s ease-in-out infinite}
-body.zsMotionPaused .app>.tools #favouriteMenuBtn::before{animation-play-state:paused!important}
+body:not(.zsMotionPaused) .app>.tools #favouriteMenuBtn{animation:zsFavouriteShine 9.6s ease-in-out infinite}
+body.zsMotionPaused .app>.tools #favouriteMenuBtn{animation-play-state:paused!important}
 
 /* Tiny depth cues only: no button sizing, layout or interaction changes. */
 .app>.top,
@@ -135,6 +148,7 @@ body.zsMotionPaused .app>.tools #favouriteMenuBtn::before{animation-play-state:p
   .app>.top{background-size:16px 16px,16px 16px,64px 64px,64px 64px,100% 100%}
   #circuitBuilder .cbTop{background-size:8px 8px,8px 8px,24px 24px,24px 24px,100% 100%}
   #circuitBuilder .cbSide{background-size:20px 20px,20px 20px,100% 100%}
+  .app>.tools #favouriteMenuBtn::before,.app>.tools #favouriteMenuBtn::after{font-size:12px}
 }
 
 /* Portrait phones: keep Export in the same action row instead of letting it create a full extra row.
@@ -169,17 +183,24 @@ if START in text and END in text:
     start = text.index(START)
     end = text.index(END, start) + len(END)
     replacement = CSS.strip()
-    if text[start:end].strip() == replacement:
-        print('index.html: tech-grid aesthetic already current')
-    else:
-        text = text[:start] + replacement + text[end:]
-        p.write_text(text, encoding='utf-8')
-        print('index.html: tech-grid aesthetic refreshed')
+    text = text[:start] + replacement + text[end:]
 elif START not in text and END not in text:
     if '</style>' not in text:
         raise SystemExit('index.html: closing style tag not found')
     text = text.replace('</style>', '\n' + CSS.strip() + '\n</style>', 1)
-    p.write_text(text, encoding='utf-8')
-    print('index.html: tech-grid aesthetic installed')
 else:
     raise SystemExit('index.html: partial tech-grid marker found')
+
+# Requested default: opening the Plan / Zone Maker starts in safe pan/zoom Move mode.
+move_off = 'pendingPhotoPin=null,navMode=false,tapStart=null'
+move_on = 'pendingPhotoPin=null,navMode=true,tapStart=null'
+if move_off in text:
+    text = text.replace(move_off, move_on, 1)
+elif move_on not in text:
+    raise SystemExit('index.html: Move-mode default anchor not found')
+
+if text != original:
+    p.write_text(text, encoding='utf-8')
+    print('index.html: workspace polish refreshed; Move defaults ON')
+else:
+    print('index.html: workspace polish already current; Move already ON')
