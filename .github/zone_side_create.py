@@ -19,6 +19,15 @@ if "$('sideZoneCreate').onclick" not in text:
         raise SystemExit('Zone-create handler anchor not found')
     text = text.replace(handler_anchor, handler, 1)
 
+# Selecting a zone from the side list should immediately arm the existing room
+# Fill Area tool. The bottom Zone menu remains the manual/custom shape workflow.
+side_pick_old = "else{selected=z.id;renderZones();draw()}"
+side_pick_new = "else{selected=z.id;renderZones();setTool('fill')}"
+if side_pick_old in text:
+    text = text.replace(side_pick_old, side_pick_new, 1)
+elif side_pick_new not in text:
+    raise SystemExit('Side-panel zone selection anchor not found')
+
 CSS_START = '/* Zone side-panel add action. */'
 CSS = r'''
 /* Zone side-panel add action. */
@@ -50,6 +59,6 @@ if CSS_START not in text:
 
 if text != original:
     p.write_text(text, encoding='utf-8')
-    print('index.html: added side-panel + Zone action')
+    print('index.html: side-panel zone selection now arms Fill Area')
 else:
-    print('index.html: side-panel + Zone action already current')
+    print('index.html: side-panel Zone action and auto-fill selection already current')
