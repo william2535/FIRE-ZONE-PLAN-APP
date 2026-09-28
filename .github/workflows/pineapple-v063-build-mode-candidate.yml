@@ -1,0 +1,93 @@
+name: Pineapple v0.63 build mode candidate
+on:
+  push:
+    branches: [project-pineapple-v063-build-mode-integration]
+    paths:
+      - '.github/pineapple_v063_build_mode_integration.py'
+      - '.github/pineapple_v063_release_meta.py'
+      - '.github/workflows/pineapple-v063-build-mode-candidate.yml'
+      - '.github/workflows/publish-v063-release.yml'
+      - 'tests/build-mode-v063.cjs'
+      - 'tests/release-v063.cjs'
+permissions:
+  contents: write
+jobs:
+  prepare-test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: project-pineapple-v063-build-mode-integration
+          fetch-depth: 0
+      - name: Apply deterministic v0.63 Build mode integration patch
+        run: |
+          python .github/pineapple_v063_build_mode_integration.py
+          python .github/pineapple_v063_release_meta.py
+      - name: Verify protected 24/7 build
+        run: python .github/verify_247_protected.py
+      - name: Verify v0.63 metadata before browser tests
+        run: node tests/release-v063.cjs
+      - name: Install browser runtimes
+        run: |
+          npm install --no-save playwright@1.62.1 acorn@8.15.0
+          npx playwright install --with-deps chromium webkit
+      - name: Parse and run full serial regression suite
+        run: |
+          node tests/circuit-editor-syntax-v058.cjs
+          node tests/run-regressions.cjs
+      - name: Re-run Build mode / Pan integration in WebKit
+        env:
+          PINEAPPLE_BROWSER: webkit
+        run: node tests/build-mode-v063.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK packages
+        run: |
+          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
+          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build v0.63 Android APK
+        run: |
+          gradle --no-daemon assembleDebug
+          mkdir -p downloads
+          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.63.apk
+          sha256sum downloads/Zone-Sketch-by-Will-v0.63.apk > downloads/Zone-Sketch-by-Will-v0.63.apk.sha256
+      - name: Recheck release metadata and generated parity
+        run: |
+          node tests/release-v063.cjs
+          cmp -s index.html ZoneSketch.html
+          cmp -s index.html Zone-Sketch-by-Will.html
+          cmp -s index.html app/src/main/assets/index.html
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zone-Sketch-by-Will-v0.63-candidate
+          path: |
+            downloads/Zone-Sketch-by-Will-v0.63.apk
+            downloads/Zone-Sketch-by-Will-v0.63.apk.sha256
+            test-results/*.png
+            test-results/*.pdf
+          if-no-files-found: error
+      - name: Verify branch did not move during candidate build
+        run: |
+          git fetch origin project-pineapple-v063-build-mode-integration
+          REMOTE_SHA=$(git rev-parse origin/project-pineapple-v063-build-mode-integration)
+          if [ "$REMOTE_SHA" != "$GITHUB_SHA" ]; then
+            echo "Development branch moved from $GITHUB_SHA to $REMOTE_SHA while the candidate was testing. Refusing to publish stale generated files."
+            exit 1
+          fi
+      - name: Commit tested v0.63 candidate
+        run: |
+          git config user.name 'william2535'
+          git config user.email '48844093+william2535@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html app/build.gradle beta.html download.html web-v063.html tests/run-regressions.cjs tests/circuit-zone-game-v054.cjs downloads/Zone-Sketch-by-Will-v0.63.apk downloads/Zone-Sketch-by-Will-v0.63.apk.sha256
+          if git diff --cached --quiet; then
+            echo 'No v0.63 candidate changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Prepare tested Pineapple v0.63 Build mode integration candidate'
+          git push origin HEAD:project-pineapple-v063-build-mode-integration
