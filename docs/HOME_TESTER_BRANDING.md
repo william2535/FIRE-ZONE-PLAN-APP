@@ -7,3 +7,9 @@ Home includes themed search, project cards, action buttons, keyboard focus and r
 Existing v0.62 APK downloads are unchanged; a new APK release is outside this web branding pass. The protected 24/7 demo remains unchanged.
 
 Validation: inline parser, release/copy parity and protected-demo checks passed locally. Local browser execution is unavailable in this sandbox; the Home and tester branding checks workflow runs the existing project regression and Chromium/WebKit layout/feedback checks. Inspect that workflow and its previews before merging. The standard PR gate also runs the full regression suite and Android build.
+
+## Motion refinement
+
+Sharper asymmetric frames, metallic lime wordmark, compact mobile hero, and unified panel/card surfaces. Ambient header light sweep, slow technical rings, a four-step workflow light sequence and button sheen add restrained motion. Original approved artwork is unchanged.
+
+The shared Motion toggle persists across Home and the tester portal. OS and in-app reduced-motion preferences take priority. Effects stop offscreen and pause when the browser tab is hidden; no per-frame JavaScript, new dependencies or drawing data changes. Browser review covers toggle persistence and reduced-motion changes as well as the established layout/project/feedback checks.
