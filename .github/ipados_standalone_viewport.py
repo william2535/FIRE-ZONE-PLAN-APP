@@ -63,7 +63,16 @@ elif OLD in text:
     text = text.replace(OLD, CSS, 1)
     p.write_text(text, encoding='utf-8')
     print('index.html: standalone viewport fill upgraded for iPhone and iPad')
+elif 'standalone viewport fill' in text:
+    raise SystemExit('index.html: an unknown standalone viewport block already exists')
 else:
-    raise SystemExit('index.html: existing standalone viewport block changed unexpectedly')
+    # A previous motion-refresh helper used to replace everything through </style>,
+    # which could remove this later CSS block. That helper is now bounded by its own
+    # end marker, so it is safe to restore this block once at the end of the style.
+    if '</style>' not in text:
+        raise SystemExit('index.html: closing style tag not found')
+    text = text.replace('</style>', CSS + '\n</style>', 1)
+    p.write_text(text, encoding='utf-8')
+    print('index.html: missing iOS/iPadOS standalone viewport fill restored')
 
 # Workflow trigger marker: standalone iOS/iPadOS viewport integration.
