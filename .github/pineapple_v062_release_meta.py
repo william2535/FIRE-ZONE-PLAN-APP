@@ -7,6 +7,13 @@ if "'build-mode-v062'" not in r:
     r=r.replace("'floor-workflow-v061'];","'floor-workflow-v061','build-mode-v062'];")
 run.write_text(r,encoding='utf-8')
 
+# Keep the long-running Zone Challenge compatibility test current with the new app version.
+zone_game=ROOT/'tests/circuit-zone-game-v054.cjs'
+z=zone_game.read_text(encoding='utf-8')
+z=z.replace('/v0\\.(?:54|55|56|57|58|59|60|61)/','/v0\\.(?:54|55|56|57|58|59|60|61|62)/')
+z=z.replace('PASS: v0.54-v0.61 Zone Challenge','PASS: v0.54-v0.62 Zone Challenge')
+zone_game.write_text(z,encoding='utf-8')
+
 launcher=(ROOT/'web-v061.html').read_text(encoding='utf-8').replace('v0.61','v0.62').replace('v061','v062')
 (ROOT/'web-v062.html').write_text(launcher,encoding='utf-8')
 
