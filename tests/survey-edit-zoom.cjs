@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 (async()=>{
  const html=fs.readFileSync('index.html','utf8').replace("ensureUiState();renderFloors();renderSymbolColors();", "window.surveyTest={read:()=>({state:JSON.parse(JSON.stringify(state)),zoom,pan:{...pan},view:transform()}),screen:screenPoint};ensureUiState();renderFloors();renderSymbolColors();");
@@ -6,7 +7,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  try{
  const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Survey test':undefined));
- await p.goto('http://127.0.0.1:'+server.address().port);await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});await p.locator('#surveyModeBtn').click();
+ await p.goto('http://127.0.0.1:'+server.address().port);await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(p);await p.locator('#surveyModeBtn').click();
  const read=()=>p.evaluate(()=>window.surveyTest.read());
  const devicePoint=()=>p.evaluate(()=>{const s=window.surveyTest.read().state.symbols[0],q=window.surveyTest.screen(s),r=document.querySelector('#canvas').getBoundingClientRect();return{x:q.x+r.left,y:q.y+r.top}});
  await p.locator('#surveyDevice').click();await p.locator('#symbolStampScale').fill('0.1');await p.locator('#symbolStampScale').dispatchEvent('input');await p.locator('[data-symbol="smoke"]').click();
@@ -23,7 +24,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  after=await read();assert.equal(after.zoom,4);const offsetX=mx-b.x-b.width/2,offsetY=my-b.y-b.height/2;assert(Math.abs(after.pan.x-(offsetX-(offsetX-pinchBefore.pan.x)*2))<.001);assert(Math.abs(after.pan.y-(offsetY-(offsetY-pinchBefore.pan.y)*2))<.001);assert.equal(after.state.symbols.length,1);
  await p.locator('#viewFit').click();after=await read();assert.equal(after.zoom,1);assert.deepEqual(after.pan,{x:0,y:0});
  await p.waitForTimeout(800);await p.reload();await p.locator('#resumeProject').click();assert.equal((await read()).state.symbols[0].reference,'L1-043');assert.equal((await read()).state.symbols[0].color,'#2675db');
- await p.locator('#surveyModeBtn').click();for(const width of [390,1024]){await p.setViewportSize({width,height:844});assert(await p.locator('#surveySelect').isVisible());assert(await p.locator('#viewZoom').isVisible());assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));fs.mkdirSync('test-results',{recursive:true});await p.screenshot({path:`test-results/survey-edit-${width}.png`})}
+ await openHeader(p);await p.locator('#surveyModeBtn').click();for(const width of [390,1024]){await p.setViewportSize({width,height:844});assert(await p.locator('#surveySelect').isVisible());assert(await p.locator('#viewZoom').isVisible());assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));fs.mkdirSync('test-results',{recursive:true});await p.screenshot({path:`test-results/survey-edit-${width}.png`})}
  assert.deepEqual(errors,[]);console.log('PASS: survey device move, properties, tiny size, undo/redo, persistence, centre zoom, pinch anchor, Fit and responsive layout');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exit(1)});

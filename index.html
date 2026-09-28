@@ -385,17 +385,17 @@ body.brandPortal:before{display:none}.brandPortal .topbar{background:#06111ded;b
 @keyframes zsBrandFlow{0%,65%,100%{transform:scaleX(.15);opacity:.22}20%,40%{transform:scaleX(1);opacity:.9}}
 @keyframes zsBrandShine{from{left:-70%}to{left:150%}}
 @media(prefers-reduced-motion:no-preference){
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView>.brandSweep{animation:zsBrandSweep 12s ease-in-out infinite}
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView>.brandOrbit{animation:zsBrandOrbit 60s linear infinite}
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView .brandBeacon,body:not(.zsMotionOff):not(.reduceMotion) .brandInView .cursor{animation:zsBrandPulse 4s ease-in-out infinite}
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:before{animation:zsBrandFlow 8s ease-in-out infinite}
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(2):before{animation-delay:1s}
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(3):before{animation-delay:2s}
- body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(4):before{animation-delay:3s}
- @media(hover:hover){body:not(.zsMotionOff):not(.reduceMotion) #projectsHome button.primary:hover:after,body:not(.zsMotionOff):not(.reduceMotion) .command.primary:hover:before{animation:zsBrandShine .65s ease-out}#projectsHome .projectCard:hover,.brandPortal .signalCard:hover{transform:translateY(-2px);border-color:#00c2ff80}#projectsHome .homeActions button:hover:not(:disabled),.brandPortal .command:hover{transform:translateY(-2px)}}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView>.brandSweep{}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView>.brandOrbit{}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .brandBeacon,body:not(.zsMotionOff):not(.reduceMotion) .brandInView .cursor{}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:before{}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(2):before{}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(3):before{}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(4):before{}
+ @media(hover:hover){body:not(.zsMotionOff):not(.reduceMotion) #projectsHome button.primary:hover:after,body:not(.zsMotionOff):not(.reduceMotion) .command.primary:hover:before{}#projectsHome .projectCard:hover,.brandPortal .signalCard:hover{transform:translateY(-2px);border-color:#00c2ff80}#projectsHome .homeActions button:hover:not(:disabled),.brandPortal .command:hover{transform:translateY(-2px)}}
 }
-body.zsMotionPaused :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.zsMotionPaused .workflowStep:before{animation-play-state:paused!important}
-body.zsMotionOff :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.zsMotionOff .workflowStep:before,body.reduceMotion :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.reduceMotion .workflowStep:before{animation:none!important}
+body.zsMotionPaused :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.zsMotionPaused .workflowStep:before{}
+body.zsMotionOff :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.zsMotionOff .workflowStep:before,body.reduceMotion :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.reduceMotion .workflowStep:before{}
 body.zsMotionOff #projectsHome *,body.zsMotionOff.brandPortal *{transition:none!important}
 @media(max-width:720px){.brandUtility{font-size:9px;letter-spacing:.08em;margin-bottom:12px}#projectsHome .homeProductHero{padding:20px;gap:18px}#projectsHome .homeProductHero p{font-size:13px;line-height:1.65}#projectsHome .homeBrandRow{margin-bottom:14px}#projectsHome .homeHeroBadge{padding:13px 15px}#projectsHome .homeHeroBadge:before{display:none}#projectsHome .homeHeroBadge strong{font-size:13px;margin:0 0 3px}#projectsHome .homeHeroBadge small{font-size:11px}#projectsHome .workflowStep{padding:10px 8px}#projectsHome .workflowStep b{margin-bottom:6px}#projectsHome .homeHeading{flex-wrap:nowrap}#projectsHome #resumeProject{font-size:11px;padding:9px;min-height:40px}#projectsHome .homeActions button{font-size:13px;padding-left:11px;padding-right:11px}.brandPortal .hero{padding-top:24px}.brandPortal .topbarInner{flex-wrap:wrap;padding:10px 0;gap:10px;min-height:60px}.brandPortal .navStatus{margin-left:auto}.brandPortal .navStatus .statusPill{display:none}.brandPortal .brandMotionToggle{min-height:36px;padding:7px 9px}.brandPortal .brandText{font-size:9px;letter-spacing:.07em}.brandPortal .approvedHeroBrand{padding:16px}.brandPortal .heroSub{font-size:12px;line-height:1.8}.brandPortal .heroCopy{font-size:14px;margin-top:14px}.brandPortal .checklist{grid-template-columns:1fr}.brandPortal .nodeRow{padding-top:9px;padding-bottom:9px}.brandPortal .panelHead{padding:14px 16px}.brandPortal .panelHeadTitle{font-size:11px}.brandPortal .heroGrid{gap:18px}.brandPortal .signalCard{padding:16px}}
 @media(max-width:360px){#projectsHome .homeProductHero{padding:16px}#projectsHome .homeHeading h2{font-size:20px}#projectsHome .homeVersion{font-size:9px}#projectsHome .homeActions button{font-size:12px}.brandPortal .brandText{font-size:8px}.brandPortal .brand{gap:7px}.brandPortal .brandMotionToggle{font-size:9px;gap:5px}}
@@ -403,16 +403,16 @@ body.zsMotionOff #projectsHome *,body.zsMotionOff.brandPortal *{transition:none!
 
 /* Motion override control v2 — system Reduced Motion is respected by default,
    but the Zone Sketch button can explicitly opt this decorative shell back in. */
-body.zsMotionActive .brandInView>.brandSweep{animation:zsBrandSweep 7s ease-in-out infinite!important}
-body.zsMotionActive .brandInView>.brandOrbit{animation:zsBrandOrbit 36s linear infinite!important}
+body.zsMotionActive .brandInView>.brandSweep{}
+body.zsMotionActive .brandInView>.brandOrbit{}
 body.zsMotionActive .brandInView .brandBeacon,
-body.zsMotionActive .brandInView .cursor{animation:zsBrandPulse 3s ease-in-out infinite!important}
-body.zsMotionActive .brandInView .workflowStep:before{animation:zsBrandFlow 6s ease-in-out infinite!important}
-body.zsMotionActive .brandInView .workflowStep:nth-child(2):before{animation-delay:.75s!important}
-body.zsMotionActive .brandInView .workflowStep:nth-child(3):before{animation-delay:1.5s!important}
-body.zsMotionActive .brandInView .workflowStep:nth-child(4):before{animation-delay:2.25s!important}
+body.zsMotionActive .brandInView .cursor{}
+body.zsMotionActive .brandInView .workflowStep:before{}
+body.zsMotionActive .brandInView .workflowStep:nth-child(2):before{}
+body.zsMotionActive .brandInView .workflowStep:nth-child(3):before{}
+body.zsMotionActive .brandInView .workflowStep:nth-child(4):before{}
 body.zsMotionActive.zsMotionPaused :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),
-body.zsMotionActive.zsMotionPaused .workflowStep:before{animation-play-state:paused!important}
+body.zsMotionActive.zsMotionPaused .workflowStep:before{}
 body.zsMotionActive .brandMotionToggle{opacity:1!important;cursor:pointer!important}
 body.zsMotionActive.brandPortal .signalCard,
 body.zsMotionActive.brandPortal .command{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease!important}
@@ -437,56 +437,56 @@ body.zsMotionActive.brandPortal .command{transition:transform .18s ease,border-c
 .brandPortal .panel:before{right:auto}
 
 body.zsMotionActive #projectsHome .homeProductHero:before,
-body.zsMotionActive.brandPortal .approvedHeroBrand:before{animation:zsEdgeRun 10.2s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .approvedHeroBrand:before{}
 body.zsMotionActive #projectsHome .homeBrandMark,
-body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation:zsLogoGlow 7s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .approvedHeroBrand>img{}
 body.zsMotionActive #projectsHome .homeHeroBadge,
-body.zsMotionActive.brandPortal .statusPill.live{animation:zsLiveHalo 5.5s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .statusPill.live{}
 
-body.zsMotionActive #projectsHome .workflowStep{animation:zsStepSignal 9.6s ease-in-out infinite!important}
-body.zsMotionActive #projectsHome .workflowStep:nth-child(2){animation-delay:2.4s!important}
-body.zsMotionActive #projectsHome .workflowStep:nth-child(3){animation-delay:4.8s!important}
-body.zsMotionActive #projectsHome .workflowStep:nth-child(4){animation-delay:7.2s!important}
+body.zsMotionActive #projectsHome .workflowStep{}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(2){}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(3){}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(4){}
 
-body.zsMotionActive #projectsHome .projectCard:after{animation:zsCardScan 14.4s ease-in-out infinite!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(2):after{animation-delay:1.7s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(3):after{animation-delay:3.4s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(4):after{animation-delay:5s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(5):after{animation-delay:6.7s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(6):after{animation-delay:8.4s!important}
+body.zsMotionActive #projectsHome .projectCard:after{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(2):after{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(3):after{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(4):after{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(5):after{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(6):after{}
 
-body.zsMotionActive.brandPortal .signalCard:after{animation:zsSignalRail 8.4s ease-in-out infinite alternate!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(2):after{animation-delay:1s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(3):after{animation-delay:1.9s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(4):after{animation-delay:2.9s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(5):after{animation-delay:3.8s!important}
-body.zsMotionActive.brandPortal .signalCard:nth-child(6):after{animation-delay:4.8s!important}
-body.zsMotionActive.brandPortal main>.panel:before{animation:zsPanelTrace 15.6s ease-in-out infinite alternate!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(2):before{animation-delay:1.4s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(3):before{animation-delay:2.9s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(4):before{animation-delay:4.3s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(5):before{animation-delay:5.8s!important}
-body.zsMotionActive.brandPortal .nodeRow .good{animation:zsGoodPulse 4.8s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .signalCard:after{}
+body.zsMotionActive.brandPortal .signalCard:nth-child(2):after{}
+body.zsMotionActive.brandPortal .signalCard:nth-child(3):after{}
+body.zsMotionActive.brandPortal .signalCard:nth-child(4):after{}
+body.zsMotionActive.brandPortal .signalCard:nth-child(5):after{}
+body.zsMotionActive.brandPortal .signalCard:nth-child(6):after{}
+body.zsMotionActive.brandPortal main>.panel:before{}
+body.zsMotionActive.brandPortal main>.panel:nth-child(2):before{}
+body.zsMotionActive.brandPortal main>.panel:nth-child(3):before{}
+body.zsMotionActive.brandPortal main>.panel:nth-child(4):before{}
+body.zsMotionActive.brandPortal main>.panel:nth-child(5):before{}
+body.zsMotionActive.brandPortal .nodeRow .good{}
 
 /* One restrained reveal when motion is enabled or the page first opens with motion active. */
 body.zsMotionActive #projectsHome .homeProductHero,
-body.zsMotionActive.brandPortal .heroGrid{animation:zsSoftIn .55s cubic-bezier(.2,.7,.25,1) both!important}
-body.zsMotionActive #projectsHome .homeHeading{animation:zsSoftIn .5s .08s cubic-bezier(.2,.7,.25,1) both!important}
-body.zsMotionActive #projectsHome .homeActions{animation:zsSoftIn .5s .14s cubic-bezier(.2,.7,.25,1) both!important}
-body.zsMotionActive #projectsHome .homeSearch{animation:zsSoftIn .5s .18s cubic-bezier(.2,.7,.25,1) both!important}
-body.zsMotionActive #projectsHome .projectCard{animation:zsSoftIn .5s .22s cubic-bezier(.2,.7,.25,1) both!important}
-body.zsMotionActive.brandPortal main>.panel{animation:zsSoftIn .5s cubic-bezier(.2,.7,.25,1) both!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(2){animation-delay:.06s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(3){animation-delay:.12s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(4){animation-delay:.18s!important}
-body.zsMotionActive.brandPortal main>.panel:nth-child(5){animation-delay:.24s!important}
+body.zsMotionActive.brandPortal .heroGrid{}
+body.zsMotionActive #projectsHome .homeHeading{}
+body.zsMotionActive #projectsHome .homeActions{}
+body.zsMotionActive #projectsHome .homeSearch{}
+body.zsMotionActive #projectsHome .projectCard{}
+body.zsMotionActive.brandPortal main>.panel{}
+body.zsMotionActive.brandPortal main>.panel:nth-child(2){}
+body.zsMotionActive.brandPortal main>.panel:nth-child(3){}
+body.zsMotionActive.brandPortal main>.panel:nth-child(4){}
+body.zsMotionActive.brandPortal main>.panel:nth-child(5){}
 
 /* Keep movement optical rather than physical on touch devices. */
 @media(max-width:720px){
  #projectsHome .projectCard:after{width:15%}
  body.zsMotionActive #projectsHome .homeBrandMark,
- body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation-duration:7.8s!important}
- body.zsMotionActive.brandPortal main>.panel:before{animation-duration:18s!important}
+ body.zsMotionActive.brandPortal .approvedHeroBrand>img{}
+ body.zsMotionActive.brandPortal main>.panel:before{}
 }
 
 
@@ -519,8 +519,8 @@ body.zsMotionActive.brandPortal main>.panel:nth-child(5){animation-delay:.24s!im
   background:linear-gradient(105deg,transparent 0,rgba(255,255,255,.06) 28%,rgba(255,255,255,.92) 49%,rgba(225,253,255,.24) 62%,transparent 100%);
   transform:translateX(-190%) skewX(-18deg);
 }
-body.zsMotionActive .zsHeaderHomeShine:before{animation:zsHeaderHomeShine 9.6s ease-in-out infinite}
-body.zsMotionPaused .zsHeaderHomeShine:before{animation-play-state:paused!important}
+body.zsMotionActive .zsHeaderHomeShine:before{}
+body.zsMotionPaused .zsHeaderHomeShine:before{}
 .top .zsHeaderHomeBtn:active{transform:scale(.97)}
 .top .zsHeaderHomeBtn:focus-visible{outline:2px solid #8eeaff!important;outline-offset:2px}
 @media(max-width:720px){
@@ -563,24 +563,24 @@ body.zsMotionPaused .zsHeaderHomeShine:before{animation-play-state:paused!import
 /* The tester page already has moving signal rails. Give the real app project cards
    the same living top-edge signal instead of leaving that accent parked at the left. */
 body.zsMotionActive #projectsHome .projectCard:before{
-  animation:zsAppProjectRail 8.4s ease-in-out infinite alternate!important;
+
 }
-body.zsMotionActive #projectsHome .projectCard:nth-child(2):before{animation-delay:1s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(3):before{animation-delay:1.9s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(4):before{animation-delay:2.9s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(5):before{animation-delay:3.8s!important}
-body.zsMotionActive #projectsHome .projectCard:nth-child(6):before{animation-delay:4.8s!important}
+body.zsMotionActive #projectsHome .projectCard:nth-child(2):before{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(3):before{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(4):before{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(5):before{}
+body.zsMotionActive #projectsHome .projectCard:nth-child(6):before{}
 
 /* The ready-state dot now pulses like BETA LIVE on the tester hub. */
 body.zsMotionActive #projectsHome .homeHeroBadge:after{
-  animation:zsAppBadgeBeacon 3s ease-in-out infinite!important;
+
   transform-origin:center;
 }
 
 /* Tester primary actions visibly sweep even on touch screens. Mirror that ambient
    gloss on the app CTA instead of relying on desktop hover, which tablets never get. */
 body.zsMotionActive #projectsHome button.primary:after{
-  animation:zsAppButtonSweep 9.8s ease-in-out infinite!important;
+
 }
 
 /* Recent-project heading gets the same moving cyan/lime trace used by tester panels. */
@@ -591,7 +591,7 @@ body.zsMotionActive #projectsHome button.primary:after{
   transform:translateX(-125%);box-shadow:0 0 12px rgba(0,194,255,.20)
 }
 body.zsMotionActive #projectsHome .homeHeading:after{
-  animation:zsAppHeadingTrace 13.8s ease-in-out infinite!important;
+
 }
 
 /* Keep the already-approved app motion, but make the project-card scan easier to
@@ -605,7 +605,7 @@ body.zsMotionActive #projectsHome .projectCard:after{
 body.zsMotionPaused #projectsHome .projectCard:before,
 body.zsMotionPaused #projectsHome .homeHeroBadge:after,
 body.zsMotionPaused #projectsHome button.primary:after,
-body.zsMotionPaused #projectsHome .homeHeading:after{animation-play-state:paused!important}
+body.zsMotionPaused #projectsHome .homeHeading:after{}
 
 /* iPhone may put the app in reduceMotion from the OS/app setting. Decorative Zone
    Sketch motion is intentionally on even though the visible toggle has been removed.
@@ -617,49 +617,49 @@ body.zsMotionOff #projectsHome .homeHeading:after,
 body.reduceMotion:not(.zsMotionActive) #projectsHome .projectCard:before,
 body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeroBadge:after,
 body.reduceMotion:not(.zsMotionActive) #projectsHome button.primary:after,
-body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeading:after{animation:none!important}
+body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeading:after{}
 
 body.zsMotionActive.reduceMotion #projectsHome .projectCard:before{
-  animation:zsAppProjectRail 8.4s ease-in-out infinite alternate!important;
+
 }
 body.zsMotionActive.reduceMotion #projectsHome .homeHeroBadge:after{
-  animation:zsAppBadgeBeacon 3s ease-in-out infinite!important;
+
 }
 body.zsMotionActive.reduceMotion #projectsHome button.primary:after{
-  animation:zsAppButtonSweep 9.8s ease-in-out infinite!important;
+
 }
 body.zsMotionActive.reduceMotion #projectsHome .homeHeading:after{
-  animation:zsAppHeadingTrace 13.8s ease-in-out infinite!important;
+
 }
 
 /* iOS standalone fix: the generic reduced-motion rule uses #projectsHome and can
    otherwise outrank the decorative workflow animation. zsMotionForce is set only
    when iOS/app Reduced Motion is present while Zone Sketch brand motion is enabled. */
 body.zsMotionActive.zsMotionForce #projectsHome .workflowStep{
-  animation-name:zsStepSignal!important;
-  animation-duration:9.6s!important;
-  animation-timing-function:ease-in-out!important;
-  animation-iteration-count:infinite!important;
+
+
+
+
 }
-body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(2){animation-delay:2.4s!important}
-body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(3){animation-delay:4.8s!important}
-body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4){animation-delay:7.2s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(2){}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(3){}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4){}
 body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:before{
-  animation-name:zsBrandFlow!important;
-  animation-duration:6s!important;
-  animation-timing-function:ease-in-out!important;
-  animation-iteration-count:infinite!important;
+
+
+
+
 }
-body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(2):before{animation-delay:.75s!important}
-body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(3):before{animation-delay:1.5s!important}
-body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4):before{animation-delay:2.25s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(2):before{}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(3):before{}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4):before{}
 
 @media(max-width:720px){
   /* Keep motion optical on touch: no cards physically slide around. */
-  body.zsMotionActive #projectsHome .projectCard:before{animation-duration:9.6s!important;animation-iteration-count:infinite!important}
-  body.zsMotionActive #projectsHome button.primary:after{animation-duration:11s!important;animation-iteration-count:infinite!important}
-  body.zsMotionActive.reduceMotion #projectsHome .homeHeroBadge:after{animation-duration:3s!important;animation-iteration-count:infinite!important}
-  body.zsMotionActive.reduceMotion #projectsHome .homeHeading:after{animation-duration:13.8s!important;animation-iteration-count:infinite!important}
+  body.zsMotionActive #projectsHome .projectCard:before{}
+  body.zsMotionActive #projectsHome button.primary:after{}
+  body.zsMotionActive.reduceMotion #projectsHome .homeHeroBadge:after{}
+  body.zsMotionActive.reduceMotion #projectsHome .homeHeading:after{}
 }
 
 /* End app motion parity. */
@@ -1092,10 +1092,10 @@ body{min-width:100%;min-height:100%;background:#020a10}
 /* Bring the approved transparent Home mark's original gloss sweep back reliably.
    No geometry, colour or click behaviour is changed. */
 body:not(.zsMotionPaused) .top .zsHeaderHomeShine:before{
-  animation:zsHeaderHomeShine 9.6s ease-in-out infinite!important;
+
   will-change:transform,opacity;
 }
-body.zsMotionPaused .top .zsHeaderHomeShine:before{animation-play-state:paused!important}
+body.zsMotionPaused .top .zsHeaderHomeShine:before{}
 
 /* Favourites stays dark and clean, but keeps its yellow star identity and a restrained yellow edge.
    The button's real text and click target are unchanged; pseudo labels are purely visual. */
@@ -1138,8 +1138,8 @@ body.zsMotionPaused .top .zsHeaderHomeShine:before{animation-play-state:paused!i
   96%{background-position:-120% 0,0 0}
   100%{background-position:-140% 0,0 0}
 }
-body:not(.zsMotionPaused) .app>.tools #favouriteMenuBtn{animation:zsFavouriteShine 9.6s ease-in-out infinite}
-body.zsMotionPaused .app>.tools #favouriteMenuBtn{animation-play-state:paused!important}
+body:not(.zsMotionPaused) .app>.tools #favouriteMenuBtn{}
+body.zsMotionPaused .app>.tools #favouriteMenuBtn{}
 
 /* Tiny depth cues only: no button sizing, layout or interaction changes. */
 .app>.top,
@@ -1205,6 +1205,51 @@ body.zsMotionPaused .app>.tools #favouriteMenuBtn{animation-play-state:paused!im
 /* Home Recent Projects heading cleanup. */
 #projectsHome .homeHeading:after{display:none!important;animation:none!important;content:none!important}
 /* End Home Recent Projects heading cleanup. */
+
+/* Portrait menu state wins over the expanded five-column header layout. */
+.app:not(.surveyMode)>.top.collapsed .topMain{display:none}
+@media(max-width:720px){
+ .app:not(.surveyMode)>.top .topEssential{display:grid;grid-template-columns:minmax(0,1fr) repeat(3,44px) 88px;gap:4px;width:100%;min-width:0}
+ .app:not(.surveyMode)>.top .topEssential>button{min-width:0;width:100%;min-height:44px;margin:0;padding:8px 4px}
+ .app:not(.surveyMode)>.top .topEssential #moveModeTop{font-size:12px}
+ .app:not(.surveyMode)>.top .topEssential #topCollapseBtn{min-width:88px;font-size:13px}
+ .app>.top{flex-shrink:0}
+}
+/* Original artwork, with one consistent technical surface across the workspace. */
+.app>.top:before,.cbLandingHero:after{content:'';position:absolute;right:0;top:0;width:min(42%,360px);height:100%;background:url('assets/brand/field-circuit-pattern.svg') right center/360px 180px no-repeat;opacity:.5;pointer-events:none}
+.app>.top .topMain,.app>.top .topEssential{position:relative;z-index:1}
+.cbLandingHero{position:relative;overflow:hidden;isolation:isolate}.cbLandingHero>*{position:relative;z-index:1}
+.toolPopup h4{background:linear-gradient(110deg,#0b2839,#071723);color:#c8eeff;border:1px solid #285d74;border-left:3px solid #9bff3f;border-radius:3px 10px 3px 10px;padding:11px 12px;font-size:11px;letter-spacing:.1em}
+.box h2{padding-bottom:12px;border-bottom:1px solid #76c6df;position:relative}.box h2:after{content:'';position:absolute;bottom:-1px;left:0;width:42px;height:2px;background:#6eb52a}
+.app.surveyMode #surveyTools{background:linear-gradient(145deg,#0b2332,#06131e);border-top:1px solid #28566d}
+.app.surveyMode #surveyTools button{border:1px solid #2a5369;border-radius:4px 11px 4px 11px;background:#102b3b;color:#dff2ff}
+.app.surveyMode #surveyTools button.active{background:#153d50;border-color:#00c2ff;box-shadow:inset 0 -2px #9bff3f;color:#fff}
+.app .saveIndicator{font-variant-numeric:tabular-nums}
+/* One authoritative decorative motion layer. Functional reduced motion stays separate. */
+@keyframes zsHeaderGlossV2{0%{transform:translateX(0) skewX(-18deg);opacity:0}8%{opacity:.65}28%{opacity:.65}38%,100%{transform:translateX(400%) skewX(-18deg);opacity:0}}
+@keyframes zsWorkspaceSignal{0%,100%{opacity:.25}50%{opacity:.8}}
+.zsHeaderHomeShine:before{left:-50%;width:50%;transform:translateX(0) skewX(-18deg)}
+body.zsMotionActive .brandInView>.brandSweep{animation:zsBrandSweep 9s ease-in-out infinite!important}
+body.zsMotionActive .brandInView>.brandOrbit{animation:zsBrandOrbit 42s linear infinite!important}
+body.zsMotionActive .brandBeacon,body.zsMotionActive .cursor{animation:zsBrandPulse 4s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .homeProductHero:before,body.zsMotionActive.brandPortal .approvedHeroBrand:before{animation:zsEdgeRun 8s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .workflowStep{animation:zsStepSignal 8s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(2){animation-delay:2s!important}body.zsMotionActive #projectsHome .workflowStep:nth-child(3){animation-delay:4s!important}body.zsMotionActive #projectsHome .workflowStep:nth-child(4){animation-delay:6s!important}
+body.zsMotionActive #projectsHome .workflowStep:before{animation:zsBrandFlow 8s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .workflowStep:nth-child(2):before{animation-delay:2s!important}body.zsMotionActive #projectsHome .workflowStep:nth-child(3):before{animation-delay:4s!important}body.zsMotionActive #projectsHome .workflowStep:nth-child(4):before{animation-delay:6s!important}
+body.zsMotionActive #projectsHome .homeHeroBadge:after{animation:zsBrandPulse 4s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome .projectCard:before{animation:zsSignalRail 9s ease-in-out infinite alternate!important}
+body.zsMotionActive #projectsHome .projectCard:after{animation:zsCardScan 11s ease-in-out infinite!important}
+body.zsMotionActive #projectsHome button.primary:after{animation:zsBrandShine 9s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .approvedHeroBrand>img{animation:zsLogoGlow 7s ease-in-out infinite!important}
+body.zsMotionActive.brandPortal .signalCard:after{animation:zsSignalRail 9s ease-in-out infinite alternate!important}
+body.zsMotionActive.brandPortal main>.panel:before{animation:zsPanelTrace 14s ease-in-out infinite alternate!important}
+body.zsMotionActive .top .zsHeaderHomeShine:before{animation:zsHeaderGlossV2 6.5s ease-in-out infinite!important}
+body.zsMotionActive .app>.tools #favouriteMenuBtn{animation:zsFavouriteShine 8s ease-in-out infinite!important}
+body.zsMotionActive .app>.top:after,body.zsMotionActive #circuitBuilder .cbLandingHero:after{animation:zsWorkspaceSignal 6s ease-in-out infinite!important}
+body.zsMotionActive :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:not(.zsMotionVisible),body.zsMotionActive :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:not(.zsMotionVisible):before,body.zsMotionActive :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:not(.zsMotionVisible):after,
+body.zsMotionActive.zsMotionPaused :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem,body.zsMotionActive.zsMotionPaused :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:before,body.zsMotionActive.zsMotionPaused :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:after{animation-play-state:paused!important}
+body.zsMotionOff .zsMotionItem,body.zsMotionOff .zsMotionItem:before,body.zsMotionOff .zsMotionItem:after{animation:none!important}
 </style>
 </head>
 <body>
@@ -1561,7 +1606,7 @@ $('newBtn').onclick=()=>projectAction(newSurvey);$('site').oninput=e=>{state.sit
 async function blank(){if(img&&!confirm('Clear the current floor and start blank? Other floors stay saved. To keep the drawing and remove only the photo, use Hide picture.'))return;push();const defaults=fresh();for(const k of floorKeys){delete state[k];if(k in defaults)state[k]=defaults[k]}state.isBlank=true;resetInteraction();await setImage(blankImage());setTool('wall');changed()}
 $('blankBtn').onclick=blank;$('emptyBlank').onclick=blank;
 function finish(){if(tool==='poly'){if(poly.length>=3&&selected){push();state.shapes.push({id:uid(),zone:selected,points:poly});changed()}}else if(tool==='layoutPoly'){if(poly.length>=3){push();const pts=poly.slice();for(let i=0;i<pts.length;i++)addWallSegment(pts[i],pts[(i+1)%pts.length]);mergeOverlappingWalls();changed()}}poly=[];draw()}$('finish').onclick=finish;
-let zonesPanelOpen=true;function syncZonesPanel(){const workspace=$('workspace'),b=$('closeZones'),legacy=$('zonesPanelBtn');workspace.classList.toggle('zonesClosed',!zonesPanelOpen);b.textContent=zonesPanelOpen?'‹':'›';b.title=zonesPanelOpen?'Hide Zones panel':'Show Zones panel';b.setAttribute('aria-label',b.title);b.setAttribute('aria-expanded',zonesPanelOpen?'true':'false');if(legacy){legacy.textContent=zonesPanelOpen?'Zones ◀':'Zones ▶';legacy.setAttribute('aria-pressed',zonesPanelOpen?'true':'false')}requestAnimationFrame(draw)}function setZonesPanel(open){zonesPanelOpen=!!open;syncZonesPanel()}$('closeZones').onclick=()=>setZonesPanel(!zonesPanelOpen);if($('zonesPanelBtn'))$('zonesPanelBtn').onclick=()=>setZonesPanel(!zonesPanelOpen);let topSectionOpen=false;function syncTopSection(){const app=document.querySelector('.app'),top=$('topBar'),b=$('topCollapseBtn');app.classList.toggle('topClosed',!topSectionOpen);top.classList.toggle('collapsed',!topSectionOpen);b.textContent=topSectionOpen?'Close ▲':'Menu ▼';b.title=topSectionOpen?'Close menu':'Show menu';b.setAttribute('aria-label',b.title);b.setAttribute('aria-expanded',topSectionOpen?'true':'false');requestAnimationFrame(draw)}function setTopSection(open){topSectionOpen=!!open;closeToolMenus();syncTopSection()}$('topCollapseBtn').onclick=()=>setTopSection(!topSectionOpen);$('moveModeTop').onclick=()=>setMoveMode(!navMode);$('moveModeBottom').onclick=()=>setMoveMode(!navMode);$('buildModeBtn').onclick=()=>setBuildMode(state.buildMode===false);syncZonesPanel();syncTopSection();syncBuildMode();syncMoveMode();
+let zonesPanelOpen=true;function syncZonesPanel(){const workspace=$('workspace'),b=$('closeZones'),legacy=$('zonesPanelBtn');workspace.classList.toggle('zonesClosed',!zonesPanelOpen);b.textContent=zonesPanelOpen?'‹':'›';b.title=zonesPanelOpen?'Hide Zones panel':'Show Zones panel';b.setAttribute('aria-label',b.title);b.setAttribute('aria-expanded',zonesPanelOpen?'true':'false');if(legacy){legacy.textContent=zonesPanelOpen?'Zones ◀':'Zones ▶';legacy.setAttribute('aria-pressed',zonesPanelOpen?'true':'false')}requestAnimationFrame(draw)}function setZonesPanel(open){zonesPanelOpen=!!open;syncZonesPanel()}$('closeZones').onclick=()=>setZonesPanel(!zonesPanelOpen);if($('zonesPanelBtn'))$('zonesPanelBtn').onclick=()=>setZonesPanel(!zonesPanelOpen);let topSectionOpen=false;function syncTopSection(){const app=document.querySelector('.app'),top=$('topBar'),b=$('topCollapseBtn');app.classList.toggle('topClosed',!topSectionOpen);top.classList.toggle('collapsed',!topSectionOpen);b.textContent=topSectionOpen?'Close ▲':'Menu ▼';b.title=topSectionOpen?'Close menu':'Show menu';b.setAttribute('aria-label',b.title);b.setAttribute('aria-expanded',topSectionOpen?'true':'false');b.setAttribute('aria-controls','topMain');requestAnimationFrame(draw)}function setTopSection(open){topSectionOpen=!!open;closeToolMenus();syncTopSection()}$('topCollapseBtn').onclick=()=>setTopSection(!topSectionOpen);$('moveModeTop').onclick=()=>setMoveMode(!navMode);$('moveModeBottom').onclick=()=>setMoveMode(!navMode);$('buildModeBtn').onclick=()=>setBuildMode(state.buildMode===false);syncZonesPanel();syncTopSection();syncBuildMode();syncMoveMode();
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{if(navMode)setMoveMode(false);setTool(b.dataset.tool)});document.querySelectorAll('[data-menu-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.menuTool));
 $('zoneMenuBtn').onclick=()=>toggleMenu($('zoneMenu'),$('zoneMenuBtn'));$('locksMenuBtn').onclick=()=>{if($('locksMenu').classList.contains('open'))closeToolMenus();else placeMenuBelow($('locksMenu'),$('locksMenuBtn'))};$('layersMenuBtn').onclick=()=>{if($('layersMenu').classList.contains('open'))closeToolMenus();else placeMenuBelow($('layersMenu'),$('layersMenuBtn'))};$('countsMenuBtn').onclick=()=>{renderDeviceCounts();if($('countsMenu').classList.contains('open'))closeToolMenus();else placeMenuBelow($('countsMenu'),$('countsMenuBtn'))};$('layoutMenuBtn').onclick=()=>toggleMenu($('layoutMenu'),$('layoutMenuBtn'));$('objectMenuBtn').onclick=()=>toggleMenu($('objectMenu'),$('objectMenuBtn'));$('symbolMenuBtn').onclick=()=>{syncSymbolScale();toggleMenu($('symbolMenu'),$('symbolMenuBtn'))};$('symbolStampScale').oninput=e=>{e.stopPropagation();setSymbolStampScale(e.target.value)};$('detailMenuBtn').onclick=()=>toggleMenu($('detailMenu'),$('detailMenuBtn'));$('floorMenuBtn').onclick=()=>{if($('floorMenu').classList.contains('open'))closeToolMenus();else placeMenuBelow($('floorMenu'),$('floorMenuBtn'))};$('zoneCreate').onclick=()=>{closeToolMenus();openModal()};if($('sideZoneCreate'))$('sideZoneCreate').onclick=()=>{closeToolMenus();openModal()};document.querySelectorAll('[data-room-name]').forEach(b=>b.onclick=()=>{let name=b.dataset.roomName;if(name==='Custom')name=prompt('Room name:')?.trim();if(!name)return;roomStamp=name.slice(0,35);setTool('quickLabel')});document.querySelectorAll('[data-symbol]').forEach(b=>b.onclick=()=>{symbolStamp=b.dataset.symbol;setTool('symbol')});document.querySelectorAll('[data-detail-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.detailTool));document.querySelectorAll('[data-lock]').forEach(b=>b.onclick=()=>{const k=b.dataset.lock;state.locks[k]=!state.locks[k];if(state.locks[k]){selection=[];drawing=null;syncSelectionBar()}renderLockMenu();syncBackground();persist();draw()});document.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{const k=b.dataset.layer;state.layers[k]=state.layers[k]===false;if(state.layers[k]===false){selection=[];drawing=null;syncSelectionBar()}renderLayersMenu();persist();draw()});
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('[aria-haspopup]')&&!e.target.closest('.toolPopup')&&!e.target.closest('#zoneMenuBtn')&&!e.target.closest('#layoutMenuBtn')&&!e.target.closest('#objectMenuBtn')&&!e.target.closest('#symbolMenuBtn')&&!e.target.closest('#detailMenuBtn')&&!e.target.closest('#locksMenuBtn')&&!e.target.closest('#layersMenuBtn')&&!e.target.closest('#countsMenuBtn')&&!e.target.closest('#floorMenuBtn'))closeToolMenus()},true);
@@ -2082,49 +2127,22 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
 
 
 <script>
-/* Decorative brand motion is always enabled. Functional UI motion remains separate. */
+/* Decorative effects share one lifecycle; the app keeps the requested always-on branding. */
 (()=>{
- const buttons=[];
- const media=window.matchMedia('(prefers-reduced-motion: reduce)');
+ const buttons=[...document.querySelectorAll('[data-brand-motion]')];
+ const media=matchMedia('(prefers-reduced-motion: reduce)');
  let mode='on';
- const systemReduced=()=>media.matches||document.body.classList.contains('reduceMotion');
- const active=()=>mode==='on'||(mode==='auto'&&!systemReduced());
- function save(){
-  try{
-   localStorage.setItem('zoneSketchBrandMotionMode',mode);
-   localStorage.setItem('zoneSketchBrandMotion',active()?'on':'off');
-  }catch(e){}
- }
- function sync(){
-  const reduced=systemReduced(),on=active(),forced=reduced&&mode==='on';
-  document.body.classList.toggle('zsMotionActive',on);
-  document.body.classList.toggle('zsMotionForce',forced);
-  document.body.classList.toggle('zsMotionOff',!on);
-  for(const b of buttons){
-   b.disabled=false;
-   b.setAttribute('aria-pressed',String(on));
-   b.textContent=on?'Motion on':reduced?'Motion reduced':'Motion off';
-   b.title=on?(forced?'Zone Sketch motion is on despite the device Reduced Motion setting':'Pause decorative animations'):(reduced?'Reduced Motion detected · tap to enable Zone Sketch motion':'Enable decorative animations');
-   b.setAttribute('aria-label',b.title);
-  }
- }
- for(const b of buttons)b.addEventListener('click',()=>{
-  mode=active()?'off':'on';
-  save();sync();
- });
+ if(buttons.length)try{const value=localStorage.getItem('zoneSketchBrandMotionMode');if(['on','off','auto'].includes(value))mode=value;else if(localStorage.getItem('zoneSketchBrandMotion')==='off')mode='off'}catch(e){}
+ function sync(){const reduced=media.matches||document.body.classList.contains('reduceMotion'),on=mode==='on'||(mode==='auto'&&!reduced);document.body.classList.toggle('zsMotionActive',on);document.body.classList.toggle('zsMotionForce',on&&reduced);document.body.classList.toggle('zsMotionOff',!on);for(const b of buttons){b.disabled=false;b.textContent=on?'Motion on':reduced?'Motion reduced':'Motion off';b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'Pause decorative animations':'Enable decorative animations')}}
+ for(const b of buttons)b.addEventListener('click',()=>{mode=document.body.classList.contains('zsMotionActive')?'off':'on';try{localStorage.setItem('zoneSketchBrandMotionMode',mode);localStorage.setItem('zoneSketchBrandMotion',mode)}catch(e){}sync()});
  media.addEventListener?.('change',sync);
-
- let appReduced=document.body.classList.contains('reduceMotion');
- new MutationObserver(()=>{
-  const next=document.body.classList.contains('reduceMotion');
-  if(next!==appReduced){appReduced=next;sync()}
- }).observe(document.body,{attributes:true,attributeFilter:['class']});
- const pause=()=>document.body.classList.toggle('zsMotionPaused',document.hidden);
- document.addEventListener('visibilitychange',pause);pause();sync();
- if('IntersectionObserver' in window){
-  const observer=new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('brandInView',entry.isIntersecting)},{threshold:.05});
-  document.querySelectorAll('[data-brand-watch]').forEach(el=>observer.observe(el));
- }else document.querySelectorAll('[data-brand-watch]').forEach(el=>el.classList.add('brandInView'));
+ window.addEventListener('storage',e=>{if(buttons.length&&e.key==='zoneSketchBrandMotionMode'){mode=['on','off','auto'].includes(e.newValue)?e.newValue:'on';sync()}});
+ let reduced=document.body.classList.contains('reduceMotion');new MutationObserver(()=>{const next=document.body.classList.contains('reduceMotion');if(next!==reduced){reduced=next;sync()}}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ const pause=()=>document.body.classList.toggle('zsMotionPaused',document.hidden);document.addEventListener('visibilitychange',pause);window.addEventListener('pageshow',()=>{pause();sync()});pause();sync();
+ const selectors='[data-brand-watch],.brandSweep,.brandOrbit,.brandBeacon,.cursor,.workflowStep,.homeProductHero,.homeHeroBadge,.projectCard,#projectsHome button.primary,.approvedHeroBrand,.approvedHeroBrand>img,.brandPortal main>.panel,.signalCard,.zsHeaderHomeShine,#favouriteMenuBtn,.app>.top,.cbLandingHero';
+ const seen=new WeakSet(),observer='IntersectionObserver' in window?new IntersectionObserver(entries=>{for(const {target,isIntersecting} of entries){target.classList.toggle('zsMotionVisible',isIntersecting);if(target.hasAttribute('data-brand-watch'))target.classList.toggle('brandInView',isIntersecting)}},{threshold:0}):null;
+ function watch(){document.querySelectorAll(selectors).forEach(el=>{if(seen.has(el))return;seen.add(el);el.classList.add('zsMotionItem');if(observer)observer.observe(el);else{el.classList.add('zsMotionVisible');if(el.hasAttribute('data-brand-watch'))el.classList.add('brandInView')}})}
+ watch();const grid=document.getElementById('projectGrid');if(grid)new MutationObserver(watch).observe(grid,{childList:true});
 })();
 </script>
 </body></html>

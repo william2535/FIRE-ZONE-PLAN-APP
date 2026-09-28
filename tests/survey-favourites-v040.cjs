@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright');
 const fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
@@ -23,7 +24,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   if(await page.locator('#emptyBlank').isVisible())await page.locator('#emptyBlank').click();
   await page.waitForFunction(()=>!document.getElementById('empty').offsetParent);
 
-  await page.locator('#surveyModeBtn').click();
+  await openHeader(page);await page.locator('#surveyModeBtn').click();
   assert.equal(await page.locator('.app').evaluate(el=>el.classList.contains('surveyMode')),true);
   assert.equal(await page.locator('#surveyFavouriteRail').isVisible(),true);
 
@@ -97,7 +98,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   await page.reload();
   await page.waitForFunction(()=>!document.getElementById('homeNew').disabled);
   if(await page.locator('#resumeProject').isVisible())await page.locator('#resumeProject').click();
-  if(!await page.locator('.app').evaluate(el=>el.classList.contains('surveyMode')))await page.locator('#surveyModeBtn').click();
+  if(!await page.locator('.app').evaluate(el=>el.classList.contains('surveyMode')))await openHeader(page);await page.locator('#surveyModeBtn').click();
   assert.equal(await page.locator('#surveyFavouriteButtons .surveyFavouriteQuick').count(),2);
   assert.equal((await page.locator('#surveyFavouriteButtons .surveyFavouriteQuick').first().innerText()).includes('Beam'),true);
 
@@ -108,7 +109,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   await page.reload();
   await page.waitForFunction(()=>!document.getElementById('homeNew').disabled);
   if(await page.locator('#resumeProject').isVisible())await page.locator('#resumeProject').click();
-  if(!await page.locator('.app').evaluate(el=>el.classList.contains('surveyMode')))await page.locator('#surveyModeBtn').click();
+  if(!await page.locator('.app').evaluate(el=>el.classList.contains('surveyMode')))await openHeader(page);await page.locator('#surveyModeBtn').click();
   assert.equal(await page.locator('#surveyFavouriteButtons .surveyFavouriteQuick').count(),9);
   await page.locator('#surveyDevice').click();
   assert.equal(await page.locator('#saveSurveyFavourite').isDisabled(),true);

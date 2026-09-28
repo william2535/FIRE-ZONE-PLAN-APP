@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
 (async()=>{
@@ -69,7 +70,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     assert.equal(s.shapes.length,1,'undo should return to one zone before combined-mode test');
 
     // Toggle from Drawing, beside the grid controls.
-    await page.locator('#settingsMenuBtn').click();
+    await openHeader(page);await page.locator('#settingsMenuBtn').click();
     const build=page.locator('#buildModeBtn');
     await build.waitFor({state:'visible'});
     assert.match(await build.innerText(),/Build mode[\s\S]*ON · Separate/);
@@ -96,17 +97,17 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     assert.equal(s.shapes.length,2,'combined mode must still place a new zone on empty space');
 
     // Turn Build mode back on and verify the separated state is restored.
-    await page.locator('#settingsMenuBtn').click();
+    await openHeader(page);await page.locator('#settingsMenuBtn').click();
     await page.locator('#buildModeBtn').click();
     await page.waitForTimeout(120);
     s=await saved();
     assert.equal(s.buildMode,true);
-    await page.locator('#settingsMenuBtn').click();
+    await openHeader(page);await page.locator('#settingsMenuBtn').click();
     assert.match(await page.locator('#buildModeBtn').innerText(),/ON · Separate/);
     await page.keyboard.press('Escape').catch(()=>{});
 
     await page.setViewportSize({width:390,height:844});
-    await page.locator('#settingsMenuBtn').click();
+    await openHeader(page);await page.locator('#settingsMenuBtn').click();
     const menu=await page.locator('#settingsMenu').boundingBox();
     const toggle=await page.locator('#buildModeBtn').boundingBox();
     assert(menu&&toggle&&toggle.width>180,'Build mode toggle should remain comfortably tappable on phone widths');

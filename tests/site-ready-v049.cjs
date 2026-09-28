@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 (async()=>{
  const server=http.createServer((q,r)=>{const path=(q.url||'/').split('?')[0],file=path==='/'?'index.html':path.slice(1);try{const data=fs.readFileSync(file);r.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':'text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
@@ -12,7 +13,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
 
   // Settings live in the Project menu and persist their field preferences.
-  await p.locator('#projectMenuBtn').click();await p.locator('#appSettingsBtn').click();await p.locator('#appSettingsModal').waitFor({state:'visible'});
+  await openHeader(p);await p.locator('#projectMenuBtn').click();await p.locator('#appSettingsBtn').click();await p.locator('#appSettingsModal').waitFor({state:'visible'});
   assert.match(await p.locator('.settingsFooter').innerText(),/v0\.49/i);
   await p.locator('#appHapticsSetting').click();
   assert.equal(await p.evaluate(()=>localStorage.getItem('zoneSketchHaptics')),'off');
@@ -22,12 +23,12 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   await p.locator('#appSettingsClose').click();
 
   // Empty Circuit Builder states use an in-app notice rather than a browser alert.
-  await p.locator('#circuitModeBtn').click();await p.locator('#cbAddressableStart').click();await p.locator('#appNoticeModal').waitFor({state:'visible'});
+  await openHeader(p);await p.locator('#circuitModeBtn').click();await p.locator('#cbAddressableStart').click();await p.locator('#appNoticeModal').waitFor({state:'visible'});
   assert.match(await p.locator('#appNoticeTitle').innerText(),/No surveyed devices/i);
   await p.locator('#appNoticeClose').click();await p.locator('#cbBack').click();
 
   // Survey picker is grouped, but device buttons remain the same stable controls.
-  await p.locator('#surveyModeBtn').click();await p.locator('#surveyDevice').click();
+  await openHeader(p);await p.locator('#surveyModeBtn').click();await p.locator('#surveyDevice').click();
   assert((await p.locator('.symbolCategory:visible').count())>=3);
   assert(await p.locator('[data-symbol="smoke"]').isVisible());
   const canvas=await p.locator('#canvas').boundingBox();
@@ -37,7 +38,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
 
   // The Circuit Builder still exposes the polished field controls and As-Fit validation surface.
   await p.locator('#surveyDevice').click();await p.locator('[data-symbol="panel"]').click();await p.mouse.click(canvas.x+canvas.width*.28,canvas.y+canvas.height*.48);
-  await p.locator('#circuitModeBtn').click();
+  await openHeader(p);await p.locator('#circuitModeBtn').click();
   assert(await p.locator('.cbLandingHero').isVisible());
   assert(await p.locator('#cbAsFitSummary').count()===1);
   assert.deepEqual(alerts,[],'Common v0.49 field states should not use browser alerts');

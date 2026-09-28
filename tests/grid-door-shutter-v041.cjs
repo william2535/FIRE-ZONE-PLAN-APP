@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright');
 const fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
@@ -34,7 +35,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
 
   // Survey grid has direct smaller/larger controls. Changing spacing from them
   // also enables snap because these controls are specifically for placement.
-  await page.locator('#surveyModeBtn').click();
+  await openHeader(page);await page.locator('#surveyModeBtn').click();
   await page.locator('#canvasOptionsBtn').click();
   await page.locator('#surveyGridSize').selectOption('20');
   // Close the popup without touching the Survey canvas: one finger on the

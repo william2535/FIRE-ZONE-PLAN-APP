@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict'),path=require('path');
 (async()=>{
  let html=fs.readFileSync('index.html','utf8');
@@ -20,10 +21,10 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   const makeZone=async(name,a,b)=>{await p.locator('#zoneMenuBtn').click();await p.locator('#zoneCreate').click();await p.locator('#zoneName').fill(name);await p.locator('#saveZone').click();await p.locator('#zoneMenuBtn').click();await p.locator('[data-menu-tool="rect"]').click();await drag(await xy(a.x,a.y),await xy(b.x,b.y))};
   await makeZone('Offices',{x:.10,y:.18},{x:.45,y:.70});
   await makeZone('Stores',{x:.50,y:.18},{x:.88,y:.70});
-  await p.locator('#surveyModeBtn').click();
+  await openHeader(p);await p.locator('#surveyModeBtn').click();
   const place=async(type,q)=>{await p.locator('#surveyDevice').click();await p.locator(`[data-symbol="${type}"]`).click();const pt=await xy(q.x,q.y);await p.mouse.click(pt.x,pt.y)};
   await place('panel',{x:.47,y:.44});await place('smoke',{x:.28,y:.42});await place('mcp',{x:.69,y:.43});
-  await p.locator('#circuitModeBtn').click();
+  await openHeader(p);await p.locator('#circuitModeBtn').click();
   assert.equal(await p.locator('#cbConventionalZones .cbZoneButton').count(),2);
   assert.equal(await p.locator('#cbExisting .cbZoneButton').count(),2,'desktop side rail should be a zone-colour palette');
   assert.equal(await p.locator('#cbExisting .cbZoneButton .cbZoneSwatch').count(),2);
