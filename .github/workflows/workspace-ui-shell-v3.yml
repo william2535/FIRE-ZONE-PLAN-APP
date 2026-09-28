@@ -19,7 +19,7 @@ jobs:
         with:
           ref: main
 
-      - name: Snapshot app markup with approved Move default normalised
+      - name: Snapshot app markup with approved Move defaults normalised
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -30,13 +30,15 @@ jobs:
           tail = text.split('</style>', 1)[1]
           tail = tail.replace('pendingPhotoPin=null,navMode=false,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
           tail = tail.replace('pendingPhotoPin=null,navMode=true,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
+          tail = tail.replace('syncModeUi();setMoveMode(false);if(surveyMode){', 'syncModeUi();setMoveMode(__ZONE_MOVE_DEFAULT__);if(surveyMode){')
+          tail = tail.replace('syncModeUi();setMoveMode(!surveyMode);if(surveyMode){', 'syncModeUi();setMoveMode(__ZONE_MOVE_DEFAULT__);if(surveyMode){')
           Path('/tmp/zone-sketch-tail.sha').write_text(hashlib.sha256(tail.encode()).hexdigest())
           PY
 
       - name: Apply tech-grid aesthetic and approved defaults
         run: python .github/workspace_ui_shell_v3.py
 
-      - name: Prove no behaviour changed except Move default
+      - name: Prove no behaviour changed except approved Move defaults
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -45,11 +47,13 @@ jobs:
           tail = text.split('</style>', 1)[1]
           tail = tail.replace('pendingPhotoPin=null,navMode=false,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
           tail = tail.replace('pendingPhotoPin=null,navMode=true,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
+          tail = tail.replace('syncModeUi();setMoveMode(false);if(surveyMode){', 'syncModeUi();setMoveMode(__ZONE_MOVE_DEFAULT__);if(surveyMode){')
+          tail = tail.replace('syncModeUi();setMoveMode(!surveyMode);if(surveyMode){', 'syncModeUi();setMoveMode(__ZONE_MOVE_DEFAULT__);if(surveyMode){')
           before = Path('/tmp/zone-sketch-tail.sha').read_text().strip()
           after = hashlib.sha256(tail.encode()).hexdigest()
           if before != after:
               raise SystemExit('unexpected non-CSS markup/JS change — refusing to continue')
-          print('Only the approved Move default may differ outside CSS.')
+          print('Only the approved Move defaults may differ outside CSS.')
           PY
 
       - name: Sync app mirrors and Android asset
@@ -61,7 +65,7 @@ jobs:
       - name: Install syntax dependency
         run: npm install --no-save acorn
 
-      - name: Verify aesthetic pass, Move default and release safety
+      - name: Verify aesthetic pass, Move defaults and release safety
         run: |
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
@@ -71,6 +75,7 @@ jobs:
           grep -q 'id="headerHomeBtn"' index.html
           grep -q 'zsHeaderHomeShine' index.html
           grep -q 'pendingPhotoPin=null,navMode=true,tapStart=null' index.html
+          grep -q 'syncModeUi();setMoveMode(!surveyMode);if(surveyMode){' index.html
           grep -q 'iOS/iPadOS standalone viewport fill' index.html
           grep -q '@supports (height:100dvh)' index.html
           grep -q 'App motion parity — tester-hub movement mapped onto the real app shell' index.html
@@ -87,6 +92,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'Workspace polish already current.'
           else
-            git commit -m 'Refine workspace tech-grid aesthetic'
+            git commit -m 'Keep Move on in Zone Plan by default'
             git push origin HEAD:main
           fi
