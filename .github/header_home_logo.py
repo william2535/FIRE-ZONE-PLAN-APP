@@ -1,88 +1,108 @@
 from pathlib import Path
+from PIL import Image
 
-p = Path('index.html')
-text = p.read_text(encoding='utf-8')
+APP_HTML = Path('index.html')
+SOURCE = Path('assets/on-site-zone-planner-icon.webp')
+MARK_PNG = Path('assets/zone-sketch-header-mark.png')
+OLD_MARK_SVG = Path('assets/zone-sketch-header-mark.svg')
 
-CSS_MARKER = '/* Header logo home button — transparent mark + restrained gloss sweep. */'
+# Source is the existing approved production icon. RGB is never recoloured or redrawn;
+# we only crop away the surrounding app-icon frame and derive transparency from the
+# original pixels so the house/flame artwork itself remains unchanged.
+img = Image.open(SOURCE).convert('RGBA')
+w, h = img.size
+crop = (round(w * 0.13), round(h * 0.10), round(w * 0.87), round(h * 0.90))
+mark = img.crop(crop)
+pixels = mark.load()
+for y in range(mark.height):
+    for x in range(mark.width):
+        r, g, b, _ = pixels[x, y]
+        v = max(r, g, b)
+        if v <= 62:
+            a = 0
+        elif v >= 158:
+            a = 255
+        else:
+            a = round((v - 62) * 255 / 96)
+        pixels[x, y] = (r, g, b, a)
+MARK_PNG.parent.mkdir(parents=True, exist_ok=True)
+mark.save(MARK_PNG, 'PNG', optimize=True)
+if OLD_MARK_SVG.exists():
+    OLD_MARK_SVG.unlink()
+
+text = APP_HTML.read_text(encoding='utf-8')
+OLD_MARKER = '/* Header logo home button — transparent mark + restrained gloss sweep. */'
+NEW_MARKER = '/* Header logo home button — approved original artwork + gloss only. */'
 CSS = r'''
-
-/* Header logo home button — transparent mark + restrained gloss sweep. */
+/* Header logo home button — approved original artwork + gloss only. */
 @keyframes zsHeaderHomeShine{
-  0%,68%,100%{transform:translateX(-175%) skewX(-18deg);opacity:0}
-  73%{opacity:.08}
-  78%{opacity:.8}
-  88%{transform:translateX(245%) skewX(-18deg);opacity:.12}
+  0%,70%,100%{transform:translateX(-190%) skewX(-18deg);opacity:0}
+  75%{opacity:0}
+  79%{opacity:.9}
+  88%{transform:translateX(285%) skewX(-18deg);opacity:.10}
   90%{opacity:0}
 }
-@keyframes zsHeaderHomeGlow{
-  0%,100%{filter:drop-shadow(0 0 6px rgba(0,194,255,.16)) drop-shadow(0 0 9px rgba(155,255,63,.08))}
-  50%{filter:drop-shadow(0 0 9px rgba(0,194,255,.28)) drop-shadow(0 0 13px rgba(155,255,63,.15))}
-}
 .top .zsHeaderHomeBtn{
-  position:relative;display:grid;place-items:center;flex:none;width:46px;height:46px;padding:0!important;
-  border:0!important;border-radius:14px;background:transparent!important;box-shadow:none!important;
-  overflow:hidden;isolation:isolate;cursor:pointer;touch-action:manipulation;
-  transition:transform .15s ease,filter .15s ease!important;
+  position:relative;display:grid;place-items:center;flex:none;width:48px;height:48px;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  overflow:visible;cursor:pointer;touch-action:manipulation;transition:transform .14s ease!important;
 }
 .top .zsHeaderHomeBtn img{
-  width:42px;height:42px;display:block;object-fit:contain;border-radius:0!important;
-  filter:drop-shadow(0 0 7px rgba(0,194,255,.2)) drop-shadow(0 0 10px rgba(155,255,63,.1));
-  pointer-events:none;position:relative;z-index:1;
-}
-.top .zsHeaderHomeBtn:before{
-  content:'';position:absolute;inset:5px;border-radius:13px;
-  background:radial-gradient(circle at 50% 56%,rgba(0,194,255,.08),transparent 66%);
-  opacity:.55;pointer-events:none;z-index:0;
-}
-.top .zsHeaderHomeBtn:after{
-  content:'';position:absolute;inset:3px;border-radius:13px;
-  box-shadow:inset 0 0 0 1px rgba(126,229,255,.05);pointer-events:none;z-index:3;
+  width:46px;height:46px;display:block;object-fit:contain;border-radius:0!important;
+  filter:none!important;box-shadow:none!important;pointer-events:none;position:relative;z-index:1;
 }
 .zsHeaderHomeShine{
-  position:absolute;z-index:2;top:-15%;bottom:-15%;left:-36%;width:34%;pointer-events:none;opacity:0;
-  background:linear-gradient(105deg,transparent 0,rgba(255,255,255,.04) 28%,rgba(255,255,255,.82) 49%,rgba(193,252,255,.3) 60%,transparent 100%);
-  filter:blur(.2px);transform:translateX(-175%) skewX(-18deg);
+  position:absolute;z-index:2;inset:1px;pointer-events:none;overflow:hidden;
+  -webkit-mask:url('assets/zone-sketch-header-mark.png') center/contain no-repeat;
+  mask:url('assets/zone-sketch-header-mark.png') center/contain no-repeat;
 }
-body.zsMotionActive .zsHeaderHomeShine{animation:zsHeaderHomeShine 9.6s ease-in-out infinite}
-body.zsMotionActive .zsHeaderHomeBtn img{animation:zsHeaderHomeGlow 8.4s ease-in-out infinite}
-body.zsMotionPaused .zsHeaderHomeShine,body.zsMotionPaused .zsHeaderHomeBtn img{animation-play-state:paused!important}
-.top .zsHeaderHomeBtn:hover{filter:brightness(1.08)}
-.top .zsHeaderHomeBtn:active{transform:scale(.955)}
+.zsHeaderHomeShine:before{
+  content:'';position:absolute;top:-28%;bottom:-28%;left:-55%;width:30%;opacity:0;
+  background:linear-gradient(105deg,transparent 0,rgba(255,255,255,.06) 28%,rgba(255,255,255,.92) 49%,rgba(225,253,255,.24) 62%,transparent 100%);
+  transform:translateX(-190%) skewX(-18deg);
+}
+body.zsMotionActive .zsHeaderHomeShine:before{animation:zsHeaderHomeShine 9.6s ease-in-out infinite}
+body.zsMotionPaused .zsHeaderHomeShine:before{animation-play-state:paused!important}
+.top .zsHeaderHomeBtn:active{transform:scale(.97)}
 .top .zsHeaderHomeBtn:focus-visible{outline:2px solid #8eeaff!important;outline-offset:2px}
 @media(max-width:720px){
-  .top .zsHeaderHomeBtn{width:42px;height:42px;border-radius:13px}
-  .top .zsHeaderHomeBtn img{width:38px;height:38px}
+  .top .zsHeaderHomeBtn{width:44px;height:44px}
+  .top .zsHeaderHomeBtn img{width:42px;height:42px}
 }
 '''
 
-OLD_HEADER = '<div class="zsBrandLockup"><img src="assets/on-site-zone-planner-icon.webp" alt=""><div class="brand">ZONE SKETCH<small>BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.62</small></div></div>'
-NEW_HEADER = '<div class="zsBrandLockup"><button type="button" id="headerHomeBtn" class="zsHeaderHomeBtn" aria-label="Home / Projects" title="Home / Projects"><span class="zsHeaderHomeShine" aria-hidden="true"></span><img src="assets/zone-sketch-header-mark.svg" alt="" aria-hidden="true"></button><div class="brand">ZONE SKETCH<small>BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.62</small></div></div>'
-
-OLD_HANDLER = "$('homeBtn').onclick=()=>projectAction(openProjects);"
-NEW_HANDLER = "$('headerHomeBtn').onclick=()=>projectAction(openProjects);" + OLD_HANDLER
-
-changed = False
-
-if CSS_MARKER not in text:
+# Replace the previous experimental block in place rather than stacking another effect.
+marker_pos = text.find(OLD_MARKER)
+if marker_pos < 0:
+    marker_pos = text.find(NEW_MARKER)
+if marker_pos >= 0:
+    style_end = text.find('</style>', marker_pos)
+    if style_end < 0:
+        raise SystemExit('index.html: closing style tag not found after header logo CSS')
+    text = text[:marker_pos] + CSS + '\n' + text[style_end:]
+else:
     if '</style>' not in text:
         raise SystemExit('index.html: closing style tag not found')
     text = text.replace('</style>', CSS + '\n</style>', 1)
-    changed = True
+
+# Keep the existing Home button behavior, but point it at the transparent cutout made
+# from the exact approved icon pixels.
+text = text.replace('src="assets/zone-sketch-header-mark.svg"', 'src="assets/zone-sketch-header-mark.png"')
 
 if 'id="headerHomeBtn"' not in text:
-    if OLD_HEADER not in text:
+    old_header = '<div class="zsBrandLockup"><img src="assets/on-site-zone-planner-icon.webp" alt=""><div class="brand">ZONE SKETCH<small>BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.62</small></div></div>'
+    new_header = '<div class="zsBrandLockup"><button type="button" id="headerHomeBtn" class="zsHeaderHomeBtn" aria-label="Home / Projects" title="Home / Projects"><span class="zsHeaderHomeShine" aria-hidden="true"></span><img src="assets/zone-sketch-header-mark.png" alt="" aria-hidden="true"></button><div class="brand">ZONE SKETCH<small>BY WILL FLOOD · PLAN / ZONE MAKER · BETA v0.62</small></div></div>'
+    if old_header not in text:
         raise SystemExit('index.html: expected header brand lockup not found')
-    text = text.replace(OLD_HEADER, NEW_HEADER, 1)
-    changed = True
+    text = text.replace(old_header, new_header, 1)
 
-if "$('headerHomeBtn').onclick=()=>projectAction(openProjects);" not in text:
-    if OLD_HANDLER not in text:
+home_handler = "$('homeBtn').onclick=()=>projectAction(openProjects);"
+header_handler = "$('headerHomeBtn').onclick=()=>projectAction(openProjects);"
+if header_handler not in text:
+    if home_handler not in text:
         raise SystemExit('index.html: Home / Projects handler not found')
-    text = text.replace(OLD_HANDLER, NEW_HANDLER, 1)
-    changed = True
+    text = text.replace(home_handler, header_handler + home_handler, 1)
 
-if changed:
-    p.write_text(text, encoding='utf-8')
-    print('index.html: transparent animated home logo installed')
-else:
-    print('index.html: header home logo already current')
+APP_HTML.write_text(text, encoding='utf-8')
+print('index.html: approved original logo restored; background removed; gloss-only animation retained')
+print(f'{MARK_PNG}: generated from {SOURCE} without RGB recolouring')
