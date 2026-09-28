@@ -1,0 +1,30 @@
+name: Publish Zone Sketch v0.62 release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'downloads/Zone-Sketch-by-Will-v0.62.apk'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify v0.62 release candidate
+        run: |
+          test -f downloads/Zone-Sketch-by-Will-v0.62.apk
+          node tests/release-v062.cjs
+          python .github/verify_247_protected.py
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.62 >/dev/null 2>&1; then
+            gh release upload v0.62 downloads/Zone-Sketch-by-Will-v0.62.apk --clobber
+          else
+            gh release create v0.62 downloads/Zone-Sketch-by-Will-v0.62.apk \
+              --target "${GITHUB_SHA}" \
+              --title "Zone Sketch by Will v0.62" \
+              --notes "Pineapple v0.62: toggleable Zone Plan Build mode. Build mode ON keeps zone placement and moving deliberately separate for larger drawings. Turn it OFF on smaller plans to drag an existing zone while the current zone tool stays armed, then drag empty space to place another zone without changing tools. Includes the v0.61 multi-floor workflow and matched web/Android delivery."
+          fi
