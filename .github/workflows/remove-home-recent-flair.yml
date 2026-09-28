@@ -1,0 +1,58 @@
+name: Simplify Recent Projects heading
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/remove_home_recent_flair.py'
+      - '.github/workflows/remove-home-recent-flair.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Remove Recent Projects trace and version label
+        run: python .github/remove_home_recent_flair.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify home-only cleanup and release safety
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          ! grep -q '<div class="homeVersion">ZONE SKETCH · v0.62</div>' index.html
+          grep -q '#projectsHome .homeHeading:after{display:none!important;animation:none!important;content:none!important}' index.html
+          grep -q 'id="headerHomeBtn"' index.html
+          grep -q 'id="zsSplash"' index.html
+          test "$(git hash-object beta.html)" = "0cda84d2c0907160c63366922330c43586f7b191"
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+
+      - name: Commit Recent Projects heading cleanup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Recent Projects heading already current.'
+          else
+            git commit -m 'Simplify Recent Projects heading'
+            git push origin HEAD:main
+          fi
