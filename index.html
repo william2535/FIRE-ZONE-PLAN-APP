@@ -112,7 +112,7 @@ body{width:100%;height:100%;min-height:0!important;overflow:hidden;overscroll-be
 
 /* v0.53 — exact survey grid controls and object zoom stability. */
 .app.surveyMode #surveyTools{grid-template-columns:repeat(9,minmax(0,1fr))}
-.app.surveyMode #surveyGridDown,.app.surveyMode #surveyGridUp{font-weight:800;background:#e5edf5}.app.surveyMode #surveySnap:disabled{opacity:1;background:#e7f7ee!important;color:#187144;border-color:#b9dec8}
+.app.surveyMode #surveyGridDown,.app.surveyMode #surveyGridUp{font-weight:800;background:#e5edf5}.app.surveyMode #surveySnap:disabled{opacity:1;background:#e7f7ee;color:#187144;border-color:#b9dec8}
 @media(max-width:600px){.app.surveyMode #surveyTools{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 
@@ -226,7 +226,7 @@ button.danger,.danger{color:#a93832}.danger.active{background:var(--zs-red)!impo
 .saveIndicator[data-state="saving"]{color:#8a5b12;background:#fff3d9;border-color:#ebcf93}.saveIndicator[data-state="saved"]{color:#17643d;background:#eaf8f0;border-color:#b9dec8}.saveIndicator[data-state="error"]{color:#9d302c;background:#fff0ef;border-color:#e6b6b3}.saveIndicator[data-state="idle"]{color:#65778a;background:#eef3f7;border-color:#d9e2ea}
 
 /* Survey picker grouping and touch confidence. */
-.symbolCategory{margin:0 0 11px}.symbolCategory:last-of-type{margin-bottom:0}.symbolCategoryTitle{margin:0 3px 6px;font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:#6a7d91}.symbolCategory:not(:has(button:not([hidden]))){display:none}.symbolCategory .symbolGrid{grid-template-columns:1fr 1fr}.symbolCategory button{min-height:44px;border:1px solid #d8e2eb;background:#f2f6fa}.app.surveyMode #surveyTools button{border:1px solid #d9e3ec;border-radius:12px}.app.surveyMode #surveyDevice{background:#eaf3ff!important;color:#1d5d9e;font-weight:800}.surveyFavouriteQuick{border-radius:10px!important}
+.symbolCategory{margin:0 0 11px}.symbolCategory:last-of-type{margin-bottom:0}.symbolCategoryTitle{margin:0 3px 6px;font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase;color:#6a7d91}.symbolCategory:not(:has(button:not([hidden]))){display:none}.symbolCategory .symbolGrid{grid-template-columns:1fr 1fr}.symbolCategory button{min-height:44px;border:1px solid #d8e2eb;background:#f2f6fa}.app.surveyMode #surveyTools button{border:1px solid #d9e3ec;border-radius:12px}.app.surveyMode #surveyDevice{background:#eaf3ff;color:#1d5d9e;font-weight:800}.surveyFavouriteQuick{border-radius:10px!important}
 
 /* App settings / professional notices. */
 .appSettingsBox{width:min(470px,100%)}.settingsHeader{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}.settingsMark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,#2e72c9,#1e568f);color:#fff;font-weight:950;box-shadow:0 7px 20px #2464a82b}.settingsHeader h2{margin:1px 0 3px}.settingsHeader p{margin:0;color:var(--zs-muted);font-size:12px}.settingsList{display:grid;gap:8px}.appSettingRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:12px 13px;border:1px solid #d9e3ec;border-radius:14px;background:#f8fafc;text-align:left}.appSettingRow strong{display:block;font-size:13px}.appSettingRow small{display:block;margin-top:3px;color:#6a7c8e;font-size:11px;font-weight:500}.settingValue{min-width:66px;padding:6px 9px;border-radius:999px;background:#e6edf4;color:#52677b;font-size:10px;font-weight:900;text-align:center}.appSettingRow.on .settingValue{background:#e7f7ee;color:#187144}.appSettingRow.static{cursor:default}.settingsFooter{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:15px;color:#697b8d;font-size:11px}.settingsFooter b{color:#34506a}
@@ -1224,6 +1224,8 @@ body.zsMotionPaused .app>.tools #favouriteMenuBtn{}
 .app.surveyMode #surveyTools{background:linear-gradient(145deg,#0b2332,#06131e);border-top:1px solid #28566d}
 .app.surveyMode #surveyTools button{border:1px solid #2a5369;border-radius:4px 11px 4px 11px;background:#102b3b;color:#dff2ff}
 .app.surveyMode #surveyTools button.active{background:#153d50;border-color:#00c2ff;box-shadow:inset 0 -2px #9bff3f;color:#fff}
+.app.surveyMode #surveyTools #surveyDevice{background:#16445b;color:#e8f8ff;border-color:#00c2ff}
+.app.surveyMode #surveyTools #surveySnap:disabled{background:#123d2f;color:#afffbc;border-color:#397b51;box-shadow:none}
 .app .saveIndicator{font-variant-numeric:tabular-nums}
 /* One authoritative decorative motion layer. Functional reduced motion stays separate. */
 @keyframes zsHeaderGlossV2{0%{transform:translateX(0) skewX(-18deg);opacity:0}8%{opacity:.65}28%{opacity:.65}38%,100%{transform:translateX(400%) skewX(-18deg);opacity:0}}
