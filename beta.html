@@ -3,358 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#040b14">
+<meta name="theme-color" content="#02070e">
 <link rel="canonical" href="https://william2535.github.io/FIRE-ZONE-PLAN-APP/beta.html">
+<link rel="icon" href="assets/zone-sketch-favicon.svg" type="image/svg+xml">
 <title>Zone Sketch Test Node · Web v0.62 · Android v0.62 · Will Flood</title>
 <style>
-:root{
-  --bg:#02070e;
-  --bg2:#06111f;
-  --panel:#071525;
-  --panel2:#091a2c;
-  --ink:#d7e7f5;
-  --muted:#7f9bb5;
-  --dim:#506b84;
-  --blue:#2f7cff;
-  --blue2:#18a5ff;
-  --green:#8cff3f;
-  --green2:#63f72a;
-  --warn:#ffb84a;
-  --danger:#ff5b65;
-  --line:#164d8f;
-  --line2:#0e315d;
-  --shadow:0 18px 60px rgba(0,0,0,.5),0 0 0 1px rgba(47,124,255,.08);
-  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
-  --sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
-}
-*{box-sizing:border-box}
-html{background:var(--bg)}
-body{
-  margin:0;
-  min-height:100vh;
-  color:var(--ink);
-  font-family:var(--sans);
-  background:
-    linear-gradient(rgba(31,91,156,.11) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(31,91,156,.11) 1px,transparent 1px),
-    radial-gradient(circle at 78% 0,rgba(25,112,255,.14),transparent 31%),
-    radial-gradient(circle at 12% 30%,rgba(75,255,92,.05),transparent 25%),
-    linear-gradient(180deg,#02070e 0%,#04101c 52%,#020810 100%);
-  background-size:30px 30px,30px 30px,auto,auto,auto;
-  overflow-x:hidden;
-}
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:50;
-  opacity:.11;
-  background:repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 4px);
-  mix-blend-mode:screen;
-}
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:49;
-  background:radial-gradient(circle at center,transparent 55%,rgba(0,0,0,.4) 100%);
-}
-a{color:inherit}
-button,input,select,textarea{font:inherit}
-.mono{font-family:var(--mono)}
-.shell{width:min(1180px,calc(100% - 28px));margin:0 auto}
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:30;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  background:rgba(2,7,14,.86);
-  border-bottom:1px solid rgba(47,124,255,.28);
-}
-.topbarInner{min-height:68px;display:flex;align-items:center;gap:18px;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:11px;min-width:0}
-.brandMark{width:13px;height:13px;border:2px solid var(--blue);transform:rotate(45deg);box-shadow:0 0 16px rgba(47,124,255,.5)}
-.brandText{font-family:var(--mono);font-size:14px;font-weight:900;letter-spacing:.16em;color:var(--green);white-space:nowrap}
-.navStatus{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-.statusPill{border:1px solid var(--line);padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.12em;color:#9ab9d6;background:rgba(8,24,41,.76)}
-.statusPill.live{border-color:rgba(140,255,63,.42);color:var(--green);box-shadow:inset 0 0 18px rgba(140,255,63,.04)}
-.hero{padding:66px 0 34px}
-.heroGrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);gap:26px;align-items:end}
-.kicker{font-family:var(--mono);font-size:11px;font-weight:900;letter-spacing:.17em;color:#75a8d9;text-transform:uppercase;margin-bottom:14px}
-.heroTitle{
-  position:relative;
-  display:inline-block;
-  margin:0;
-  font-size:clamp(52px,9vw,108px);
-  line-height:.84;
-  font-weight:1000;
-  letter-spacing:-.065em;
-  color:var(--green);
-  text-shadow:5px 4px 0 rgba(47,124,255,.78),-3px -1px 0 rgba(25,197,255,.26),0 0 28px rgba(140,255,63,.12);
-}
-.heroTitle::after{
-  content:"ZONE SKETCH";
-  position:absolute;
-  left:3px;
-  top:2px;
-  color:transparent;
-  -webkit-text-stroke:1px rgba(255,255,255,.1);
-  clip-path:polygon(0 46%,100% 41%,100% 52%,0 58%);
-  transform:translateX(4px);
-}
-.heroSub{margin:28px 0 0;font-family:var(--mono);font-size:clamp(15px,2.6vw,22px);line-height:1.7;color:#d1dfeb;letter-spacing:.025em}
-.heroSub span{color:var(--green)}
-.heroCopy{max-width:780px;margin:28px 0 0;color:#93a9bc;font-family:var(--mono);font-size:clamp(14px,2vw,18px);line-height:1.72}
-.cursor{display:inline-block;width:14px;height:2px;background:var(--green);vertical-align:middle;margin-left:5px;box-shadow:0 0 10px rgba(140,255,63,.45)}
-.nodeCard,.panel{
-  position:relative;
-  background:linear-gradient(180deg,rgba(8,24,42,.92),rgba(4,16,29,.96));
-  border:1px solid var(--line);
-  box-shadow:var(--shadow);
-}
-.nodeCard::before,.panel::before{
-  content:"";
-  position:absolute;
-  inset:8px;
-  border:1px solid rgba(47,124,255,.07);
-  pointer-events:none;
-}
-.nodeCard{padding:18px 18px 10px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%)}
-.nodeHead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid rgba(47,124,255,.27);font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#6da1d5}
-.nodeHead strong{color:var(--green)}
-.nodeRows{display:grid}
-.nodeRow{display:grid;grid-template-columns:88px 1fr;gap:14px;padding:13px 2px;border-bottom:1px solid rgba(47,124,255,.18);font-family:var(--mono);font-size:12px}
-.nodeRow:last-child{border-bottom:0}
-.nodeRow span{color:#5f7e9a;letter-spacing:.1em}
-.nodeRow b{color:#cce1f2;font-weight:800;overflow-wrap:anywhere}
-.nodeRow .good{color:var(--green)}
-.main{padding:10px 0 60px}
-.panel{margin:18px 0;padding:0;overflow:hidden;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
-.panelHead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 18px;border-bottom:1px solid rgba(47,124,255,.3);background:rgba(8,23,40,.72)}
-.panelHeadTitle{display:flex;align-items:center;gap:11px;font-family:var(--mono);font-size:13px;font-weight:900;letter-spacing:.11em;color:#78a7d5}
-.panelHeadTitle::before{content:">";color:var(--blue2);font-size:20px;line-height:1}
-.panelFlag{font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.11em;color:var(--green);border-left:1px solid rgba(47,124,255,.25);padding-left:16px}
-.panelBody{padding:22px}
-.commandGrid{display:grid;grid-template-columns:1.25fr 1fr .72fr;gap:12px}
-.command{
-  min-height:72px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  text-decoration:none;
-  border:1px solid var(--line);
-  background:rgba(6,20,34,.92);
-  color:#86b8ec;
-  font-family:var(--mono);
-  font-weight:900;
-  letter-spacing:.08em;
-  padding:14px 16px;
-  text-transform:uppercase;
-  cursor:pointer;
-  position:relative;
-  transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,color .14s ease;
-  clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px));
-}
-.command:hover{transform:translateY(-1px);border-color:#3d8df4;box-shadow:0 0 22px rgba(47,124,255,.1);color:#b9d9fa}
-.command.primary{background:linear-gradient(90deg,var(--green2),var(--green));border-color:#b6ff86;color:#041008;font-size:16px;box-shadow:0 0 28px rgba(140,255,63,.12)}
-.command.primary:hover{box-shadow:0 0 32px rgba(140,255,63,.22)}
-.command::after{content:"↗";position:absolute;right:14px;font-size:16px;opacity:.72}
-.command.utility::after{content:"⧉"}
-.command.download::after{content:"↓"}
-.metaGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-.metaCard{border:1px solid var(--line2);background:rgba(3,14,25,.68);padding:16px;min-height:128px}
-.metaLabel{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:#5f819f;margin-bottom:8px}
-.metaCard strong{display:block;font-family:var(--mono);font-size:15px;color:var(--green);margin-bottom:8px}
-.metaCard p{margin:0;color:#7893aa;font-family:var(--mono);font-size:12px;line-height:1.6}
-.signalGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.signalCard{position:relative;border:1px solid var(--line2);background:linear-gradient(180deg,rgba(8,23,39,.82),rgba(4,13,24,.82));padding:16px;min-height:150px;overflow:hidden}
-.signalCard::after{content:"";position:absolute;left:0;top:0;width:62px;height:2px;background:var(--blue);box-shadow:0 0 12px rgba(47,124,255,.55)}
-.signalCode{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:#4b6f91;margin-bottom:18px}
-.signalCard strong{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:#d5e7f7;margin-bottom:8px}
-.signalCard p{margin:0;color:#7893aa;font-family:var(--mono);font-size:11px;line-height:1.55}
-.signalState{margin-top:14px;display:inline-block;font-family:var(--mono);font-size:9px;font-weight:900;letter-spacing:.13em;color:var(--green)}
-.checklist{counter-reset:item;margin:0;padding:0;display:grid;gap:10px}
-.checklist li{list-style:none;position:relative;border-left:2px solid var(--blue);background:rgba(5,18,31,.68);padding:14px 14px 14px 52px;color:#9bb0c3;font-family:var(--mono);font-size:12px;line-height:1.6}
-.checklist li::before{counter-increment:item;content:counter(item,decimal-leading-zero);position:absolute;left:14px;top:14px;color:var(--green);font-weight:900}
-.notice{border:1px solid rgba(255,184,74,.35);background:linear-gradient(90deg,rgba(255,184,74,.06),rgba(8,23,39,.72));padding:18px 18px 18px 58px;position:relative;color:#a7b6c5;font-family:var(--mono);font-size:12px;line-height:1.7}
-.notice::before{content:"⚠";position:absolute;left:19px;top:18px;color:var(--green);font-size:22px}
-.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{display:block;margin:0 0 7px;font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.12em;color:#6e91b2;text-transform:uppercase}
-.field{margin-bottom:14px}
-input,select,textarea{
-  width:100%;
-  border:1px solid var(--line2);
-  border-radius:0;
-  background:#04111e;
-  color:#d8e7f5;
-  padding:12px 13px;
-  outline:none;
-  font-family:var(--mono);
-  font-size:12px;
-  transition:border-color .15s ease,box-shadow .15s ease;
-}
-input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(47,124,255,.12),inset 0 0 24px rgba(47,124,255,.03)}
-textarea{min-height:150px;resize:vertical}
-.feedbackActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
-.feedbackActions .command{min-height:54px;flex:1 1 190px}
-.reportStatus{min-height:22px;margin:12px 0 0;font-family:var(--mono);font-size:11px;color:var(--green)}
-.assetGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.assetCard{border:1px solid var(--line2);background:#04111e;padding:14px}
-.asset{height:120px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#081728,#04101b);border:1px solid rgba(47,124,255,.15)}
-.asset img{max-width:92%;max-height:96px}
-.assetLink{display:block;margin-top:10px;text-decoration:none;font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.08em;color:#77acf0}
-.footer{padding:18px 0 38px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#496784}
-.footer b{color:var(--green)}
-@media(max-width:900px){
-  .heroGrid{grid-template-columns:1fr}
-  .commandGrid{grid-template-columns:1fr 1fr}
-  .commandGrid .primary{grid-column:1/-1}
-  .signalGrid{grid-template-columns:1fr 1fr}
-  .assetGrid{grid-template-columns:1fr 1fr}
-}
-@media(max-width:650px){
-  .shell{width:min(100% - 20px,1180px)}
-  .topbarInner{min-height:62px;gap:10px}.brandText{font-size:12px}.statusPill:not(.live){display:none}
-  .hero{padding:44px 0 22px}.heroTitle{font-size:clamp(52px,16vw,86px)}
-  .heroSub{font-size:14px}.heroCopy{font-size:13px}
-  .nodeCard{padding:14px 14px 8px}
-  .panelHead{align-items:flex-start;flex-direction:column;gap:7px}.panelFlag{border-left:0;padding-left:0}
-  .panelBody{padding:16px}.commandGrid,.metaGrid,.signalGrid,.formGrid,.assetGrid{grid-template-columns:1fr}.commandGrid .primary{grid-column:auto}
-  .command{min-height:60px}.signalCard{min-height:0}.asset{height:100px}
-  .nodeRow{grid-template-columns:76px 1fr}
-}
+:root{--bg:#02070e;--panel:#071525;--panel2:#091a2c;--ink:#d7e7f5;--muted:#7f9bb5;--dim:#506b84;--blue:#2f7cff;--blue2:#18a5ff;--green:#8cff3f;--green2:#63f72a;--orange:#ffad27;--red:#ff4b55;--line:#164d8f;--line2:#0e315d;--shadow:0 18px 60px rgba(0,0,0,.5),0 0 0 1px rgba(47,124,255,.08);--mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;--sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;color:var(--ink);font-family:var(--sans);background:linear-gradient(rgba(31,91,156,.11) 1px,transparent 1px),linear-gradient(90deg,rgba(31,91,156,.11) 1px,transparent 1px),radial-gradient(circle at 78% 0,rgba(25,112,255,.14),transparent 31%),radial-gradient(circle at 12% 30%,rgba(75,255,92,.05),transparent 25%),linear-gradient(180deg,#02070e 0%,#04101c 52%,#020810 100%);background-size:30px 30px,30px 30px,auto,auto,auto;overflow-x:hidden}body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.1;background:repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 4px);mix-blend-mode:screen}body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:49;background:radial-gradient(circle at center,transparent 55%,rgba(0,0,0,.42) 100%)}a{color:inherit}button,input,select,textarea{font:inherit}.shell{width:min(1180px,calc(100% - 28px));margin:0 auto}.mono{font-family:var(--mono)}
+.topbar{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(2,7,14,.88);border-bottom:1px solid rgba(47,124,255,.28)}.topbarInner{min-height:70px;display:flex;align-items:center;gap:18px;justify-content:space-between}.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand img{width:42px;height:42px;border-radius:10px;box-shadow:0 0 22px rgba(47,124,255,.18)}.brandText{font-family:var(--mono);font-size:13px;font-weight:900;letter-spacing:.15em;color:var(--green);white-space:nowrap}.navStatus{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}.statusPill{border:1px solid var(--line);padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.11em;color:#9ab9d6;background:rgba(8,24,41,.76)}.statusPill.live{border-color:rgba(140,255,63,.42);color:var(--green)}
+.hero{padding:54px 0 24px}.heroGrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);gap:26px;align-items:end}.heroWordmark{display:block;width:min(770px,100%);filter:drop-shadow(0 0 24px rgba(47,124,255,.08))}.kicker{font-family:var(--mono);font-size:11px;font-weight:900;letter-spacing:.17em;color:#75a8d9;text-transform:uppercase;margin-bottom:15px}.heroSub{margin:20px 0 0;font-family:var(--mono);font-size:clamp(14px,2.4vw,20px);line-height:1.7;color:#d1dfeb;letter-spacing:.025em}.heroSub span{color:var(--green)}.heroCopy{max-width:780px;margin:24px 0 0;color:#93a9bc;font-family:var(--mono);font-size:clamp(13px,2vw,17px);line-height:1.72}.cursor{display:inline-block;width:14px;height:2px;background:var(--green);vertical-align:middle;margin-left:5px;box-shadow:0 0 10px rgba(140,255,63,.45)}
+.nodeCard,.panel{position:relative;background:linear-gradient(180deg,rgba(8,24,42,.92),rgba(4,16,29,.96));border:1px solid var(--line);box-shadow:var(--shadow)}.nodeCard::before,.panel::before{content:"";position:absolute;inset:8px;border:1px solid rgba(47,124,255,.07);pointer-events:none}.nodeCard{padding:18px 18px 10px;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%)}.nodeHead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid rgba(47,124,255,.27);font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#6da1d5}.nodeHead strong{color:var(--green)}.nodeRow{display:grid;grid-template-columns:88px 1fr;gap:14px;padding:13px 2px;border-bottom:1px solid rgba(47,124,255,.18);font-family:var(--mono);font-size:12px}.nodeRow:last-child{border-bottom:0}.nodeRow span{color:#5f7e9a;letter-spacing:.1em}.nodeRow b{color:#cce1f2;font-weight:800;overflow-wrap:anywhere}.nodeRow .good{color:var(--green)}
+.main{padding:8px 0 60px}.panel{margin:18px 0;overflow:hidden;clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}.panelHead{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 18px;border-bottom:1px solid rgba(47,124,255,.3);background:rgba(8,23,40,.72)}.panelHeadTitle{display:flex;align-items:center;gap:11px;font-family:var(--mono);font-size:13px;font-weight:900;letter-spacing:.11em;color:#78a7d5}.panelHeadTitle::before{content:">";color:var(--blue2);font-size:20px;line-height:1}.panelFlag{font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.11em;color:var(--green);border-left:1px solid rgba(47,124,255,.25);padding-left:16px}.panelBody{padding:22px}
+.commandGrid{display:grid;grid-template-columns:1.25fr 1fr .72fr;gap:12px}.command{min-height:68px;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border:1px solid var(--line);background:rgba(6,20,34,.92);color:#86b8ec;font-family:var(--mono);font-weight:900;letter-spacing:.08em;padding:14px 16px;text-transform:uppercase;cursor:pointer;position:relative;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease,color .14s ease;clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px))}.command:hover{transform:translateY(-1px);border-color:#3d8df4;box-shadow:0 0 22px rgba(47,124,255,.1);color:#b9d9fa}.command.primary{background:linear-gradient(90deg,var(--green2),var(--green));border-color:#b6ff86;color:#041008;font-size:16px;box-shadow:0 0 28px rgba(140,255,63,.12)}.command::after{content:"↗";position:absolute;right:14px;font-size:16px;opacity:.72}.command.utility::after{content:"⧉"}.command.download::after{content:"↓"}
+.metaGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.metaCard{border:1px solid var(--line2);background:rgba(3,14,25,.68);padding:16px;min-height:128px}.metaLabel{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:#5f819f;margin-bottom:8px}.metaCard strong{display:block;font-family:var(--mono);font-size:15px;color:var(--green);margin-bottom:8px}.metaCard p{margin:0;color:#7893aa;font-family:var(--mono);font-size:12px;line-height:1.6}
+.identityGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.identityStage{border:1px solid var(--line2);background:radial-gradient(circle at 50% 15%,rgba(47,124,255,.12),transparent 34%),#04111e;padding:18px;min-height:320px;display:flex;flex-direction:column;justify-content:center}.identityStage img{display:block;width:100%;max-height:220px;object-fit:contain}.identityNote{margin:16px 0 0;font-family:var(--mono);font-size:11px;line-height:1.6;color:#7893aa}.storeMock{border:1px solid var(--line2);background:#020810;padding:18px;display:grid;align-content:center;gap:16px}.storeHead{display:flex;align-items:center;gap:14px}.storeHead img{width:86px;height:86px;border-radius:20px;box-shadow:0 0 28px rgba(140,255,63,.09)}.storeHead strong{display:block;font-size:22px}.storeHead span{display:block;margin-top:5px;color:#7d9ab5;font-family:var(--mono);font-size:11px}.storeOpen{justify-self:start;padding:8px 19px;border-radius:999px;background:#1668e8;color:white;font-weight:800}.storeMeta{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}.storeMeta div{padding:14px 8px;text-align:center;font-family:var(--mono);font-size:10px;color:#6f8ca7}.storeMeta b{display:block;color:#d6e8f7;font-size:15px;margin-bottom:3px}
+.variantGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.variantCard{border:1px solid var(--line2);background:#04111e;padding:12px;position:relative}.variantCard img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}.variantCard strong{display:block;margin-top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.08em}.variantCard span{display:block;margin-top:4px;color:#647f99;font-family:var(--mono);font-size:9px;line-height:1.4}.variantCard a{display:inline-block;margin-top:9px;color:#75aef1;text-decoration:none;font-family:var(--mono);font-size:9px;font-weight:900;letter-spacing:.06em}
+.signalGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.signalCard{position:relative;border:1px solid var(--line2);background:linear-gradient(180deg,rgba(8,23,39,.82),rgba(4,13,24,.82));padding:16px;min-height:150px;overflow:hidden}.signalCard::after{content:"";position:absolute;left:0;top:0;width:62px;height:2px;background:var(--blue);box-shadow:0 0 12px rgba(47,124,255,.55)}.signalCode{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:#4b6f91;margin-bottom:18px}.signalCard strong{display:block;font-family:var(--mono);font-size:13px;letter-spacing:.04em;color:#d5e7f7;margin-bottom:8px}.signalCard p{margin:0;color:#7893aa;font-family:var(--mono);font-size:11px;line-height:1.55}.signalState{margin-top:14px;display:inline-block;font-family:var(--mono);font-size:9px;font-weight:900;letter-spacing:.13em;color:var(--green)}
+.checklist{counter-reset:item;margin:0;padding:0;display:grid;gap:10px}.checklist li{list-style:none;position:relative;border-left:2px solid var(--blue);background:rgba(5,18,31,.68);padding:14px 14px 14px 52px;color:#9bb0c3;font-family:var(--mono);font-size:12px;line-height:1.6}.checklist li::before{counter-increment:item;content:counter(item,decimal-leading-zero);position:absolute;left:14px;top:14px;color:var(--green);font-weight:900}.notice{border:1px solid rgba(255,184,74,.35);background:linear-gradient(90deg,rgba(255,184,74,.06),rgba(8,23,39,.72));padding:18px 18px 18px 58px;position:relative;color:#a7b6c5;font-family:var(--mono);font-size:12px;line-height:1.7}.notice::before{content:"⚠";position:absolute;left:19px;top:18px;color:var(--green);font-size:22px}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}label{display:block;margin:0 0 7px;font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.12em;color:#6e91b2;text-transform:uppercase}.field{margin-bottom:14px}input,select,textarea{width:100%;border:1px solid var(--line2);border-radius:0;background:#04111e;color:#d8e7f5;padding:12px 13px;outline:none;font-family:var(--mono);font-size:12px}input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(47,124,255,.12)}textarea{min-height:150px;resize:vertical}.feedbackActions{display:flex;gap:10px;flex-wrap:wrap}.feedbackActions .command{min-height:54px;flex:1 1 190px}.reportStatus{min-height:22px;margin:12px 0 0;font-family:var(--mono);font-size:11px;color:var(--green)}
+.assetGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.assetCard{border:1px solid var(--line2);background:#04111e;padding:14px}.asset{height:120px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#081728,#04101b);border:1px solid rgba(47,124,255,.15)}.asset img{max-width:92%;max-height:96px}.assetLink{display:block;margin-top:10px;text-decoration:none;font-family:var(--mono);font-size:10px;font-weight:900;letter-spacing:.08em;color:#77acf0}.footer{padding:18px 0 38px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:#496784}.footer b{color:var(--green)}
+@media(max-width:950px){.heroGrid,.identityGrid{grid-template-columns:1fr}.commandGrid{grid-template-columns:1fr 1fr}.commandGrid .primary{grid-column:1/-1}.signalGrid{grid-template-columns:1fr 1fr}.variantGrid{grid-template-columns:repeat(3,1fr)}.assetGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.shell{width:min(100% - 20px,1180px)}.topbarInner{min-height:64px;gap:8px}.brand img{width:36px;height:36px}.brandText{font-size:10px}.statusPill:not(.live){display:none}.hero{padding:34px 0 16px}.heroSub{font-size:13px}.heroCopy{font-size:12px}.nodeCard{padding:14px 14px 8px}.panelHead{align-items:flex-start;flex-direction:column;gap:7px}.panelFlag{border-left:0;padding-left:0}.panelBody{padding:15px}.commandGrid,.metaGrid,.signalGrid,.formGrid,.assetGrid,.variantGrid{grid-template-columns:1fr}.commandGrid .primary{grid-column:auto}.command{min-height:58px}.signalCard{min-height:0}.storeHead img{width:72px;height:72px}.storeHead strong{font-size:18px}.asset{height:100px}.nodeRow{grid-template-columns:76px 1fr}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="shell topbarInner">
-    <div class="brand"><span class="brandMark"></span><span class="brandText">ZONE SKETCH // TEST NODE</span></div>
-    <div class="navStatus">
-      <span class="statusPill">WEB v0.62</span>
-      <span class="statusPill">ANDROID v0.62</span>
-      <span class="statusPill live">● SIGNAL LIVE</span>
-    </div>
-  </div>
-</div>
-
-<header class="hero">
-  <div class="shell heroGrid">
-    <div>
-      <div class="kicker">FIELD SYSTEM · PUBLIC TEST CHANNEL</div>
-      <h1 class="heroTitle">ZONE SKETCH</h1>
-      <div class="heroSub">plan mapping · survey workflow · circuit routing · as-fit output <span>_</span></div>
-      <p class="heroCopy">A field-first fire &amp; security workspace built for engineers. This node is the public tester gateway: open the latest web build, install the matched Android package, stress the workflow and transmit anything that feels wrong.<span class="cursor"></span></p>
-    </div>
-    <aside class="nodeCard">
-      <div class="nodeHead"><span>PUBLIC SERVICE(ISH)</span><strong>[ TESTING ENABLED ]</strong></div>
-      <div class="nodeRows">
-        <div class="nodeRow"><span>NODE</span><b>william2535.github.io</b></div>
-        <div class="nodeRow"><span>MODE</span><b>TESTER PORTAL</b></div>
-        <div class="nodeRow"><span>WEB</span><b class="good">v0.62 // LIVE</b></div>
-        <div class="nodeRow"><span>ANDROID</span><b class="good">v0.62 // MATCHED</b></div>
-        <div class="nodeRow"><span>AUTHOR</span><b>WILL FLOOD</b></div>
-      </div>
-    </aside>
-  </div>
-</header>
-
+<div class="topbar"><div class="shell topbarInner"><div class="brand"><img src="assets/zone-sketch-app-icon.svg" alt="Zone Sketch"><span class="brandText">ZONE SKETCH // TEST NODE</span></div><div class="navStatus"><span class="statusPill">WEB v0.62</span><span class="statusPill">ANDROID v0.62</span><span class="statusPill live">● SIGNAL LIVE</span></div></div></div>
+<header class="hero"><div class="shell heroGrid"><div><div class="kicker">FIELD SYSTEM · PUBLIC TEST CHANNEL</div><img class="heroWordmark" src="assets/zone-sketch-by-will-flood-wordmark.svg" alt="Zone Sketch — Fire and Security Field App"><div class="heroSub">plan mapping · survey workflow · circuit routing · as-fit output <span>_</span></div><p class="heroCopy">A field-first fire &amp; security workspace built for engineers. This node is also the first live preview of the new Zone Sketch identity before any of it is carried into the full app UI.<span class="cursor"></span></p></div><aside class="nodeCard"><div class="nodeHead"><span>PUBLIC SERVICE(ISH)</span><strong>[ TESTING ENABLED ]</strong></div><div class="nodeRow"><span>NODE</span><b>william2535.github.io</b></div><div class="nodeRow"><span>MODE</span><b>TESTER PORTAL</b></div><div class="nodeRow"><span>WEB</span><b class="good">v0.62 // LIVE</b></div><div class="nodeRow"><span>ANDROID</span><b class="good">v0.62 // MATCHED</b></div><div class="nodeRow"><span>IDENTITY</span><b class="good">NEW SYSTEM // PREVIEW</b></div><div class="nodeRow"><span>AUTHOR</span><b>WILL FLOOD</b></div></aside></div></header>
 <main class="shell main">
-  <section class="panel">
-    <div class="panelHead"><div class="panelHeadTitle">ENTER TEST NODE</div><div class="panelFlag">[ ACCESS GRANTED ]</div></div>
-    <div class="panelBody">
-      <div class="commandGrid">
-        <a class="command primary" href="./web-v062.html">Open web beta v0.62</a>
-        <a class="command download" href="https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/v0.62/Zone-Sketch-by-Will-v0.62.apk">Download Android APK</a>
-        <button class="command utility" id="copyLink">Copy tester link</button>
-      </div>
-      <div class="metaGrid">
-        <div class="metaCard"><div class="metaLabel">IOS / IPADOS PATH</div><strong>SAFARI // WEB v0.62</strong><p>Open the web build in Safari. For an app-style icon use Share → Add to Home Screen → enable Open as Web App if shown → Add.</p></div>
-        <div class="metaCard"><div class="metaLabel">ANDROID PATH</div><strong>APK // v0.62</strong><p>The APK matches the current web milestone. If GitHub download stalls, use the repository mirror below.</p><p style="margin-top:8px"><a href="downloads/Zone-Sketch-by-Will-v0.62.apk" style="color:#7fb2f5;font-weight:900;text-decoration:none">› BACKUP APK MIRROR</a></p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="panelHead"><div class="panelHeadTitle">CURRENT SIGNAL</div><div class="panelFlag">[ BUILD v0.62 ]</div></div>
-    <div class="panelBody">
-      <div class="signalGrid">
-        <article class="signalCard"><div class="signalCode">SIG-01 / WORKFLOW</div><strong>PROFESSIONAL PROJECT HOME</strong><p>Cleaner Plan → Survey → Circuits → As-Fit flow, recent projects and stronger autosave confidence.</p><span class="signalState">● LIVE</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-02 / SURVEY</div><strong>SURVEY SPEED</strong><p>Grouped device picker, improved touch hit areas and faster feedback when placing devices onsite.</p><span class="signalState">● LIVE</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-03 / PLAN</div><strong>TOGGLEABLE BUILD MODE</strong><p>Build mode ON separates placing and moving. Turn it OFF for compact jobs so you can place and move without swapping tools.</p><span class="signalState">● NEW</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-04 / FLOORS</div><strong>FLOOR-AWARE CIRCUIT BUILDER</strong><p>Switch Ground, First, Second and custom floors while each floor keeps its own zones, devices, circuits and As-Fit state.</p><span class="signalState">● VERIFIED</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-05 / STATE</div><strong>ZONE STATE PROTECTION</strong><p>Changing floors snapshots zone data immediately and restores the last selected zone when you return.</p><span class="signalState">● PATCHED</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-06 / CIRCUITS</div><strong>CIRCUIT RECOVERY</strong><p>Completed conventional routes can safely repair stale device references instead of falsely reporting missing devices.</p><span class="signalState">● VERIFIED</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-07 / EDITOR</div><strong>MANUAL CABLE EDITING</strong><p>Pencil, Bin, Undo/Redo, Bridge and Cleanup survive interruptions and preserve edited geometry when plan bounds change.</p><span class="signalState">● HARDENED</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-08 / OUTPUT</div><strong>AS-FIT WORKFLOW</strong><p>Validated completed circuits can be mapped over the surveyed plan and exported as an As-Fit PNG.</p><span class="signalState">● LIVE</span></article>
-        <article class="signalCard"><div class="signalCode">SIG-09 / FIELD</div><strong>FIELD SETTINGS</strong><p>Circuit sounds, haptics, reduced motion and clearer in-app notices instead of browser-style alerts.</p><span class="signalState">● LIVE</span></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="panelHead"><div class="panelHeadTitle">FIELD CHECKLIST</div><div class="panelFlag">[ STRESS IT LIKE A REAL JOB ]</div></div>
-    <div class="panelBody">
-      <ol class="checklist">
-        <li>Create a project, import a plan or start blank, then draw a few rooms and zones.</li>
-        <li>Switch floors and confirm each floor keeps the exact zone state you left behind.</li>
-        <li>Open Survey and add a panel plus several devices. Move and zoom while placing them.</li>
-        <li>Open Circuit Builder and switch floors there too. Try conventional and addressable routing if possible.</li>
-        <li>Stress Build mode: ON for separated placement/moving, OFF for combined place + move on a smaller plan.</li>
-        <li>Complete a circuit, use Undo/Retry once, keep it, then generate the As-Fit preview.</li>
-        <li>Export something, return Home, close the browser/app, reopen and confirm the project still survives intact.</li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="panelHead"><div class="panelHeadTitle">KNOWN CONDITIONS</div><div class="panelFlag">[ USEFUL BETA NOISE ]</div></div>
-    <div class="panelBody"><div class="notice">Dense real-world drawings, rough one-handed routing and awkward mobile layouts are exactly what help. Please push the Build mode toggle, multi-floor switching, Manual Edit, rotation/resize and saved-draft reloads. If anything feels confusing even when it technically works, report that too.</div></div>
-  </section>
-
-  <section class="panel" id="feedback">
-    <div class="panelHead"><div class="panelHeadTitle">TRANSMIT REPORT</div><div class="panelFlag">[ CHANNEL OPEN ]</div></div>
-    <div class="panelBody">
-      <div class="formGrid">
-        <div>
-          <div class="field"><label for="tester">Tester identity / optional</label><input id="tester" placeholder="e.g. John"></div>
-          <div class="field"><label for="device">Device</label><select id="device"><option>iPhone / iPad</option><option>Android phone</option><option>Android tablet</option><option>Desktop / laptop</option></select></div>
-        </div>
-        <div>
-          <div class="field"><label for="area">Area tested</label><select id="area"><option>General / whole app</option><option>Plan / Zone Maker</option><option>Survey</option><option>Circuit Builder</option><option>As-Fit / Export</option><option>Projects / Saving</option></select></div>
-          <div class="field"><label for="severity">Signal severity</label><select id="severity"><option>Idea / improvement</option><option>Small annoyance</option><option>Bug but I can carry on</option><option>Stops me using the feature</option></select></div>
-        </div>
-      </div>
-      <div class="field"><label for="notes">Transmission payload</label><textarea id="notes" placeholder="What were you trying to do? What happened? What did you expect instead?"></textarea></div>
-      <div class="feedbackActions"><button class="command primary" id="shareReport">Share report</button><button class="command utility" id="copyReport">Copy report</button></div>
-      <div class="reportStatus" id="reportStatus">STATUS: AWAITING INPUT_</div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="panelHead"><div class="panelHeadTitle">ASSETS / IDENTITY</div><div class="panelFlag">[ SHAREABLE ]</div></div>
-    <div class="panelBody"><div class="assetGrid">
-      <div class="assetCard"><div class="asset"><img src="assets/zone-sketch-by-will-flood-wordmark.svg" alt="Zone Sketch by Will Flood wordmark"></div><a class="assetLink" href="assets/zone-sketch-by-will-flood-wordmark.svg" download>DOWNLOAD // WORDMARK SVG</a></div>
-      <div class="assetCard"><div class="asset"><img src="assets/zone-sketch-beta-tester-badge.svg" alt="Zone Sketch beta tester badge"></div><a class="assetLink" href="assets/zone-sketch-beta-tester-badge.svg" download>DOWNLOAD // BETA BADGE SVG</a></div>
-      <div class="assetCard"><div class="asset"><img src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch app icon"></div><a class="assetLink" href="assets/on-site-zone-planner-icon.webp" download>DOWNLOAD // APP ICON</a></div>
-    </div></div>
-  </section>
+<section class="panel"><div class="panelHead"><div class="panelHeadTitle">ENTER TEST NODE</div><div class="panelFlag">[ ACCESS GRANTED ]</div></div><div class="panelBody"><div class="commandGrid"><a class="command primary" href="./web-v062.html">Open web beta v0.62</a><a class="command download" href="https://github.com/william2535/FIRE-ZONE-PLAN-APP/releases/download/v0.62/Zone-Sketch-by-Will-v0.62.apk">Download Android APK</a><button class="command utility" id="copyLink">Copy tester link</button></div><div class="metaGrid"><div class="metaCard"><div class="metaLabel">IOS / IPADOS PATH</div><strong>SAFARI // WEB v0.62</strong><p>Open the web build in Safari. For an app-style icon use Share → Add to Home Screen → enable Open as Web App if shown → Add.</p></div><div class="metaCard"><div class="metaLabel">ANDROID PATH</div><strong>APK // v0.62</strong><p>The APK matches the current web milestone. If GitHub download stalls, use the repository mirror below.</p><p style="margin-top:8px"><a href="downloads/Zone-Sketch-by-Will-v0.62.apk" style="color:#7fb2f5;font-weight:900;text-decoration:none">› BACKUP APK MIRROR</a></p></div></div></div></section>
+<section class="panel"><div class="panelHead"><div class="panelHeadTitle">IDENTITY SYSTEM // PREVIEW</div><div class="panelFlag">[ PORTAL ONLY FOR NOW ]</div></div><div class="panelBody"><div class="identityGrid"><div class="identityStage"><img src="assets/zone-sketch-by-will-flood-wordmark.svg" alt="Zone Sketch wordmark"><p class="identityNote">Primary direction: the green/cyan house + flame mark stays the main Zone Sketch identity. The same outer geometry becomes the system family for Fire, CCTV and Access Control.</p></div><div class="storeMock"><div class="metaLabel">APP STORE / HOME SCREEN MOCK</div><div class="storeHead"><img src="assets/zone-sketch-app-icon.svg" alt="Zone Sketch app icon"><div><strong>Zone Sketch</strong><span>Fire &amp; Security Field App</span></div></div><div class="storeOpen">Open</div><div class="storeMeta"><div><b>v0.62</b>current</div><div><b>Field</b>workflow</div><div><b>Will Flood</b>developer</div></div></div></div><div class="variantGrid" style="margin-top:14px"><div class="variantCard"><img src="assets/zone-sketch-app-icon.svg" alt="Zone Sketch primary green icon"><strong style="color:var(--green)">PRIMARY // ZONE SKETCH</strong><span>General app identity · green/cyan</span><a href="assets/zone-sketch-app-icon.svg" download>DOWNLOAD SVG</a></div><div class="variantCard"><img src="assets/zone-sketch-fire-icon.svg" alt="Zone Sketch fire icon"><strong style="color:var(--red)">FIRE SYSTEMS</strong><span>Fire design / survey · red</span><a href="assets/zone-sketch-fire-icon.svg" download>DOWNLOAD SVG</a></div><div class="variantCard"><img src="assets/zone-sketch-cctv-icon.svg" alt="Zone Sketch CCTV icon"><strong style="color:#55bfff">CCTV SYSTEMS</strong><span>CCTV survey / design · blue</span><a href="assets/zone-sketch-cctv-icon.svg" download>DOWNLOAD SVG</a></div><div class="variantCard"><img src="assets/zone-sketch-access-icon.svg" alt="Zone Sketch access control icon"><strong style="color:var(--orange)">ACCESS CONTROL</strong><span>Access survey / design · orange</span><a href="assets/zone-sketch-access-icon.svg" download>DOWNLOAD SVG</a></div><div class="variantCard"><img src="assets/zone-sketch-mono-icon.svg" alt="Zone Sketch mono icon"><strong>MONO</strong><span>Print / documents / uniforms</span><a href="assets/zone-sketch-mono-icon.svg" download>DOWNLOAD SVG</a></div></div></div></section>
+<section class="panel"><div class="panelHead"><div class="panelHeadTitle">CURRENT SIGNAL</div><div class="panelFlag">[ BUILD v0.62 ]</div></div><div class="panelBody"><div class="signalGrid"><article class="signalCard"><div class="signalCode">SIG-01 / WORKFLOW</div><strong>PROFESSIONAL PROJECT HOME</strong><p>Cleaner Plan → Survey → Circuits → As-Fit flow, recent projects and stronger autosave confidence.</p><span class="signalState">● LIVE</span></article><article class="signalCard"><div class="signalCode">SIG-02 / SURVEY</div><strong>SURVEY SPEED</strong><p>Grouped device picker, improved touch hit areas and faster feedback when placing devices onsite.</p><span class="signalState">● LIVE</span></article><article class="signalCard"><div class="signalCode">SIG-03 / PLAN</div><strong>TOGGLEABLE BUILD MODE</strong><p>Build mode ON separates placing and moving. Turn it OFF for compact jobs so you can place and move without swapping tools.</p><span class="signalState">● NEW</span></article><article class="signalCard"><div class="signalCode">SIG-04 / FLOORS</div><strong>FLOOR-AWARE CIRCUIT BUILDER</strong><p>Switch Ground, First, Second and custom floors while each floor keeps its own zones, devices, circuits and As-Fit state.</p><span class="signalState">● VERIFIED</span></article><article class="signalCard"><div class="signalCode">SIG-05 / STATE</div><strong>ZONE STATE PROTECTION</strong><p>Changing floors snapshots zone data immediately and restores the last selected zone when you return.</p><span class="signalState">● PATCHED</span></article><article class="signalCard"><div class="signalCode">SIG-06 / CIRCUITS</div><strong>CIRCUIT RECOVERY</strong><p>Completed conventional routes can safely repair stale device references instead of falsely reporting missing devices.</p><span class="signalState">● VERIFIED</span></article></div></div></section>
+<section class="panel"><div class="panelHead"><div class="panelHeadTitle">FIELD CHECKLIST</div><div class="panelFlag">[ STRESS IT LIKE A REAL JOB ]</div></div><div class="panelBody"><ol class="checklist"><li>Create a project, import a plan or start blank, then draw a few rooms and zones.</li><li>Switch floors and confirm each floor keeps the exact zone state you left behind.</li><li>Open Survey and add a panel plus several devices. Move and zoom while placing them.</li><li>Open Circuit Builder and switch floors there too. Try conventional and addressable routing if possible.</li><li>Stress Build mode: ON for separated placement/moving, OFF for combined place + move on a smaller plan.</li><li>Complete a circuit, use Undo/Retry once, keep it, then generate the As-Fit preview.</li><li>Export something, return Home, close the browser/app, reopen and confirm the project still survives intact.</li></ol></div></section>
+<section class="panel"><div class="panelHead"><div class="panelHeadTitle">KNOWN CONDITIONS</div><div class="panelFlag">[ USEFUL BETA NOISE ]</div></div><div class="panelBody"><div class="notice">Dense real-world drawings, rough one-handed routing and awkward mobile layouts are exactly what help. Please push the Build mode toggle, multi-floor switching, Manual Edit, rotation/resize and saved-draft reloads. The branding above is deliberately being trialled here first before any full-app restyle.</div></div></section>
+<section class="panel" id="feedback"><div class="panelHead"><div class="panelHeadTitle">TRANSMIT REPORT</div><div class="panelFlag">[ CHANNEL OPEN ]</div></div><div class="panelBody"><div class="formGrid"><div><div class="field"><label for="tester">Tester identity / optional</label><input id="tester" placeholder="e.g. John"></div><div class="field"><label for="device">Device</label><select id="device"><option>iPhone / iPad</option><option>Android phone</option><option>Android tablet</option><option>Desktop / laptop</option></select></div></div><div><div class="field"><label for="area">Area tested</label><select id="area"><option>General / whole app</option><option>Plan / Zone Maker</option><option>Survey</option><option>Circuit Builder</option><option>As-Fit / Export</option><option>Projects / Saving</option><option>Brand / tester portal</option></select></div><div class="field"><label for="severity">Signal severity</label><select id="severity"><option>Idea / improvement</option><option>Small annoyance</option><option>Bug but I can carry on</option><option>Stops me using the feature</option></select></div></div></div><div class="field"><label for="notes">Transmission payload</label><textarea id="notes" placeholder="What were you trying to do? What happened? What did you expect instead?"></textarea></div><div class="feedbackActions"><button class="command primary" id="shareReport">Share report</button><button class="command utility" id="copyReport">Copy report</button></div><div class="reportStatus" id="reportStatus">STATUS: AWAITING INPUT_</div></div></section>
+<section class="panel"><div class="panelHead"><div class="panelHeadTitle">ASSETS / IDENTITY</div><div class="panelFlag">[ PRODUCTION SVG MASTERS ]</div></div><div class="panelBody"><div class="assetGrid"><div class="assetCard"><div class="asset"><img src="assets/zone-sketch-by-will-flood-wordmark.svg" alt="Zone Sketch wordmark"></div><a class="assetLink" href="assets/zone-sketch-by-will-flood-wordmark.svg" download>DOWNLOAD // WORDMARK SVG</a></div><div class="assetCard"><div class="asset"><img src="assets/zone-sketch-beta-tester-badge.svg" alt="Zone Sketch tester badge"></div><a class="assetLink" href="assets/zone-sketch-beta-tester-badge.svg" download>DOWNLOAD // TESTER BADGE SVG</a></div><div class="assetCard"><div class="asset"><img src="assets/zone-sketch-splash.svg" alt="Zone Sketch splash artwork"></div><a class="assetLink" href="assets/zone-sketch-splash.svg" download>DOWNLOAD // SPLASH SVG</a></div><div class="assetCard"><div class="asset"><img src="assets/zone-sketch-favicon.svg" alt="Zone Sketch favicon"></div><a class="assetLink" href="assets/zone-sketch-favicon.svg" download>DOWNLOAD // FAVICON SVG</a></div></div></div></section>
 </main>
-
 <footer class="shell footer">ZONE SKETCH // WEB v0.62 // ANDROID v0.62 // DESIGNED &amp; BUILT BY <b>WILL FLOOD</b></footer>
-
-<script>
-const WEB_VERSION='v0.62',ANDROID_VERSION='v0.62';
-const betaUrl='https://william2535.github.io/FIRE-ZONE-PLAN-APP/beta.html?web=v0.62';
-const $=id=>document.getElementById(id);
-$('copyLink').onclick=async()=>{try{await navigator.clipboard.writeText(betaUrl);$('copyLink').textContent='LINK COPIED ✓'}catch(e){prompt('Copy tester link',betaUrl)}};
-function report(){const who=$('tester').value.trim()||'Anonymous tester',notes=$('notes').value.trim()||'(no extra notes)';return `ZONE SKETCH TEST NODE — ${WEB_VERSION}\nAndroid APK: ${ANDROID_VERSION}\nTester: ${who}\nDevice: ${$('device').value}\nArea: ${$('area').value}\nSeverity: ${$('severity').value}\nBrowser/device info: ${navigator.userAgent}\n\nTransmission:\n${notes}`;}
-$('copyReport').onclick=async()=>{try{await navigator.clipboard.writeText(report());$('reportStatus').textContent='STATUS: REPORT COPIED // READY TO TRANSMIT ✓'}catch(e){prompt('Copy beta report',report())}};
-$('shareReport').onclick=async()=>{const text=report();if(navigator.share){try{await navigator.share({title:`Zone Sketch ${WEB_VERSION} tester report`,text});$('reportStatus').textContent='STATUS: TRANSMISSION SENT ✓';return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(text);$('reportStatus').textContent='STATUS: SHARE UNAVAILABLE // REPORT COPIED ✓'}catch(e){prompt('Copy beta report',text)}};
-</script>
+<script>const WEB_VERSION='v0.62',ANDROID_VERSION='v0.62';const betaUrl='https://william2535.github.io/FIRE-ZONE-PLAN-APP/beta.html?web=v0.62';const $=id=>document.getElementById(id);$('copyLink').onclick=async()=>{try{await navigator.clipboard.writeText(betaUrl);$('copyLink').textContent='LINK COPIED ✓'}catch(e){prompt('Copy tester link',betaUrl)}};function report(){const who=$('tester').value.trim()||'Anonymous tester',notes=$('notes').value.trim()||'(no extra notes)';return `ZONE SKETCH TEST NODE — ${WEB_VERSION}\nAndroid APK: ${ANDROID_VERSION}\nTester: ${who}\nDevice: ${$('device').value}\nArea: ${$('area').value}\nSeverity: ${$('severity').value}\nBrowser/device info: ${navigator.userAgent}\n\nTransmission:\n${notes}`;}$('copyReport').onclick=async()=>{try{await navigator.clipboard.writeText(report());$('reportStatus').textContent='STATUS: REPORT COPIED // READY TO TRANSMIT ✓'}catch(e){prompt('Copy beta report',report())}};$('shareReport').onclick=async()=>{const text=report();if(navigator.share){try{await navigator.share({title:`Zone Sketch ${WEB_VERSION} tester report`,text});$('reportStatus').textContent='STATUS: TRANSMISSION SENT ✓';return}catch(e){if(e.name==='AbortError')return}}try{await navigator.clipboard.writeText(text);$('reportStatus').textContent='STATUS: SHARE UNAVAILABLE // REPORT COPIED ✓'}catch(e){prompt('Copy beta report',text)}};</script>
 </body>
 </html>
