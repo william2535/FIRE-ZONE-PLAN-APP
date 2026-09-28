@@ -1,0 +1,87 @@
+name: Apply workspace tech-grid aesthetic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workspace_ui_shell_v3.py'
+      - '.github/workflows/workspace-ui-shell-v3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Snapshot non-CSS app markup
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          text = Path('index.html').read_text(encoding='utf-8')
+          if '</style>' not in text:
+              raise SystemExit('missing style close')
+          tail = text.split('</style>', 1)[1]
+          Path('/tmp/zone-sketch-tail.sha').write_text(hashlib.sha256(tail.encode()).hexdigest())
+          PY
+
+      - name: Apply tech-grid aesthetic only
+        run: python .github/workspace_ui_shell_v3.py
+
+      - name: Prove markup and behaviour were not changed
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          text = Path('index.html').read_text(encoding='utf-8')
+          tail = text.split('</style>', 1)[1]
+          before = Path('/tmp/zone-sketch-tail.sha').read_text().strip()
+          after = hashlib.sha256(tail.encode()).hexdigest()
+          if before != after:
+              raise SystemExit('non-CSS markup/JS changed — refusing to continue')
+          print('Non-CSS markup/JS unchanged.')
+          PY
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify aesthetic-only pass and release safety
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          grep -q 'Workspace UI shell v3 — tech-grid aesthetic only' index.html
+          grep -q 'End workspace UI shell v3' index.html
+          grep -q 'id="headerHomeBtn"' index.html
+          grep -q 'zsHeaderHomeShine' index.html
+          grep -q 'iOS/iPadOS standalone viewport fill' index.html
+          grep -q '@supports (height:100dvh)' index.html
+          grep -q 'App motion parity — tester-hub movement mapped onto the real app shell' index.html
+          test "$(git hash-object beta.html)" = "0cda84d2c0907160c63366922330c43586f7b191"
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+
+      - name: Commit tech-grid aesthetic
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Tech-grid aesthetic already current.'
+          else
+            git commit -m 'Refine workspace tech-grid aesthetic'
+            git push origin HEAD:main
+          fi
