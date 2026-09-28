@@ -4,6 +4,7 @@ p = Path('index.html')
 text = p.read_text(encoding='utf-8')
 
 MARKER = '/* App motion parity — tester-hub movement mapped onto the real app shell. */'
+END_MARKER = '/* End app motion parity. */'
 CSS = r'''
 
 /* App motion parity — tester-hub movement mapped onto the real app shell. */
@@ -133,22 +134,32 @@ body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4):befor
 }
 '''
 
+replacement = CSS.rstrip() + '\n\n' + END_MARKER + '\n'
+
 if MARKER not in text:
     if '</style>' not in text:
         raise SystemExit('index.html: closing style tag not found')
-    text = text.replace('</style>', CSS + '\n</style>', 1)
+    text = text.replace('</style>', replacement + '\n</style>', 1)
     p.write_text(text, encoding='utf-8')
-    print('index.html: app motion parity installed')
+    print('index.html: app motion parity installed with protected end marker')
 else:
     start = text.index(MARKER)
     block_start = text.rfind('\n', 0, start) + 1
-    end = text.find('</style>', start)
-    if end == -1:
-        raise SystemExit('index.html: closing style tag not found after motion parity marker')
+    marker_end = text.find(END_MARKER, start)
+    if marker_end != -1:
+        end = marker_end + len(END_MARKER)
+        while end < len(text) and text[end] in '\r\n':
+            end += 1
+    else:
+        # One-time migration from the old unbounded block. At present it sits at the
+        # end of the style section; after this run future refreshes stop at END_MARKER.
+        end = text.find('</style>', start)
+        if end == -1:
+            raise SystemExit('index.html: closing style tag not found after motion parity marker')
     old = text[block_start:end]
-    if old.strip() == CSS.strip():
+    if old.strip() == replacement.strip():
         print('index.html: app motion parity already current')
     else:
-        text = text[:block_start] + CSS + '\n' + text[end:]
+        text = text[:block_start] + replacement + text[end:]
         p.write_text(text, encoding='utf-8')
-        print('index.html: app motion parity refreshed for iPhone workflow animation override')
+        print('index.html: app motion parity bounded so later standalone CSS is preserved')
