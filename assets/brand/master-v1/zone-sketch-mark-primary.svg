@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Zone Sketch primary mark">
+  <defs>
+    
+        <linearGradient id="house" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#18C8FF"/>
+          <stop offset=".48" stop-color="#4FE9FF"/>
+          <stop offset=".74" stop-color="#68F477"/>
+          <stop offset="1" stop-color="#A3FF3B"/>
+        </linearGradient>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#13CFFF"/>
+      <stop offset=".62" stop-color="#2688FF"/>
+      <stop offset="1" stop-color="#8CFF3F"/>
+    </linearGradient>
+    <linearGradient id="flameOuter" x1="0" y1="1" x2=".55" y2="0">
+      <stop offset="0" stop-color="#C90D1C"/>
+      <stop offset=".28" stop-color="#FF2D27"/>
+      <stop offset=".66" stop-color="#FF5734"/>
+      <stop offset="1" stop-color="#FFB044"/>
+    </linearGradient>
+    <linearGradient id="flameInner" x1=".3" y1="1" x2=".65" y2="0">
+      <stop offset="0" stop-color="#FF2A1F"/>
+      <stop offset=".5" stop-color="#FF6B2C"/>
+      <stop offset="1" stop-color="#FFD45A"/>
+    </linearGradient>
+    <radialGradient id="bgGlow" cx="50%" cy="42%" r="65%">
+      <stop offset="0" stop-color="#0D233D"/>
+      <stop offset=".56" stop-color="#071321"/>
+      <stop offset="1" stop-color="#02070E"/>
+    </radialGradient>
+    <filter id="houseGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="flameGlow" x="-55%" y="-55%" width="210%" height="210%">
+      <feGaussianBlur stdDeviation="20" result="b1"/>
+      <feColorMatrix in="b1" type="matrix" values="1.2 0 0 0 0.22  0 0.36 0 0 0  0 0 0.22 0 0  0 0 0 1 0" result="redGlow"/>
+      <feMerge><feMergeNode in="redGlow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" fill="none" stroke="#1B70B0" stroke-width="2" opacity=".16"/>
+      <path d="M32 0V64M0 32H64" fill="none" stroke="#1B70B0" stroke-width="1" opacity=".08"/>
+    </pattern>
+    <clipPath id="round"><rect x="44" y="44" width="936" height="936" rx="194"/></clipPath>
+  </defs>
+  <rect x="44" y="44" width="936" height="936" rx="194" fill="url(#bgGlow)"/>
+  <g clip-path="url(#round)">
+    <rect x="44" y="44" width="936" height="936" fill="url(#grid)"/>
+    <ellipse cx="348" cy="128" rx="520" ry="210" fill="#FFFFFF" opacity=".035"/>
+    <ellipse cx="512" cy="520" rx="365" ry="345" fill="#38D7FF" opacity=".025"/>
+  </g>
+  <rect x="58" y="58" width="908" height="908" rx="180" fill="none" stroke="url(#frame)" stroke-width="18"/>
+  <rect x="82" y="82" width="860" height="860" rx="157" fill="none" stroke="#5CDFFF" stroke-width="3" opacity=".28"/>
+  <g stroke="#8CFF3F" stroke-width="13" opacity=".9" stroke-linecap="square">
+    <path d="M126 203v-56h56M898 203v-56h-56M126 821v56h56M898 821v56h-56"/>
+  </g>
+  <g filter="url(#houseGlow)">
+    <path d="M170 842 V472 L512 164 L854 472 V842 H690 V680 H334 V842 Z"
+          fill="none" stroke="url(#house)" stroke-width="54" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M194 817 V483 L512 198 L830 483 V817 H716 V654 H308 V817 Z"
+          fill="none" stroke="#E9FBFF" stroke-width="8" opacity=".24" stroke-linejoin="round"/>
+  </g>
+  <g filter="url(#flameGlow)">
+    <path d="M512 726 C414 718 345 651 352 551 C357 481 403 441 426 382 C446 331 438 278 416 238 C510 278 572 347 586 422 C614 402 631 369 635 334 C689 385 716 458 704 536 C689 640 608 719 512 726Z"
+          fill="url(#flameOuter)" stroke="#FFB067" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M517 651 C460 644 423 603 431 548 C437 513 465 490 477 456 C485 433 484 411 477 390 C528 415 562 454 568 503 C586 491 596 473 600 454 C628 487 639 532 629 570 C614 621 568 655 517 651Z"
+          fill="url(#flameInner)"/>
+    <path d="M520 604 C492 599 475 579 479 554 C482 537 494 526 502 508 C508 495 509 481 507 469 C532 483 548 505 550 531 C559 526 565 518 569 509 C581 527 584 547 579 565 C572 588 548 606 520 604Z"
+          fill="#FFF2B0" opacity=".94"/>
+    <path d="M438 318 C487 344 540 391 567 448" fill="none" stroke="#FFF4D2" stroke-width="12" opacity=".34" stroke-linecap="round"/>
+  </g>
+  <path d="M143 112 C340 73 674 73 879 116" fill="none" stroke="#FFFFFF" stroke-width="10" opacity=".13" stroke-linecap="round"/>
+</svg>
