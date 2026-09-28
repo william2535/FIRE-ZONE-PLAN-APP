@@ -1,0 +1,62 @@
+name: Apply app motion parity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/app-motion-parity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Apply tester-hub motion parity to app only
+        run: python .github/app_motion_parity.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Verify motion parity without touching tester hub
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          test "$(git hash-object beta.html)" = "0cda84d2c0907160c63366922330c43586f7b191"
+          test "$(git hash-object assets/on-site-zone-planner-icon.webp)" = "e37b469d546c626f41ad3cd15bdfaae9d727627a"
+          grep -q 'App motion parity — tester-hub movement mapped onto the real app shell' index.html
+          grep -q 'zsAppProjectRail 8.4s' index.html
+          grep -q 'zsAppBadgeBeacon 3s' index.html
+          grep -q 'zsAppButtonSweep 9.8s' index.html
+          grep -q 'zsAppHeadingTrace 13.8s' index.html
+          grep -q 'body.zsMotionActive #projectsHome .homeProductHero:before' index.html
+          grep -q 'body.zsMotionActive #projectsHome .workflowStep' index.html
+          grep -q 'body.zsMotionActive #projectsHome .homeBrandMark' index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+
+      - name: Commit corrected app motion
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'App motion parity is already current.'
+          else
+            git commit -m 'Animate full Zone Sketch app brand shell'
+            git push origin HEAD:main
+          fi
