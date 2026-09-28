@@ -5,9 +5,9 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#edf2f7",
+  "background_color": "#020a10",
   "theme_color": "#10263d",
   "icons": [
-    {"src": "assets/zone-sketch-app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+    {"src": "assets/on-site-zone-planner-icon.webp", "sizes": "1024x1024", "type": "image/webp", "purpose": "any maskable"}
   ]
 }
