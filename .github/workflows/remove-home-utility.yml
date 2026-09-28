@@ -1,0 +1,58 @@
+name: Remove home utility strip
+
+on:
+  push:
+    branches:
+      - project-pineapple-clean-home-header
+    paths:
+      - '.github/workflows/remove-home-utility.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: project-pineapple-clean-home-header
+
+      - name: Remove home utility strip
+        run: python .github/remove-home-utility.py
+
+      - name: Sync app mirrors
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify clean home and release safety
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          ! grep -q 'YOUR WORKSPACE / 01' index.html
+          ! grep -q 'data-brand-motion' index.html
+          grep -q "let mode='on';" index.html
+          grep -q "const buttons=\[\];" index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+          git diff --exit-code HEAD -- beta.html download.html
+
+      - name: Commit tested clean home
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Clean home already integrated.'
+          else
+            git commit -m 'Remove workspace utility strip from project home'
+            git push origin HEAD:project-pineapple-clean-home-header
+          fi
