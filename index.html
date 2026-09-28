@@ -400,6 +400,23 @@ body.zsMotionOff #projectsHome *,body.zsMotionOff.brandPortal *{transition:none!
 @media(max-width:720px){.brandUtility{font-size:9px;letter-spacing:.08em;margin-bottom:12px}#projectsHome .homeProductHero{padding:20px;gap:18px}#projectsHome .homeProductHero p{font-size:13px;line-height:1.65}#projectsHome .homeBrandRow{margin-bottom:14px}#projectsHome .homeHeroBadge{padding:13px 15px}#projectsHome .homeHeroBadge:before{display:none}#projectsHome .homeHeroBadge strong{font-size:13px;margin:0 0 3px}#projectsHome .homeHeroBadge small{font-size:11px}#projectsHome .workflowStep{padding:10px 8px}#projectsHome .workflowStep b{margin-bottom:6px}#projectsHome .homeHeading{flex-wrap:nowrap}#projectsHome #resumeProject{font-size:11px;padding:9px;min-height:40px}#projectsHome .homeActions button{font-size:13px;padding-left:11px;padding-right:11px}.brandPortal .hero{padding-top:24px}.brandPortal .topbarInner{flex-wrap:wrap;padding:10px 0;gap:10px;min-height:60px}.brandPortal .navStatus{margin-left:auto}.brandPortal .navStatus .statusPill{display:none}.brandPortal .brandMotionToggle{min-height:36px;padding:7px 9px}.brandPortal .brandText{font-size:9px;letter-spacing:.07em}.brandPortal .approvedHeroBrand{padding:16px}.brandPortal .heroSub{font-size:12px;line-height:1.8}.brandPortal .heroCopy{font-size:14px;margin-top:14px}.brandPortal .checklist{grid-template-columns:1fr}.brandPortal .nodeRow{padding-top:9px;padding-bottom:9px}.brandPortal .panelHead{padding:14px 16px}.brandPortal .panelHeadTitle{font-size:11px}.brandPortal .heroGrid{gap:18px}.brandPortal .signalCard{padding:16px}}
 @media(max-width:360px){#projectsHome .homeProductHero{padding:16px}#projectsHome .homeHeading h2{font-size:20px}#projectsHome .homeVersion{font-size:9px}#projectsHome .homeActions button{font-size:12px}.brandPortal .brandText{font-size:8px}.brandPortal .brand{gap:7px}.brandPortal .brandMotionToggle{font-size:9px;gap:5px}}
 @media(prefers-reduced-motion:reduce){.brandSweep,.brandOrbit,.brandBeacon,.cursor,.workflowStep:before{animation:none!important}.brandPortal *,#projectsHome *{transition:none!important}}
+
+/* Motion override control v2 — system Reduced Motion is respected by default,
+   but the Zone Sketch button can explicitly opt this decorative shell back in. */
+body.zsMotionActive .brandInView>.brandSweep{animation:zsBrandSweep 7s ease-in-out infinite!important}
+body.zsMotionActive .brandInView>.brandOrbit{animation:zsBrandOrbit 36s linear infinite!important}
+body.zsMotionActive .brandInView .brandBeacon,
+body.zsMotionActive .brandInView .cursor{animation:zsBrandPulse 3s ease-in-out infinite!important}
+body.zsMotionActive .brandInView .workflowStep:before{animation:zsBrandFlow 6s ease-in-out infinite!important}
+body.zsMotionActive .brandInView .workflowStep:nth-child(2):before{animation-delay:.75s!important}
+body.zsMotionActive .brandInView .workflowStep:nth-child(3):before{animation-delay:1.5s!important}
+body.zsMotionActive .brandInView .workflowStep:nth-child(4):before{animation-delay:2.25s!important}
+body.zsMotionActive.zsMotionPaused :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),
+body.zsMotionActive.zsMotionPaused .workflowStep:before{animation-play-state:paused!important}
+body.zsMotionActive .brandMotionToggle{opacity:1!important;cursor:pointer!important}
+body.zsMotionActive.brandPortal .signalCard,
+body.zsMotionActive.brandPortal .command{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease!important}
+
 </style>
 </head>
 <body>
@@ -1256,20 +1273,61 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
 
 
 <script>
-/* Motion belongs to the brand shell; it never touches a drawing or project. */
+/* Motion belongs to the brand shell; it never touches a drawing or project.
+   Reduced Motion is the default, not a lock: the visible button can override it. */
 (()=>{
  const buttons=[...document.querySelectorAll('[data-brand-motion]')];
  if(!buttons.length)return;
  const media=window.matchMedia('(prefers-reduced-motion: reduce)');
- let enabled=true;try{enabled=localStorage.getItem('zoneSketchBrandMotion')!=='off'}catch(e){}
- const reduced=()=>media.matches||document.body.classList.contains('reduceMotion');
- function sync(){const quiet=reduced(),active=enabled&&!quiet;document.body.classList.toggle('zsMotionOff',!active);for(const b of buttons){b.textContent=quiet?'Motion reduced':active?'Motion on':'Motion off';b.setAttribute('aria-pressed',String(active));b.disabled=quiet;b.title=quiet?'Motion follows your reduced-motion setting':active?'Pause decorative animations':'Enable decorative animations'}}
- for(const b of buttons)b.addEventListener('click',()=>{enabled=!enabled;try{localStorage.setItem('zoneSketchBrandMotion',enabled?'on':'off')}catch(e){}sync()});
+ let mode='auto';
+ try{
+  const saved=localStorage.getItem('zoneSketchBrandMotionMode');
+  if(saved==='on'||saved==='off'||saved==='auto')mode=saved;
+  else if(localStorage.getItem('zoneSketchBrandMotion')==='off')mode='off';
+ }catch(e){}
+ const systemReduced=()=>media.matches||document.body.classList.contains('reduceMotion');
+ const active=()=>mode==='on'||(mode==='auto'&&!systemReduced());
+ function save(){
+  try{
+   localStorage.setItem('zoneSketchBrandMotionMode',mode);
+   localStorage.setItem('zoneSketchBrandMotion',active()?'on':'off');
+  }catch(e){}
+ }
+ function sync(){
+  const reduced=systemReduced(),on=active(),forced=reduced&&mode==='on';
+  document.body.classList.toggle('zsMotionActive',on);
+  document.body.classList.toggle('zsMotionForce',forced);
+  document.body.classList.toggle('zsMotionOff',!on);
+  for(const b of buttons){
+   b.disabled=false;
+   b.setAttribute('aria-pressed',String(on));
+   b.textContent=on?'Motion on':reduced?'Motion reduced':'Motion off';
+   b.title=on?(forced?'Zone Sketch motion is on despite the device Reduced Motion setting':'Pause decorative animations'):(reduced?'Reduced Motion detected · tap to enable Zone Sketch motion':'Enable decorative animations');
+   b.setAttribute('aria-label',b.title);
+  }
+ }
+ for(const b of buttons)b.addEventListener('click',()=>{
+  mode=active()?'off':'on';
+  save();sync();
+ });
  media.addEventListener?.('change',sync);
- window.addEventListener('storage',e=>{if(e.key==='zoneSketchBrandMotion'){enabled=e.newValue!=='off';sync()}});
- let appReduced=document.body.classList.contains('reduceMotion');new MutationObserver(()=>{const next=document.body.classList.contains('reduceMotion');if(next!==appReduced){appReduced=next;sync()}}).observe(document.body,{attributes:true,attributeFilter:['class']});
- const pause=()=>document.body.classList.toggle('zsMotionPaused',document.hidden);document.addEventListener('visibilitychange',pause);pause();sync();
- if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('brandInView',entry.isIntersecting)},{threshold:.05});document.querySelectorAll('[data-brand-watch]').forEach(el=>observer.observe(el))}
+ window.addEventListener('storage',e=>{
+  if(e.key==='zoneSketchBrandMotionMode'||e.key==='zoneSketchBrandMotion'){
+   try{const saved=localStorage.getItem('zoneSketchBrandMotionMode');mode=(saved==='on'||saved==='off'||saved==='auto')?saved:(localStorage.getItem('zoneSketchBrandMotion')==='off'?'off':'auto')}catch(err){}
+   sync();
+  }
+ });
+ let appReduced=document.body.classList.contains('reduceMotion');
+ new MutationObserver(()=>{
+  const next=document.body.classList.contains('reduceMotion');
+  if(next!==appReduced){appReduced=next;sync()}
+ }).observe(document.body,{attributes:true,attributeFilter:['class']});
+ const pause=()=>document.body.classList.toggle('zsMotionPaused',document.hidden);
+ document.addEventListener('visibilitychange',pause);pause();sync();
+ if('IntersectionObserver' in window){
+  const observer=new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('brandInView',entry.isIntersecting)},{threshold:.05});
+  document.querySelectorAll('[data-brand-watch]').forEach(el=>observer.observe(el));
+ }else document.querySelectorAll('[data-brand-watch]').forEach(el=>el.classList.add('brandInView'));
 })();
 </script>
 </body></html>
