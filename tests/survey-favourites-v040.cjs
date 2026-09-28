@@ -54,7 +54,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
 
   await page.locator('#surveyFavouriteButtons .surveyFavouriteQuick').first().click();
   const box=await page.locator('#canvas').boundingBox();
-  const directionalBeam=await page.locator('.homeVersion').evaluate(el=>{
+  const directionalBeam=await page.locator('.top .brand small').evaluate(el=>{
    const m=(el.textContent||'').match(/v0\.(\d+)/);
    return !!m&&Number(m[1])>=42;
   });
