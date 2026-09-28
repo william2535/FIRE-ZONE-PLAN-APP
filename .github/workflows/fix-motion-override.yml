@@ -1,0 +1,140 @@
+name: Fix reduced-motion override
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-motion-override.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-motion-control:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Make Zone Sketch motion user-controllable
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          css = r'''
+          /* Motion override control v2 — system Reduced Motion is respected by default,
+             but the Zone Sketch button can explicitly opt this decorative shell back in. */
+          body.zsMotionActive .brandInView>.brandSweep{animation:zsBrandSweep 7s ease-in-out infinite!important}
+          body.zsMotionActive .brandInView>.brandOrbit{animation:zsBrandOrbit 36s linear infinite!important}
+          body.zsMotionActive .brandInView .brandBeacon,
+          body.zsMotionActive .brandInView .cursor{animation:zsBrandPulse 3s ease-in-out infinite!important}
+          body.zsMotionActive .brandInView .workflowStep:before{animation:zsBrandFlow 6s ease-in-out infinite!important}
+          body.zsMotionActive .brandInView .workflowStep:nth-child(2):before{animation-delay:.75s!important}
+          body.zsMotionActive .brandInView .workflowStep:nth-child(3):before{animation-delay:1.5s!important}
+          body.zsMotionActive .brandInView .workflowStep:nth-child(4):before{animation-delay:2.25s!important}
+          body.zsMotionActive.zsMotionPaused :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),
+          body.zsMotionActive.zsMotionPaused .workflowStep:before{animation-play-state:paused!important}
+          body.zsMotionActive .brandMotionToggle{opacity:1!important;cursor:pointer!important}
+          body.zsMotionActive.brandPortal .signalCard,
+          body.zsMotionActive.brandPortal .command{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease!important}
+          '''
+
+          script = r'''<script>
+          /* Motion belongs to the brand shell; it never touches a drawing or project.
+             Reduced Motion is the default, not a lock: the visible button can override it. */
+          (()=>{
+           const buttons=[...document.querySelectorAll('[data-brand-motion]')];
+           if(!buttons.length)return;
+           const media=window.matchMedia('(prefers-reduced-motion: reduce)');
+           let mode='auto';
+           try{
+            const saved=localStorage.getItem('zoneSketchBrandMotionMode');
+            if(saved==='on'||saved==='off'||saved==='auto')mode=saved;
+            else if(localStorage.getItem('zoneSketchBrandMotion')==='off')mode='off';
+           }catch(e){}
+           const systemReduced=()=>media.matches||document.body.classList.contains('reduceMotion');
+           const active=()=>mode==='on'||(mode==='auto'&&!systemReduced());
+           function save(){
+            try{
+             localStorage.setItem('zoneSketchBrandMotionMode',mode);
+             localStorage.setItem('zoneSketchBrandMotion',active()?'on':'off');
+            }catch(e){}
+           }
+           function sync(){
+            const reduced=systemReduced(),on=active(),forced=reduced&&mode==='on';
+            document.body.classList.toggle('zsMotionActive',on);
+            document.body.classList.toggle('zsMotionForce',forced);
+            document.body.classList.toggle('zsMotionOff',!on);
+            for(const b of buttons){
+             b.disabled=false;
+             b.setAttribute('aria-pressed',String(on));
+             b.textContent=on?'Motion on':reduced?'Motion reduced':'Motion off';
+             b.title=on?(forced?'Zone Sketch motion is on despite the device Reduced Motion setting':'Pause decorative animations'):(reduced?'Reduced Motion detected · tap to enable Zone Sketch motion':'Enable decorative animations');
+             b.setAttribute('aria-label',b.title);
+            }
+           }
+           for(const b of buttons)b.addEventListener('click',()=>{
+            mode=active()?'off':'on';
+            save();sync();
+           });
+           media.addEventListener?.('change',sync);
+           window.addEventListener('storage',e=>{
+            if(e.key==='zoneSketchBrandMotionMode'||e.key==='zoneSketchBrandMotion'){
+             try{const saved=localStorage.getItem('zoneSketchBrandMotionMode');mode=(saved==='on'||saved==='off'||saved==='auto')?saved:(localStorage.getItem('zoneSketchBrandMotion')==='off'?'off':'auto')}catch(err){}
+             sync();
+            }
+           });
+           let appReduced=document.body.classList.contains('reduceMotion');
+           new MutationObserver(()=>{
+            const next=document.body.classList.contains('reduceMotion');
+            if(next!==appReduced){appReduced=next;sync()}
+           }).observe(document.body,{attributes:true,attributeFilter:['class']});
+           const pause=()=>document.body.classList.toggle('zsMotionPaused',document.hidden);
+           document.addEventListener('visibilitychange',pause);pause();sync();
+           if('IntersectionObserver' in window){
+            const observer=new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('brandInView',entry.isIntersecting)},{threshold:.05});
+            document.querySelectorAll('[data-brand-watch]').forEach(el=>observer.observe(el));
+           }else document.querySelectorAll('[data-brand-watch]').forEach(el=>el.classList.add('brandInView'));
+          })();
+          </script>'''
+
+          start_marker = '<script>\n/* Motion belongs to the brand shell; it never touches a drawing or project. */'
+          for filename in ('beta.html','index.html'):
+              path=Path(filename)
+              text=path.read_text(encoding='utf-8')
+              if '/* Motion override control v2' not in text:
+                  style_end=text.rfind('</style>')
+                  if style_end < 0:
+                      raise SystemExit(f'{filename}: missing </style>')
+                  text=text[:style_end]+css+'\n'+text[style_end:]
+              start=text.find(start_marker)
+              if start < 0:
+                  alt='<script>\n/* Motion belongs to the brand shell; it never touches a drawing or project.\n'
+                  start=text.find(alt)
+              if start < 0:
+                  raise SystemExit(f'{filename}: motion script marker not found')
+              end=text.find('</script>',start)
+              if end < 0:
+                  raise SystemExit(f'{filename}: motion script end not found')
+              end += len('</script>')
+              text=text[:start]+script+text[end:]
+              path.write_text(text,encoding='utf-8')
+              print('patched',filename)
+          PY
+
+      - name: Commit motion fix
+        shell: bash
+        run: |
+          if git diff --quiet -- beta.html index.html; then
+            echo 'Motion override already patched.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add beta.html index.html
+          git commit -m 'Fix motion control on reduced-motion devices'
+          git push origin HEAD:main
