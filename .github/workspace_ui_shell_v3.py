@@ -91,6 +91,38 @@ body:not(.zsMotionPaused) .top .zsHeaderHomeShine:before{
 }
 body.zsMotionPaused .top .zsHeaderHomeShine:before{animation-play-state:paused!important}
 
+/* Favourites should sit inside the dark tool dock, not shout brighter than the drawing.
+   Keep the same button and behaviour, then give it the same slow gloss language as Home. */
+.app>.tools #favouriteMenuBtn{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  background:linear-gradient(145deg,#102b3a,#0b2230);
+  color:#d7edf9;
+  border-color:#2a5065;
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 0 0 1px rgba(0,194,255,.025);
+}
+.app>.tools #favouriteMenuBtn::before{
+  content:'';
+  position:absolute;
+  top:-45%;bottom:-45%;left:-42%;
+  width:30%;
+  pointer-events:none;
+  opacity:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),rgba(255,255,255,.5),rgba(255,255,255,.12),transparent);
+  transform:skewX(-18deg) translateX(-260%);
+  filter:blur(.2px);
+  will-change:transform,opacity;
+}
+@keyframes zsFavouriteShine{
+  0%,72%{transform:skewX(-18deg) translateX(-260%);opacity:0}
+  76%{opacity:.72}
+  96%{transform:skewX(-18deg) translateX(720%);opacity:.55}
+  100%{transform:skewX(-18deg) translateX(760%);opacity:0}
+}
+body:not(.zsMotionPaused) .app>.tools #favouriteMenuBtn::before{animation:zsFavouriteShine 9.6s ease-in-out infinite}
+body.zsMotionPaused .app>.tools #favouriteMenuBtn::before{animation-play-state:paused!important}
+
 /* Tiny depth cues only: no button sizing, layout or interaction changes. */
 .app>.top,
 .app>.tools,
