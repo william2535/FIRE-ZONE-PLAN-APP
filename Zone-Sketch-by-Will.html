@@ -666,7 +666,7 @@ body{min-width:100%;min-height:100%;background:#020a10}
 </head>
 <body>
 <div id="zsSplash" aria-hidden="true"><div class="zsSplashInner"><img src="assets/on-site-zone-planner-icon.webp" alt=""><div class="zsSplashName"><span class="zone">ZONE</span> <span class="sketch">SKETCH</span></div><div class="zsSplashSub">FIRE &amp; SECURITY FIELD APP</div><div class="zsSplashBy">Designed &amp; built by Will Flood</div></div></div>
-<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="brandUtility" data-brand-watch><span class="brandUtilityLabel"><i class="brandBeacon" aria-hidden="true"></i>YOUR WORKSPACE / 01</span><button type="button" class="brandMotionToggle" data-brand-motion aria-label="Decorative motion" aria-pressed="false">Motion</button></div><div class="homeProductHero brandFx" data-brand-watch><span class="brandSweep" aria-hidden="true"></span><span class="brandOrbit" aria-hidden="true"></span><div><div class="homeBrandRow"><img class="homeBrandMark" src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>From first survey to finished As-Fit. Your whole site, in one project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Ready for your next site</strong><small>Local autosave · touch-first controls · offline project data</small></div></div><div class="homeHeading"><div><div class="homeVersion">ZONE SKETCH · v0.62</div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
+<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero brandFx" data-brand-watch><span class="brandSweep" aria-hidden="true"></span><span class="brandOrbit" aria-hidden="true"></span><div><div class="homeBrandRow"><img class="homeBrandMark" src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>From first survey to finished As-Fit. Your whole site, in one project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Ready for your next site</strong><small>Local autosave · touch-first controls · offline project data</small></div></div><div class="homeHeading"><div><div class="homeVersion">ZONE SKETCH · v0.62</div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
 
 <section id="circuitBuilder" hidden aria-label="Circuit Builder">
 <header class="cbTop"><div><strong>CIRCUIT BUILDER</strong><small>BY WILL FLOOD · ZONE PLAN + SURVEY → WIRING → AS-FIT</small></div><div class="cbGrow"></div><label class="cbFloorSwitch" for="cbFloorSelect"><span>Floor</span><select id="cbFloorSelect" aria-label="Circuit Builder floor"></select></label><button id="cbSoundToggle" aria-pressed="true" title="Toggle app sounds">Sound on</button><button id="cbBack">Back to plan</button></header>
@@ -1539,18 +1539,11 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
 
 
 <script>
-/* Motion belongs to the brand shell; it never touches a drawing or project.
-   Reduced Motion is the default, not a lock: the visible button can override it. */
+/* Decorative brand motion is always enabled. Functional UI motion remains separate. */
 (()=>{
- const buttons=[...document.querySelectorAll('[data-brand-motion]')];
- if(!buttons.length)return;
+ const buttons=[];
  const media=window.matchMedia('(prefers-reduced-motion: reduce)');
- let mode='auto';
- try{
-  const saved=localStorage.getItem('zoneSketchBrandMotionMode');
-  if(saved==='on'||saved==='off'||saved==='auto')mode=saved;
-  else if(localStorage.getItem('zoneSketchBrandMotion')==='off')mode='off';
- }catch(e){}
+ let mode='on';
  const systemReduced=()=>media.matches||document.body.classList.contains('reduceMotion');
  const active=()=>mode==='on'||(mode==='auto'&&!systemReduced());
  function save(){
@@ -1577,12 +1570,7 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
   save();sync();
  });
  media.addEventListener?.('change',sync);
- window.addEventListener('storage',e=>{
-  if(e.key==='zoneSketchBrandMotionMode'||e.key==='zoneSketchBrandMotion'){
-   try{const saved=localStorage.getItem('zoneSketchBrandMotionMode');mode=(saved==='on'||saved==='off'||saved==='auto')?saved:(localStorage.getItem('zoneSketchBrandMotion')==='off'?'off':'auto')}catch(err){}
-   sync();
-  }
- });
+
  let appReduced=document.body.classList.contains('reduceMotion');
  new MutationObserver(()=>{
   const next=document.body.classList.contains('reduceMotion');
