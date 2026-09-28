@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/app-motion-parity.yml'
+      - '.github/app_motion_parity.py'
   workflow_dispatch:
 
 permissions:
@@ -42,6 +43,8 @@ jobs:
           grep -q 'zsAppBadgeBeacon 3s' index.html
           grep -q 'zsAppButtonSweep 9.8s' index.html
           grep -q 'zsAppHeadingTrace 13.8s' index.html
+          grep -q 'body.zsMotionActive.reduceMotion #projectsHome .projectCard:before' index.html
+          grep -q 'body.reduceMotion:not(.zsMotionActive) #projectsHome .projectCard:before' index.html
           grep -q 'body.zsMotionActive #projectsHome .homeProductHero:before' index.html
           grep -q 'body.zsMotionActive #projectsHome .workflowStep' index.html
           grep -q 'body.zsMotionActive #projectsHome .homeBrandMark' index.html
@@ -57,6 +60,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'App motion parity is already current.'
           else
-            git commit -m 'Animate full Zone Sketch app brand shell'
+            git commit -m 'Fix iPhone app brand motion override'
             git push origin HEAD:main
           fi
