@@ -71,24 +71,45 @@ body.zsMotionActive #projectsHome .projectCard:after{
   background:linear-gradient(90deg,transparent,rgba(142,231,255,.08),rgba(255,255,255,.15),rgba(155,255,63,.07),transparent);
 }
 
-/* Pause every added ambient effect with the existing motion/visibility controls. */
+/* Pause every added ambient effect with the existing visibility controls. */
 body.zsMotionPaused #projectsHome .projectCard:before,
 body.zsMotionPaused #projectsHome .homeHeroBadge:after,
 body.zsMotionPaused #projectsHome button.primary:after,
 body.zsMotionPaused #projectsHome .homeHeading:after{animation-play-state:paused!important}
+
+/* Important: iPhone may put the app in reduceMotion from the OS/app setting. The
+   tester hub's explicit Motion on choice is allowed to opt the decorative brand shell
+   back in. Only suppress these effects when brand motion itself is not explicitly on. */
 body.zsMotionOff #projectsHome .projectCard:before,
 body.zsMotionOff #projectsHome .homeHeroBadge:after,
 body.zsMotionOff #projectsHome button.primary:after,
 body.zsMotionOff #projectsHome .homeHeading:after,
-body.reduceMotion #projectsHome .projectCard:before,
-body.reduceMotion #projectsHome .homeHeroBadge:after,
-body.reduceMotion #projectsHome button.primary:after,
-body.reduceMotion #projectsHome .homeHeading:after{animation:none!important}
+body.reduceMotion:not(.zsMotionActive) #projectsHome .projectCard:before,
+body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeroBadge:after,
+body.reduceMotion:not(.zsMotionActive) #projectsHome button.primary:after,
+body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeading:after{animation:none!important}
+
+/* Explicit Motion on must win over iOS/app Reduce Motion for decorative branding only.
+   Functional app transitions remain reduced. */
+body.zsMotionActive.reduceMotion #projectsHome .projectCard:before{
+  animation:zsAppProjectRail 8.4s ease-in-out infinite alternate!important;
+}
+body.zsMotionActive.reduceMotion #projectsHome .homeHeroBadge:after{
+  animation:zsAppBadgeBeacon 3s ease-in-out infinite!important;
+}
+body.zsMotionActive.reduceMotion #projectsHome button.primary:after{
+  animation:zsAppButtonSweep 9.8s ease-in-out infinite!important;
+}
+body.zsMotionActive.reduceMotion #projectsHome .homeHeading:after{
+  animation:zsAppHeadingTrace 13.8s ease-in-out infinite!important;
+}
 
 @media(max-width:720px){
   /* Keep motion optical on touch: no cards physically slide around. */
-  body.zsMotionActive #projectsHome .projectCard:before{animation-duration:9.6s!important}
-  body.zsMotionActive #projectsHome button.primary:after{animation-duration:11s!important}
+  body.zsMotionActive #projectsHome .projectCard:before{animation-duration:9.6s!important;animation-iteration-count:infinite!important}
+  body.zsMotionActive #projectsHome button.primary:after{animation-duration:11s!important;animation-iteration-count:infinite!important}
+  body.zsMotionActive.reduceMotion #projectsHome .homeHeroBadge:after{animation-duration:3s!important;animation-iteration-count:infinite!important}
+  body.zsMotionActive.reduceMotion #projectsHome .homeHeading:after{animation-duration:13.8s!important;animation-iteration-count:infinite!important}
 }
 '''
 
@@ -99,4 +120,15 @@ if MARKER not in text:
     p.write_text(text, encoding='utf-8')
     print('index.html: app motion parity installed')
 else:
-    print('index.html: app motion parity already current')
+    start = text.index(MARKER)
+    block_start = text.rfind('\n', 0, start) + 1
+    end = text.find('</style>', start)
+    if end == -1:
+        raise SystemExit('index.html: closing style tag not found after motion parity marker')
+    old = text[block_start:end]
+    if old.strip() == CSS.strip():
+        print('index.html: app motion parity already current')
+    else:
+        text = text[:block_start] + CSS + '\n' + text[end:]
+        p.write_text(text, encoding='utf-8')
+        print('index.html: app motion parity refreshed for iPhone reduced-motion override')
