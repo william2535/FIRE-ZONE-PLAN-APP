@@ -37,3 +37,5 @@ if MARKER not in text:
     print('index.html: iPadOS standalone viewport fill installed')
 else:
     print('index.html: iPadOS standalone viewport fill already current')
+
+# Workflow trigger marker: standalone iPad viewport integration.
