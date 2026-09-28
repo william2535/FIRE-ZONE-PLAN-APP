@@ -2,8 +2,11 @@ name: Sync v0.62 motion mirrors
 
 on:
   push:
+    branches: [main]
     paths:
       - '.github/workflows/motion-polish-v3.yml'
+      - '.github/motion_polish_v3.py'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,26 +18,28 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Keep app mirrors byte-identical
+      - name: Apply current motion timing
+        run: python .github/motion_polish_v3.py
+      - name: Keep every v0.62 app mirror byte-identical
         run: |
           cp index.html ZoneSketch.html
           cp index.html Zone-Sketch-by-Will.html
           cp index.html app/src/main/assets/index.html
           cp beta.html download.html
-      - name: Verify mirrors
+      - name: Verify mirrors and protected company demo
         run: |
-          cmp --silent index.html ZoneSketch.html
-          cmp --silent index.html Zone-Sketch-by-Will.html
-          cmp --silent index.html app/src/main/assets/index.html
-          cmp --silent beta.html download.html
-      - name: Commit mirror sync
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          node tests/projects.cjs
+      - name: Commit motion timing and mirror sync
         run: |
-          if git diff --quiet -- ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html download.html; then
-            echo 'Mirrors already current.'
-            exit 0
-          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html download.html
-          git commit -m 'Sync v0.62 mirrors with motion polish'
-          git push origin HEAD:main
+          git add index.html beta.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html download.html
+          if git diff --cached --quiet; then
+            echo 'Motion timing and mirrors already current.'
+          else
+            git commit -m 'Slow ambient branding motion slightly'
+            git push origin HEAD:main
+          fi
