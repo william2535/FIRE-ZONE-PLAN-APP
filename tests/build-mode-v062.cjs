@@ -31,9 +31,18 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
       await page.mouse.move(b.x+x2,b.y+y2,{steps:8});
       await page.mouse.up();
     }
+    async function dragAbs(a,b){
+      await page.mouse.move(a.x,a.y);
+      await page.mouse.down();
+      await page.mouse.move(b.x,b.y,{steps:8});
+      await page.mouse.up();
+    }
     async function saved(){
       await page.waitForTimeout(400);
       return page.evaluate(()=>new Promise(ok=>{const r=indexedDB.open('ZoneSketch-v1',1);r.onsuccess=()=>{const g=r.result.transaction('draft').objectStore('draft').get('state');g.onsuccess=()=>ok(g.result)}}));
+    }
+    async function firstShapeCentre(){
+      return page.evaluate(()=>{const pts=state.shapes[0].points,c={x:pts.reduce((n,p)=>n+p.x,0)/pts.length,y:pts.reduce((n,p)=>n+p.y,0)/pts.length},q=screenPoint(c),r=canvas.getBoundingClientRect();return{x:r.left+q.x,y:r.top+q.y}});
     }
 
     await addZone(1,'Small office');
@@ -43,10 +52,10 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     assert.equal(s.shapes.length,1,'initial zone box should exist');
     assert.equal(s.buildMode,true,'Build mode should default ON for existing separated behaviour');
 
-    // Build mode ON: dragging inside the zone still performs the active placement tool,
-    // proving placement and moving remain deliberately separate.
-    const firstBefore=JSON.stringify(s.shapes[0].points);
-    await dragOnCanvas(270,220,350,285);
+    // Build mode ON: start deliberately inside the existing zone. The armed placement tool
+    // still creates a new zone box, proving placement and moving remain separate.
+    const firstBefore=JSON.stringify(s.shapes[0].points),insideOn=await firstShapeCentre();
+    await dragAbs(insideOn,{x:insideOn.x+70,y:insideOn.y+55});
     s=await saved();
     assert.equal(s.shapes.length,2,'Build mode ON should keep the box placement tool armed rather than moving the old zone');
     assert.equal(JSON.stringify(s.shapes[0].points),firstBefore,'original zone must not move while Build mode is ON');
@@ -68,17 +77,18 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     s=await saved();
     assert.equal(s.buildMode,false,'Build mode OFF must persist in project state');
 
-    // OFF: dragging inside the existing zone moves it, keeps the active zone tool,
-    // and does not create another zone.
-    const beforeMove=JSON.stringify(s.shapes[0].points);
-    await dragOnCanvas(270,220,345,275);
+    // OFF: use the actual saved zone centre so this test cannot accidentally hit blank canvas.
+    // The existing zone moves, no second zone is created, and the rect placement tool stays armed.
+    const beforeMove=JSON.stringify(s.shapes[0].points),insideOff=await firstShapeCentre();
+    assert(await page.evaluate(({x,y})=>!!combinedZoneAt(x,y),insideOff),'combined mode must recognise the existing zone under the pointer');
+    await dragAbs(insideOff,{x:insideOff.x+75,y:insideOff.y+55});
     s=await saved();
     assert.equal(s.shapes.length,1,'combined mode should move the existing zone instead of adding a new one');
     assert.notEqual(JSON.stringify(s.shapes[0].points),beforeMove,'existing zone should actually move in combined mode');
     assert.equal(await page.locator('[data-menu-tool="rect"]').getAttribute('class').then(v=>/active/.test(v||'')),true,'zone box tool should remain active after moving a zone');
 
     // Empty space still places with the same armed tool.
-    await dragOnCanvas(610,170,800,330);
+    await dragOnCanvas(650,150,820,300);
     s=await saved();
     assert.equal(s.shapes.length,2,'combined mode must still place a new zone on empty space');
 
