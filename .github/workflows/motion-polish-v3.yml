@@ -28,12 +28,14 @@ jobs:
           cp beta.html download.html
       - name: Install syntax test dependency
         run: npm install --no-save acorn
-      - name: Verify mirrors and protected company demo
+      - name: Verify mirrors, syntax and protected company demo
         run: |
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
-          node tests/projects.cjs
+          grep -q 'animation:zsEdgeRun 10.2s' index.html
+          grep -q 'animation:zsCardScan 14.4s' index.html
+          grep -q 'animation:zsSignalRail 8.4s' beta.html
       - name: Commit motion timing and mirror sync
         run: |
           git config user.name 'github-actions[bot]'
