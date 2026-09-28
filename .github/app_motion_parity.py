@@ -77,9 +77,9 @@ body.zsMotionPaused #projectsHome .homeHeroBadge:after,
 body.zsMotionPaused #projectsHome button.primary:after,
 body.zsMotionPaused #projectsHome .homeHeading:after{animation-play-state:paused!important}
 
-/* Important: iPhone may put the app in reduceMotion from the OS/app setting. The
-   tester hub's explicit Motion on choice is allowed to opt the decorative brand shell
-   back in. Only suppress these effects when brand motion itself is not explicitly on. */
+/* iPhone may put the app in reduceMotion from the OS/app setting. Decorative Zone
+   Sketch motion is intentionally on even though the visible toggle has been removed.
+   Functional app transitions still remain reduced. */
 body.zsMotionOff #projectsHome .projectCard:before,
 body.zsMotionOff #projectsHome .homeHeroBadge:after,
 body.zsMotionOff #projectsHome button.primary:after,
@@ -89,8 +89,6 @@ body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeroBadge:after,
 body.reduceMotion:not(.zsMotionActive) #projectsHome button.primary:after,
 body.reduceMotion:not(.zsMotionActive) #projectsHome .homeHeading:after{animation:none!important}
 
-/* Explicit Motion on must win over iOS/app Reduce Motion for decorative branding only.
-   Functional app transitions remain reduced. */
 body.zsMotionActive.reduceMotion #projectsHome .projectCard:before{
   animation:zsAppProjectRail 8.4s ease-in-out infinite alternate!important;
 }
@@ -103,6 +101,28 @@ body.zsMotionActive.reduceMotion #projectsHome button.primary:after{
 body.zsMotionActive.reduceMotion #projectsHome .homeHeading:after{
   animation:zsAppHeadingTrace 13.8s ease-in-out infinite!important;
 }
+
+/* iOS standalone fix: the generic reduced-motion rule uses #projectsHome and can
+   otherwise outrank the decorative workflow animation. zsMotionForce is set only
+   when iOS/app Reduced Motion is present while Zone Sketch brand motion is enabled. */
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep{
+  animation-name:zsStepSignal!important;
+  animation-duration:9.6s!important;
+  animation-timing-function:ease-in-out!important;
+  animation-iteration-count:infinite!important;
+}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(2){animation-delay:2.4s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(3){animation-delay:4.8s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4){animation-delay:7.2s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:before{
+  animation-name:zsBrandFlow!important;
+  animation-duration:6s!important;
+  animation-timing-function:ease-in-out!important;
+  animation-iteration-count:infinite!important;
+}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(2):before{animation-delay:.75s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(3):before{animation-delay:1.5s!important}
+body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4):before{animation-delay:2.25s!important}
 
 @media(max-width:720px){
   /* Keep motion optical on touch: no cards physically slide around. */
@@ -131,4 +151,4 @@ else:
     else:
         text = text[:block_start] + CSS + '\n' + text[end:]
         p.write_text(text, encoding='utf-8')
-        print('index.html: app motion parity refreshed for iPhone reduced-motion override')
+        print('index.html: app motion parity refreshed for iPhone workflow animation override')
