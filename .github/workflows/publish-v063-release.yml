@@ -1,0 +1,30 @@
+name: Publish Zone Sketch v0.63 release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'downloads/Zone-Sketch-by-Will-v0.63.apk'
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify v0.63 release candidate
+        run: |
+          test -f downloads/Zone-Sketch-by-Will-v0.63.apk
+          node tests/release-v063.cjs
+          python .github/verify_247_protected.py
+      - name: Publish GitHub Release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.63 >/dev/null 2>&1; then
+            gh release upload v0.63 downloads/Zone-Sketch-by-Will-v0.63.apk --clobber
+          else
+            gh release create v0.63 downloads/Zone-Sketch-by-Will-v0.63.apk \
+              --target "${GITHUB_SHA}" \
+              --title "Zone Sketch by Will v0.63" \
+              --notes "Pineapple v0.63 fixes the Build mode / Pan conflict found in real-device testing. Build mode OFF now owns the Place + move workflow: the old one-finger Pan control is forced out of the way and disabled so it cannot silently override the setting. Existing zones drag to move, empty space still places with the armed zone tool, and two-finger navigation remains available. Build mode ON restores the explicit separated workflow. Includes the v0.61 multi-floor and v0.60 circuit recovery foundations."
+          fi
