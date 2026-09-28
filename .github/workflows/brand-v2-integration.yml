@@ -5,9 +5,9 @@ on:
     branches:
       - project-pineapple-brand-v2-integration
     paths:
+      - .github/brand-v2-source/**
       - .github/build_brand_v2_assets.py
       - .github/workflows/brand-v2-integration.yml
-      - assets/brand/master-v2-approved/approved-board.webp
   workflow_dispatch:
 
 permissions:
@@ -31,43 +31,39 @@ jobs:
       - name: Install Pillow
         run: python -m pip install --disable-pip-version-check pillow
 
-      - name: Build exact assets from approved board
+      - name: Build approved primary assets
         run: python .github/build_brand_v2_assets.py
 
       - name: Verify production outputs
         run: |
+          test -f assets/brand/master-v2-approved/production/zone-sketch-primary-source.webp
           test -f assets/brand/master-v2-approved/production/zone-sketch-primary-1024.webp
-          test -f assets/brand/master-v2-approved/production/zone-sketch-fire-1024.png
-          test -f assets/brand/master-v2-approved/production/zone-sketch-cctv-1024.png
-          test -f assets/brand/master-v2-approved/production/zone-sketch-access-1024.png
-          test -f assets/brand/master-v2-approved/production/zone-sketch-mono-1024.png
-          test -f assets/brand/master-v2-approved/production/zone-sketch-wordmark-1840.png
-          test -f assets/brand/master-v2-approved/production/zone-sketch-splash-1080.webp
+          test -f assets/brand/master-v2-approved/production/zone-sketch-primary-180.png
+          test -f assets/brand/master-v2-approved/production/zone-sketch-primary-192.png
+          test -f assets/brand/master-v2-approved/production/zone-sketch-primary-512.png
           test -f assets/on-site-zone-planner-icon.webp
           test -f app/src/main/res/drawable/app_icon.webp
-          test -f app/src/main/res/drawable/app_splash.webp
           python - <<'PY'
           from PIL import Image
-          checks = {
-              'assets/on-site-zone-planner-icon.webp': (1024, 1024),
-              'app/src/main/res/drawable/app_icon.webp': (1024, 1024),
-          }
-          for path, expected in checks.items():
+          for path in [
+              'assets/on-site-zone-planner-icon.webp',
+              'app/src/main/res/drawable/app_icon.webp',
+          ]:
               with Image.open(path) as im:
-                  assert im.size == expected, (path, im.size, expected)
-          with Image.open('app/src/main/res/drawable/app_splash.webp') as im:
-              assert im.width == 1080 and im.height > im.width, im.size
-          print('Brand asset dimensions verified')
+                  assert im.size == (1024,1024), (path, im.size)
+          with Image.open('assets/brand/master-v2-approved/production/zone-sketch-primary-source.webp') as im:
+              assert im.size == (312,312), im.size
+          print('Approved brand asset dimensions verified')
           PY
 
       - name: Commit generated production assets
         run: |
-          if git diff --quiet -- assets/brand/master-v2-approved/production assets/on-site-zone-planner-icon.webp app/src/main/res/drawable/app_icon.webp app/src/main/res/drawable/app_splash.webp; then
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/brand/master-v2-approved/production assets/on-site-zone-planner-icon.webp app/src/main/res/drawable/app_icon.webp
+          if git diff --cached --quiet; then
             echo 'No generated changes to commit.'
             exit 0
           fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/brand/master-v2-approved/production assets/on-site-zone-planner-icon.webp app/src/main/res/drawable/app_icon.webp app/src/main/res/drawable/app_splash.webp
-          git commit -m 'Generate approved Zone Sketch brand v2 production assets'
+          git commit -m 'Generate approved Zone Sketch brand v2 primary assets'
           git push origin HEAD:project-pineapple-brand-v2-integration
