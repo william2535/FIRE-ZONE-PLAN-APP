@@ -19,7 +19,7 @@ jobs:
         with:
           ref: main
 
-      - name: Snapshot non-CSS app markup
+      - name: Snapshot app markup with approved Move default normalised
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -28,24 +28,28 @@ jobs:
           if '</style>' not in text:
               raise SystemExit('missing style close')
           tail = text.split('</style>', 1)[1]
+          tail = tail.replace('pendingPhotoPin=null,navMode=false,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
+          tail = tail.replace('pendingPhotoPin=null,navMode=true,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
           Path('/tmp/zone-sketch-tail.sha').write_text(hashlib.sha256(tail.encode()).hexdigest())
           PY
 
-      - name: Apply tech-grid aesthetic only
+      - name: Apply tech-grid aesthetic and approved defaults
         run: python .github/workspace_ui_shell_v3.py
 
-      - name: Prove markup and behaviour were not changed
+      - name: Prove no behaviour changed except Move default
         run: |
           python - <<'PY'
           from pathlib import Path
           import hashlib
           text = Path('index.html').read_text(encoding='utf-8')
           tail = text.split('</style>', 1)[1]
+          tail = tail.replace('pendingPhotoPin=null,navMode=false,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
+          tail = tail.replace('pendingPhotoPin=null,navMode=true,tapStart=null', 'pendingPhotoPin=null,navMode=__MOVE_DEFAULT__,tapStart=null')
           before = Path('/tmp/zone-sketch-tail.sha').read_text().strip()
           after = hashlib.sha256(tail.encode()).hexdigest()
           if before != after:
-              raise SystemExit('non-CSS markup/JS changed — refusing to continue')
-          print('Non-CSS markup/JS unchanged.')
+              raise SystemExit('unexpected non-CSS markup/JS change — refusing to continue')
+          print('Only the approved Move default may differ outside CSS.')
           PY
 
       - name: Sync app mirrors and Android asset
@@ -57,7 +61,7 @@ jobs:
       - name: Install syntax dependency
         run: npm install --no-save acorn
 
-      - name: Verify aesthetic-only pass and release safety
+      - name: Verify aesthetic pass, Move default and release safety
         run: |
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
@@ -66,6 +70,7 @@ jobs:
           grep -q 'End workspace UI shell v3' index.html
           grep -q 'id="headerHomeBtn"' index.html
           grep -q 'zsHeaderHomeShine' index.html
+          grep -q 'pendingPhotoPin=null,navMode=true,tapStart=null' index.html
           grep -q 'iOS/iPadOS standalone viewport fill' index.html
           grep -q '@supports (height:100dvh)' index.html
           grep -q 'App motion parity — tester-hub movement mapped onto the real app shell' index.html
@@ -74,13 +79,13 @@ jobs:
           cmp --silent index.html Zone-Sketch-by-Will.html
           cmp --silent index.html app/src/main/assets/index.html
 
-      - name: Commit tech-grid aesthetic
+      - name: Commit workspace polish
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
           if git diff --cached --quiet; then
-            echo 'Tech-grid aesthetic already current.'
+            echo 'Workspace polish already current.'
           else
             git commit -m 'Refine workspace tech-grid aesthetic'
             git push origin HEAD:main
