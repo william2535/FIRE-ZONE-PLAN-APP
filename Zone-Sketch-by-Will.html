@@ -332,11 +332,79 @@ body.reduceMotion *,body.reduceMotion *::before,body.reduceMotion *::after{anima
 @media(max-width:720px){#projectsHome .homeProductHero{grid-template-columns:1fr;padding:20px;gap:20px}#projectsHome .homeHeroBadge{width:100%;justify-self:stretch;padding:14px 16px}#projectsHome .homeHeroBadge:before{margin-bottom:5px}#projectsHome .homeBrandMark{width:64px;height:64px}#projectsHome .homeBrandRow{gap:12px}#projectsHome .homeProductHero h1{font-size:clamp(25px,6.5vw,40px)}#projectsHome .homeEyebrow{font-size:9px;letter-spacing:.07em}#projectsHome .homeBrandTagline{font-size:9px;letter-spacing:.08em}#projectsHome .workflowTrack{grid-template-columns:repeat(4,minmax(0,1fr))}#projectsHome .workflowStep{font-size:9px;letter-spacing:0}#projectsHome .homeActions button{flex:1}#projectsHome .homeHeading h2{font-size:23px}}
 @media(max-width:360px){#projectsHome .homeProductHero{padding:16px}#projectsHome .homeBrandMark{width:52px;height:52px}#projectsHome .homeBrandRow{gap:9px}#projectsHome .homeProductHero h1{font-size:25px}#projectsHome .homeBrandTagline{font-size:8px}}
 @media(prefers-reduced-motion:reduce){#projectsHome *,#projectsHome *:before,#projectsHome *:after{animation:none!important;transition:none!important}}
+
+/* Zone Sketch motion identity — decorative, pausable and offscreen-aware. */
+.brandUtility{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;color:#8cb6cc;font:600 10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.12em}
+.brandUtilityLabel{display:flex;align-items:center;gap:9px}.brandBeacon{display:inline-block;width:6px;height:6px;border-radius:50%;background:#9bff3f;box-shadow:0 0 10px #9bff3f66;flex:none}
+#projectsHome .brandMotionToggle,.brandMotionToggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 11px;border:1px solid #2e5568;border-radius:6px;background:#071823;color:#b5d3e4;font:600 10px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.02em;white-space:nowrap;cursor:pointer}
+.brandMotionToggle:before{content:'';width:12px;height:10px;border-left:3px solid #9bff3f;border-right:3px solid #9bff3f}.brandMotionToggle[aria-pressed='false']:before{border:0;width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:8px solid #81cfe8}.brandMotionToggle:disabled{cursor:default;opacity:.7}.brandMotionToggle:focus-visible{outline:2px solid #00c2ff;outline-offset:3px}
+.brandFx{position:relative;isolation:isolate;overflow:hidden}.brandFx>.brandSweep,.brandFx>.brandOrbit{position:absolute;pointer-events:none;z-index:0}
+.brandSweep{inset:-50% auto -50% -40%;width:30%;background:linear-gradient(90deg,transparent,#00c2ff08 35%,#c4f9ff12 50%,#9bff3f06 65%,transparent);transform:translateX(-100%) rotate(20deg);opacity:0}
+.brandOrbit{width:250px;height:250px;right:-80px;top:-100px;border:1px solid #00c2ff18;border-radius:50%;opacity:.7}
+.brandOrbit:before,.brandOrbit:after{content:'';position:absolute;border-radius:50%;inset:22px;border:1px dashed #00c2ff30}.brandOrbit:after{inset:48px;border:1px solid #9bff3f30;border-left-color:transparent;border-bottom-color:transparent}
+#projectsHome .homeProductHero{border-radius:4px 22px 4px 22px;border-color:#00c2ff70;background:linear-gradient(125deg,#0a2230ed,#06141ff7 65%);box-shadow:inset 0 1px #9be7ff20,0 16px 44px #0003;padding:28px}
+#projectsHome .homeProductHero:after{width:120px;height:2px;right:28px;top:0;border-radius:0;background:linear-gradient(90deg,transparent,#9bff3f);box-shadow:0 0 18px #9bff3f55}
+#projectsHome .homeBrandMark{box-shadow:0 0 32px #00c2ff14}
+#projectsHome .homeProductHero h1,.approvedHeroName{letter-spacing:-.035em!important}
+#projectsHome .homeProductHero h1 span,.approvedHeroName span{background:linear-gradient(180deg,#c8ff93,#9bff3f 60%,#75dc26);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+#projectsHome .homeHeroBadge{position:relative;background:linear-gradient(135deg,#9bff3f09,#071823);border-color:#426541;border-radius:4px 16px 4px 16px}
+#projectsHome .homeHeroBadge small{line-height:1.7}
+#projectsHome .homeHeroBadge:after{content:'';position:absolute;right:13px;top:14px;width:5px;height:5px;border-radius:50%;background:#9bff3f;box-shadow:0 0 10px #9bff3f66}
+#projectsHome .workflowTrack{gap:9px;margin-top:20px}
+#projectsHome .workflowStep{overflow:hidden;text-align:left;padding:12px;border-radius:3px 10px 3px 10px;background:linear-gradient(130deg,#11304390,#061721);border-color:#214558}
+#projectsHome .workflowStep b{font-size:9px;margin-bottom:8px;color:#81cfe8}
+#projectsHome .workflowStep:before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00c2ff,#9bff3f);transform:scaleX(.15);transform-origin:left;opacity:.28}
+#projectsHome .projectCard{overflow:hidden;border-radius:4px 16px 4px 16px;background:linear-gradient(145deg,#0c2332,#071620);box-shadow:0 10px 28px #0003}
+#projectsHome .projectCard:before{content:'';position:absolute;top:0;left:16px;width:42px;height:2px;background:linear-gradient(90deg,#00c2ff,#9bff3f);opacity:.8}
+#projectsHome .projectCard img{border-color:#24465a;box-shadow:0 3px 15px #0002}
+#projectsHome .homeSearch{background:linear-gradient(110deg,#091e2c,#061521);border-radius:4px 12px 4px 12px}
+#projectsHome .homeActions button{padding-left:20px;padding-right:20px}
+#projectsHome .homeActions .primary:before{content:'+';display:inline-block;margin-right:8px;font-size:18px;line-height:1;vertical-align:-1px}
+#projectsHome :is(.homeActions button,.projectActions button),.command{position:relative;overflow:hidden;transition:transform .18s ease,background .18s ease,border-color .18s ease,box-shadow .18s ease}
+#projectsHome button.primary,.command.primary{background:linear-gradient(125deg,#bdff77,#9bff3f 60%,#8cf02f)!important;box-shadow:inset 0 1px #e7ffc280,0 4px 18px #9bff3f14}
+#projectsHome button.primary:after,.command.primary:before{content:'';position:absolute;inset:-70% auto -70% -70%;width:40%;background:linear-gradient(90deg,transparent,#fff5,transparent);transform:skewX(-20deg);pointer-events:none}
+#projectsHome button:active:not(:disabled),.command:active{transform:translateY(1px) scale(.985)}
+body.brandPortal{background:linear-gradient(#00c2ff07 1px,transparent 1px),linear-gradient(90deg,#00c2ff07 1px,transparent 1px),radial-gradient(ellipse at 75% 0,#0b2c3e,transparent 45%),#06111d;background-size:32px 32px,32px 32px,auto,auto}
+body.brandPortal:before{display:none}.brandPortal .topbar{background:#06111ded;border-bottom-color:#23495e}.brandPortal .hero{padding-top:38px}.brandPortal .heroGrid{align-items:center}
+.brandPortal .approvedHeroBrand{position:relative;isolation:isolate;overflow:hidden;border-radius:4px 18px 4px 18px;padding:22px;background:linear-gradient(125deg,#0a2230ed,#06141ff7 65%);box-shadow:inset 0 1px #9be7ff20,0 14px 40px #0002}
+.brandPortal .approvedHeroBrand>img,.brandPortal .approvedHeroBrand>div:not(.brandSweep):not(.brandOrbit){position:relative;z-index:1}
+.brandPortal .heroCopy{max-width:650px;font-size:15px}.brandPortal .heroSub{font-size:14px;line-height:1.6;letter-spacing:.015em;color:#9cc5d9}.brandPortal .cursor{width:6px;height:6px;border-radius:50%;margin-left:10px}
+.brandPortal .panel{clip-path:none;border-radius:4px 18px 4px 18px;border-color:#23516a;box-shadow:0 12px 36px #0002;background:linear-gradient(140deg,#0a2030e6,#061420f5)}
+.brandPortal .panel:before{inset:0;border:0;width:60px;height:2px;background:linear-gradient(90deg,#00c2ff,#9bff3f)}
+.brandPortal .panelHead{background:#0d26364d;border-bottom-color:#214658;padding:16px 20px}.brandPortal .panelHeadTitle{font-size:12px;letter-spacing:.14em}
+.brandPortal .nodeCard{clip-path:none;border-radius:4px 18px 4px 18px;background:linear-gradient(125deg,#0a2230ed,#06141ff7);box-shadow:inset 0 1px #9be7ff20,0 14px 40px #0002}.brandPortal .nodeCard:before{display:none}.brandPortal .nodeRow{padding-top:11px;padding-bottom:11px}
+.brandPortal .signalCard{border-radius:4px 12px 4px 12px;transition:border-color .18s,transform .18s;background:linear-gradient(145deg,#0b2433,#071722)}
+.brandPortal .signalCard:after{width:34px;background:linear-gradient(90deg,#00c2ff,#9bff3f)}.brandPortal .signalCode{letter-spacing:.1em}.brandPortal .signalState{color:#b3ee8e}
+.brandPortal .metaCard{min-height:0;border-radius:4px 10px 4px 10px}.brandPortal .command{clip-path:none;border-radius:4px 12px 4px 12px}
+.brandPortal .checklist{grid-template-columns:repeat(2,minmax(0,1fr))}.brandPortal .checklist li{border-left:1px solid #00c2ff80;border-radius:0 8px 8px 0;background:#091f2b}.brandPortal .checklist li:last-child{grid-column:1/-1}
+.brandPortal .notice{border-radius:4px 12px 4px 12px;border-color:#716b3b;background:linear-gradient(110deg,#9bff3f07,#091c28)}
+.brandPortal :is(input,select,textarea){background:#071a27;color:#d8e7f5;border-color:#2b5065}.brandPortal .statusPill{border-radius:4px}.brandPortal .statusPill.live{display:flex;align-items:center;gap:7px}.brandPortal .navStatus{flex-wrap:nowrap}
+@keyframes zsBrandSweep{0%,20%{transform:translateX(-100%) rotate(20deg);opacity:0}28%{opacity:1}70%{opacity:.6}85%,100%{transform:translateX(560%) rotate(20deg);opacity:0}}
+@keyframes zsBrandOrbit{to{transform:rotate(360deg)}}
+@keyframes zsBrandPulse{0%,100%{opacity:.5;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes zsBrandFlow{0%,65%,100%{transform:scaleX(.15);opacity:.22}20%,40%{transform:scaleX(1);opacity:.9}}
+@keyframes zsBrandShine{from{left:-70%}to{left:150%}}
+@media(prefers-reduced-motion:no-preference){
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView>.brandSweep{animation:zsBrandSweep 12s ease-in-out infinite}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView>.brandOrbit{animation:zsBrandOrbit 60s linear infinite}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .brandBeacon,body:not(.zsMotionOff):not(.reduceMotion) .brandInView .cursor{animation:zsBrandPulse 4s ease-in-out infinite}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:before{animation:zsBrandFlow 8s ease-in-out infinite}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(2):before{animation-delay:1s}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(3):before{animation-delay:2s}
+ body:not(.zsMotionOff):not(.reduceMotion) .brandInView .workflowStep:nth-child(4):before{animation-delay:3s}
+ @media(hover:hover){body:not(.zsMotionOff):not(.reduceMotion) #projectsHome button.primary:hover:after,body:not(.zsMotionOff):not(.reduceMotion) .command.primary:hover:before{animation:zsBrandShine .65s ease-out}#projectsHome .projectCard:hover,.brandPortal .signalCard:hover{transform:translateY(-2px);border-color:#00c2ff80}#projectsHome .homeActions button:hover:not(:disabled),.brandPortal .command:hover{transform:translateY(-2px)}}
+}
+body.zsMotionPaused :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.zsMotionPaused .workflowStep:before{animation-play-state:paused!important}
+body.zsMotionOff :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.zsMotionOff .workflowStep:before,body.reduceMotion :is(.brandSweep,.brandOrbit,.brandBeacon,.cursor),body.reduceMotion .workflowStep:before{animation:none!important}
+body.zsMotionOff #projectsHome *,body.zsMotionOff.brandPortal *{transition:none!important}
+@media(max-width:720px){.brandUtility{font-size:9px;letter-spacing:.08em;margin-bottom:12px}#projectsHome .homeProductHero{padding:20px;gap:18px}#projectsHome .homeProductHero p{font-size:13px;line-height:1.65}#projectsHome .homeBrandRow{margin-bottom:14px}#projectsHome .homeHeroBadge{padding:13px 15px}#projectsHome .homeHeroBadge:before{display:none}#projectsHome .homeHeroBadge strong{font-size:13px;margin:0 0 3px}#projectsHome .homeHeroBadge small{font-size:11px}#projectsHome .workflowStep{padding:10px 8px}#projectsHome .workflowStep b{margin-bottom:6px}#projectsHome .homeHeading{flex-wrap:nowrap}#projectsHome #resumeProject{font-size:11px;padding:9px;min-height:40px}#projectsHome .homeActions button{font-size:13px;padding-left:11px;padding-right:11px}.brandPortal .hero{padding-top:24px}.brandPortal .topbarInner{flex-wrap:wrap;padding:10px 0;gap:10px;min-height:60px}.brandPortal .navStatus{margin-left:auto}.brandPortal .navStatus .statusPill{display:none}.brandPortal .brandMotionToggle{min-height:36px;padding:7px 9px}.brandPortal .brandText{font-size:9px;letter-spacing:.07em}.brandPortal .approvedHeroBrand{padding:16px}.brandPortal .heroSub{font-size:12px;line-height:1.8}.brandPortal .heroCopy{font-size:14px;margin-top:14px}.brandPortal .checklist{grid-template-columns:1fr}.brandPortal .nodeRow{padding-top:9px;padding-bottom:9px}.brandPortal .panelHead{padding:14px 16px}.brandPortal .panelHeadTitle{font-size:11px}.brandPortal .heroGrid{gap:18px}.brandPortal .signalCard{padding:16px}}
+@media(max-width:360px){#projectsHome .homeProductHero{padding:16px}#projectsHome .homeHeading h2{font-size:20px}#projectsHome .homeVersion{font-size:9px}#projectsHome .homeActions button{font-size:12px}.brandPortal .brandText{font-size:8px}.brandPortal .brand{gap:7px}.brandPortal .brandMotionToggle{font-size:9px;gap:5px}}
+@media(prefers-reduced-motion:reduce){.brandSweep,.brandOrbit,.brandBeacon,.cursor,.workflowStep:before{animation:none!important}.brandPortal *,#projectsHome *{transition:none!important}}
 </style>
 </head>
 <body>
 <div id="zsSplash" aria-hidden="true"><div class="zsSplashInner"><img src="assets/on-site-zone-planner-icon.webp" alt=""><div class="zsSplashName"><span class="zone">ZONE</span> <span class="sketch">SKETCH</span></div><div class="zsSplashSub">FIRE &amp; SECURITY FIELD APP</div><div class="zsSplashBy">Designed &amp; built by Will Flood</div></div></div>
-<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero"><div><div class="homeBrandRow"><img class="homeBrandMark" src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>Capture the building, survey installed devices, build validated circuits and produce an As-Fit route — all from the same project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Site-ready workspace</strong><small>Local autosave · touch-first controls · offline project data</small></div></div><div class="homeHeading"><div><div class="homeVersion">ZONE SKETCH · v0.62</div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
+<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="brandUtility" data-brand-watch><span class="brandUtilityLabel"><i class="brandBeacon" aria-hidden="true"></i>YOUR WORKSPACE / 01</span><button type="button" class="brandMotionToggle" data-brand-motion aria-label="Decorative motion" aria-pressed="false">Motion</button></div><div class="homeProductHero brandFx" data-brand-watch><span class="brandSweep" aria-hidden="true"></span><span class="brandOrbit" aria-hidden="true"></span><div><div class="homeBrandRow"><img class="homeBrandMark" src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>From first survey to finished As-Fit. Your whole site, in one project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Ready for your next site</strong><small>Local autosave · touch-first controls · offline project data</small></div></div><div class="homeHeading"><div><div class="homeVersion">ZONE SKETCH · v0.62</div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
 
 <section id="circuitBuilder" hidden aria-label="Circuit Builder">
 <header class="cbTop"><div><strong>CIRCUIT BUILDER</strong><small>BY WILL FLOOD · ZONE PLAN + SURVEY → WIRING → AS-FIT</small></div><div class="cbGrow"></div><label class="cbFloorSwitch" for="cbFloorSelect"><span>Floor</span><select id="cbFloorSelect" aria-label="Circuit Builder floor"></select></label><button id="cbSoundToggle" aria-pressed="true" title="Toggle Circuit Builder sounds">Sound on</button><button id="cbBack">Back to plan</button></header>
@@ -1186,6 +1254,24 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
 })();
 </script>
 
+
+<script>
+/* Motion belongs to the brand shell; it never touches a drawing or project. */
+(()=>{
+ const buttons=[...document.querySelectorAll('[data-brand-motion]')];
+ if(!buttons.length)return;
+ const media=window.matchMedia('(prefers-reduced-motion: reduce)');
+ let enabled=true;try{enabled=localStorage.getItem('zoneSketchBrandMotion')!=='off'}catch(e){}
+ const reduced=()=>media.matches||document.body.classList.contains('reduceMotion');
+ function sync(){const quiet=reduced(),active=enabled&&!quiet;document.body.classList.toggle('zsMotionOff',!active);for(const b of buttons){b.textContent=quiet?'Motion reduced':active?'Motion on':'Motion off';b.setAttribute('aria-pressed',String(active));b.disabled=quiet;b.title=quiet?'Motion follows your reduced-motion setting':active?'Pause decorative animations':'Enable decorative animations'}}
+ for(const b of buttons)b.addEventListener('click',()=>{enabled=!enabled;try{localStorage.setItem('zoneSketchBrandMotion',enabled?'on':'off')}catch(e){}sync()});
+ media.addEventListener?.('change',sync);
+ window.addEventListener('storage',e=>{if(e.key==='zoneSketchBrandMotion'){enabled=e.newValue!=='off';sync()}});
+ let appReduced=document.body.classList.contains('reduceMotion');new MutationObserver(()=>{const next=document.body.classList.contains('reduceMotion');if(next!==appReduced){appReduced=next;sync()}}).observe(document.body,{attributes:true,attributeFilter:['class']});
+ const pause=()=>document.body.classList.toggle('zsMotionPaused',document.hidden);document.addEventListener('visibilitychange',pause);pause();sync();
+ if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{for(const entry of entries)entry.target.classList.toggle('brandInView',entry.isIntersecting)},{threshold:.05});document.querySelectorAll('[data-brand-watch]').forEach(el=>observer.observe(el))}
+})();
+</script>
 </body></html>
 
 
