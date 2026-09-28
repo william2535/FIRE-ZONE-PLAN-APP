@@ -62,6 +62,21 @@ replace_once(
 "if(lockedReason){setHint(lockedReason+' · use the Locks menu to unlock it');setTimeout(hint,1300);return}const combinedHit=combinedZoneAt(e.clientX,e.clientY);if(combinedHit){selection=[combinedHit];syncSelectionBar();drawing={mode:'moveSelection',start:point(e.clientX,e.clientY),snap:snapshotSelection(),moved:false,combinedZone:true};setHint('Place + move · drag this zone to move it · drag empty space to place');draw();return}if(tool==='joinWalls')",
 'combined zone pointer down')
 
+# A combined move still uses a zone placement tool such as rect. Keep the normal rect preview/move/up
+# handlers from stealing that gesture before the move-selection branch gets it.
+replace_once(
+"if(!surveyMode&&state.layers.zones!==false){const zonePaint=state.shapes.slice();if(!navMode&&drawing&&tool==='rect'&&selected){",
+"if(!surveyMode&&state.layers.zones!==false){const zonePaint=state.shapes.slice();if(!navMode&&drawing&&!drawing.combinedZone&&tool==='rect'&&selected){",
+'combined zone rect preview guard')
+replace_once(
+"else if(tool==='rect'&&drawing){drawing.now=snapZoneCorner(inputPoint(e.clientX,e.clientY));draw()}",
+"else if(tool==='rect'&&drawing&&!drawing.combinedZone){drawing.now=snapZoneCorner(inputPoint(e.clientX,e.clientY));draw()}",
+'combined zone rect pointer-move guard')
+replace_once(
+"if(tool==='rect'&&drawing){const a=drawing.start,b=snapZoneCorner(inputPoint(e.clientX,e.clientY));",
+"if(tool==='rect'&&drawing&&!drawing.combinedZone){const a=drawing.start,b=snapZoneCorner(inputPoint(e.clientX,e.clientY));",
+'combined zone rect pointer-up guard')
+
 replace_once(
 "else if((tool==='group'||tool==='select')&&drawing?.mode==='moveSelection'){const now=point(e.clientX,e.clientY)",
 "else if(((tool==='group'||tool==='select')||drawing?.combinedZone)&&drawing?.mode==='moveSelection'){const now=point(e.clientX,e.clientY)",
