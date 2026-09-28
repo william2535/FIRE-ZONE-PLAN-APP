@@ -15,8 +15,10 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     page.on('dialog',d=>d.accept());
     await page.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
 
-    const homeNew=page.locator('#homeNew');
-    if(await homeNew.isVisible().catch(()=>false)) await homeNew.click();
+    // The Projects screen intentionally overlays the editor for a fresh browser.
+    // Hide only that shell so this focused regression can exercise the editor header itself.
+    const projectsHome=page.locator('#projectsHome');
+    if(await projectsHome.count()) await projectsHome.evaluate(el=>{el.hidden=true;el.style.display='none'});
     await page.locator('#topCollapseBtn').waitFor({state:'visible'});
 
     const toggle=page.locator('#topCollapseBtn'),top=page.locator('#topBar'),floor=page.locator('#floorBar');
