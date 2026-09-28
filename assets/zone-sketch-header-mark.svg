@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Zone Sketch home mark</title>
+  <desc id="desc">Transparent glossy blue, cyan and green house with red-orange flame</desc>
+  <defs>
+    <linearGradient id="house" x1="0.1" y1="0.12" x2="0.9" y2="0.9">
+      <stop offset="0" stop-color="#2f7cff"/>
+      <stop offset="0.42" stop-color="#25d9ff"/>
+      <stop offset="0.72" stop-color="#65f67a"/>
+      <stop offset="1" stop-color="#b8ff45"/>
+    </linearGradient>
+    <linearGradient id="houseGloss" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.86"/>
+      <stop offset="0.24" stop-color="#d8fbff" stop-opacity="0.32"/>
+      <stop offset="0.58" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0.35" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#ff3d2e"/>
+      <stop offset="0.52" stop-color="#ff6a20"/>
+      <stop offset="1" stop-color="#ffb52d"/>
+    </linearGradient>
+    <linearGradient id="flameInner" x1="0.4" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#fff1a6"/>
+      <stop offset="0.48" stop-color="#ffbd37"/>
+      <stop offset="1" stop-color="#ff5a25"/>
+    </linearGradient>
+    <filter id="houseGlow" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="fireGlow" x="-55%" y="-55%" width="210%" height="210%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#houseGlow)">
+    <path d="M102 261 256 108l154 153v143h-105v-78h-98v78H102V261Z" fill="none" stroke="url(#house)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M123 248 257 116l108 108" fill="none" stroke="url(#houseGloss)" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <g filter="url(#fireGlow)">
+    <path d="M257 175c20 32 59 58 63 105 4 52-24 93-66 93-46 0-76-35-72-79 3-34 21-59 47-86 14-15 23-26 28-33Z" fill="url(#flame)"/>
+    <path d="M261 246c13 19 32 33 31 57-1 25-16 43-37 43-22 0-38-18-36-40 1-18 11-31 24-45 9-9 14-14 18-15Z" fill="url(#flameInner)"/>
+    <path d="M236 214c10-10 18-19 23-29 8 10 14 18 19 25" fill="none" stroke="#fff8cf" stroke-width="7" stroke-linecap="round" opacity="0.58"/>
+  </g>
+</svg>
