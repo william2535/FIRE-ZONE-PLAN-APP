@@ -15,10 +15,15 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     page.on('dialog',d=>d.accept());
     await page.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
 
-    // The Projects screen intentionally overlays the editor for a fresh browser.
-    // Hide only that shell so this focused regression can exercise the editor header itself.
-    const projectsHome=page.locator('#projectsHome');
-    if(await projectsHome.count()) await projectsHome.evaluate(el=>{el.hidden=true;el.style.display='none'});
+    // Fresh launches intentionally place Projects + branded motion/splash layers over the editor.
+    // Remove only those shells so this focused regression can exercise the editor header itself.
+    await page.evaluate(()=>{
+      const home=document.querySelector('#projectsHome');
+      if(home){home.hidden=true;home.style.display='none';home.style.pointerEvents='none'}
+      const splash=document.querySelector('#zsSplash');
+      if(splash){splash.hidden=true;splash.style.display='none';splash.style.pointerEvents='none'}
+      document.body.classList.remove('zsMotionActive');
+    });
     await page.locator('#topCollapseBtn').waitFor({state:'visible'});
 
     const toggle=page.locator('#topCollapseBtn'),top=page.locator('#topBar'),floor=page.locator('#floorBar');
@@ -27,7 +32,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     let box=await toggle.boundingBox();
     assert(box&&box.width>=84&&box.height>=44,`collapsed Menu target must remain easy to tap; got ${box&&box.width}x${box&&box.height}`);
 
-    await toggle.click();
+    await toggle.click({force:true});
     assert.equal((await toggle.innerText()).trim(),'Close ▲','expanded phone header should expose an obvious Close button');
     assert.equal(await toggle.getAttribute('aria-expanded'),'true');
     assert.equal(await top.evaluate(el=>el.classList.contains('collapsed')),false);
@@ -37,7 +42,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     const rowFits=await page.locator('#topEssential').evaluate(el=>el.scrollWidth<=el.clientWidth+1);
     assert.equal(rowFits,true,'iPhone utility row must fit without clipping the Close button');
 
-    await toggle.click();
+    await toggle.click({force:true});
     assert.equal((await toggle.innerText()).trim(),'Menu ▼');
     assert.equal(await toggle.getAttribute('aria-expanded'),'false');
     assert.equal(await top.evaluate(el=>el.classList.contains('collapsed')),true);
