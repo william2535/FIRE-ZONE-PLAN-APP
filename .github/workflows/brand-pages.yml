@@ -1,0 +1,35 @@
+name: Home and tester branding checks
+on:
+  push:
+    branches: [project-pineapple-home-tester-theme]
+  pull_request:
+    branches: [main]
+    paths: ['index.html', 'beta.html', 'download.html', 'tests/brand-pages.cjs', '.github/workflows/brand-pages.yml']
+permissions:
+  contents: read
+jobs:
+  browser-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser tooling
+        run: |
+          npm install --no-save playwright@1.62.1 acorn
+          npx playwright install --with-deps chromium webkit
+      - name: Verify app and protected build
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          node tests/projects.cjs
+      - name: Review Chromium layouts and feedback
+        run: node tests/brand-pages.cjs
+      - name: Review WebKit layouts and feedback
+        env:
+          PINEAPPLE_BROWSER: webkit
+        run: node tests/brand-pages.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: home-tester-brand-previews
+          path: test-results/brand-*.png

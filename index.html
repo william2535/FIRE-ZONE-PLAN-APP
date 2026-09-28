@@ -281,11 +281,62 @@ body.reduceMotion *,body.reduceMotion *::before,body.reduceMotion *::after{anima
 #zsSplash.hide{opacity:0;visibility:hidden;pointer-events:none}
 .zsSplashInner{text-align:center;padding:28px}.zsSplashInner img{width:min(42vw,190px);height:auto;border-radius:34px;filter:drop-shadow(0 0 34px rgba(0,194,255,.24))}.zsSplashName{margin-top:18px;font-size:clamp(27px,7vw,44px);font-weight:950;letter-spacing:-.04em}.zsSplashName .zone{color:#9bff3f;display:inline;padding:0;margin:0;border:0;font-size:inherit}.zsSplashName .sketch{color:#e5f7ff}.zsSplashSub{margin-top:7px;font-size:10px;font-weight:850;letter-spacing:.18em;color:#9db8cb}.zsSplashBy{margin-top:14px;font-size:11px;color:#6f91a9}
 @media(max-width:720px){.zsBrandLockup>img{width:34px;height:34px}.homeBrandMark{width:64px;height:64px}.homeBrandRow{gap:11px}.homeProductHero{grid-template-columns:1fr}.homeHeroBadge{justify-self:stretch;width:100%}}
+
+/* Approved blueprint theme: scoped to Home so drawing colours stay meaningful. */
+#projectsHome{--home-cyan:#00c2ff;--home-lime:#9bff3f;--home-ink:#e7f5ff;--home-muted:#a3bdcf;--home-line:#23516a;color:var(--home-ink);color-scheme:dark;background:linear-gradient(#00c2ff08 1px,transparent 1px),linear-gradient(90deg,#00c2ff08 1px,transparent 1px),radial-gradient(ellipse at 85% 0,#123345 0,transparent 48%),#06111d;background-size:32px 32px,32px 32px,auto,auto;padding:calc(28px + env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+#projectsHome .homeInner{max-width:1100px!important}
+#projectsHome .homeProductHero{border:1px solid #00c2ff80;border-radius:12px;background:linear-gradient(120deg,#071925f5,#071420eb);box-shadow:inset 0 1px #66dbff33,0 0 36px #00c2ff0c;padding:30px;gap:24px}
+#projectsHome .homeProductHero:after{width:200px;height:200px;right:-80px;top:-90px;background:radial-gradient(circle,#9bff3f24,transparent 70%)}
+#projectsHome .homeBrandRow{gap:18px;align-items:center;margin-bottom:18px}
+#projectsHome .homeBrandMark{width:88px;height:88px;flex:none;border-radius:18px;box-shadow:0 0 28px #00c2ff20}
+#projectsHome .homeEyebrow{color:#81cfe8;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:10px;line-height:1.5;letter-spacing:.12em}
+#projectsHome .homeProductHero h1{font-size:clamp(28px,4vw,43px);font-weight:950;letter-spacing:-.045em;margin:8px 0 7px;color:#e7f5ff;text-shadow:0 0 20px #00c2ff26}
+#projectsHome .homeProductHero h1 span{color:var(--home-lime);text-shadow:0 0 20px #9bff3f26}
+#projectsHome .homeBrandTagline{font:600 10px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.14em;color:#81dfff}
+#projectsHome .homeProductHero p{color:#bed0dc;font-size:14px;line-height:1.65}
+#projectsHome .creatorLine{color:#9db9cc;font-size:10px;line-height:1.5}
+#projectsHome .creatorLine strong{color:#e7f5ff}
+#projectsHome .homeHeroBadge{border:1px solid #396348;border-radius:8px;background:linear-gradient(135deg,#9bff3f0a,#06111d);padding:20px;backdrop-filter:none}
+#projectsHome .homeHeroBadge:before{content:'BETA · v0.62';background:#9bff3f16;border:1px solid #9bff3f55;border-radius:4px;color:var(--home-lime);padding:6px 9px;font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace}
+#projectsHome .homeHeroBadge strong{font-size:15px;margin-top:3px;color:#e7f5ff}
+#projectsHome .homeHeroBadge small{color:#b5cbd7;font-size:12px;line-height:1.7}
+#projectsHome .workflowTrack{gap:8px;margin-top:22px}
+#projectsHome .workflowStep{border:1px solid #23516a;border-radius:4px;background:#00c2ff06;padding:12px 6px;font:700 10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.06em;color:#d4edfb}
+#projectsHome .workflowStep b{color:var(--home-lime);font-size:10px;margin-bottom:6px}
+#projectsHome .workflowStep:after{display:none}
+#projectsHome .homeHeading{align-items:center;gap:14px;padding-top:8px}
+#projectsHome .homeHeading h2{font-size:25px;letter-spacing:-.025em;margin:7px 0 3px}
+#projectsHome .homeVersion{color:#81cfe8;font:600 10px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.12em}
+#projectsHome .homeIntro{color:var(--home-muted);line-height:1.7;font-size:13px}
+#projectsHome .homeActions{margin:20px 0 18px;gap:10px}
+#projectsHome button{min-height:46px;border:1px solid var(--home-line);border-radius:6px;background:#0b2332;color:#d6efff;box-shadow:none;transition:background .15s,border-color .15s}
+#projectsHome button:hover:not(:disabled){border-color:var(--home-cyan);background:#123346}
+#projectsHome button.primary{background:var(--home-lime)!important;color:#102008!important;border-color:#b9ff79!important;font-weight:800;box-shadow:0 0 18px #9bff3f12}
+#projectsHome button.primary:hover:not(:disabled){background:#b6ff78!important}
+#projectsHome button:disabled{opacity:.5;cursor:wait}
+#projectsHome :is(button,input):focus-visible{outline:2px solid var(--home-cyan);outline-offset:4px}
+#projectsHome .homeSearch{color:#e7f5ff;background:#071a28;border:1px solid var(--home-line);border-radius:6px;box-shadow:none;min-height:48px;padding:13px 15px;font-size:16px}
+#projectsHome .homeSearch::placeholder{color:#9db7c9;opacity:1}
+#projectsHome #homeMessage{font-size:12px;line-height:1.6;color:#a3bdcf;margin:14px 0 18px}
+#projectsHome #homeMessage.homeNotice{background:#392b15;border:1px solid #a98040;color:#ffe2a6;border-radius:6px}
+#projectsHome .projectGrid{grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+#projectsHome .projectCard{border:1px solid var(--home-line)!important;border-radius:10px;background:linear-gradient(145deg,#0b2130,#081723);padding:16px;box-shadow:0 8px 25px #0002;transition:border-color .15s,box-shadow .15s;position:relative}
+#projectsHome .projectCard:hover{transform:none;border-color:#00c2ff99!important;box-shadow:0 8px 30px #00c2ff0c}
+#projectsHome .projectCard h3{font-size:18px;color:#e7f5ff;margin:14px 0 7px;line-height:1.4}
+#projectsHome .projectCard p{color:#a3bdcf;font-size:12px;line-height:1.6}
+#projectsHome .projectCard img{height:160px;object-fit:contain;border-radius:5px;border:1px solid #386077;background:#f4f7fa}
+#projectsHome .projectActions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:18px}
+#projectsHome .projectActions button{font-size:12px;padding:10px 6px;min-width:0}
+#projectsHome .projectActions .primary{grid-column:span 2}
+#projectsHome .projectActions button:last-child{color:#ffaaa7;border-color:#754649;background:#2b1d25}
+@media(max-width:720px){#projectsHome .homeProductHero{grid-template-columns:1fr;padding:20px;gap:20px}#projectsHome .homeHeroBadge{width:100%;justify-self:stretch;padding:14px 16px}#projectsHome .homeHeroBadge:before{margin-bottom:5px}#projectsHome .homeBrandMark{width:64px;height:64px}#projectsHome .homeBrandRow{gap:12px}#projectsHome .homeProductHero h1{font-size:clamp(25px,6.5vw,40px)}#projectsHome .homeEyebrow{font-size:9px;letter-spacing:.07em}#projectsHome .homeBrandTagline{font-size:9px;letter-spacing:.08em}#projectsHome .workflowTrack{grid-template-columns:repeat(4,minmax(0,1fr))}#projectsHome .workflowStep{font-size:9px;letter-spacing:0}#projectsHome .homeActions button{flex:1}#projectsHome .homeHeading h2{font-size:23px}}
+@media(max-width:360px){#projectsHome .homeProductHero{padding:16px}#projectsHome .homeBrandMark{width:52px;height:52px}#projectsHome .homeBrandRow{gap:9px}#projectsHome .homeProductHero h1{font-size:25px}#projectsHome .homeBrandTagline{font-size:8px}}
+@media(prefers-reduced-motion:reduce){#projectsHome *,#projectsHome *:before,#projectsHome *:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div id="zsSplash" aria-hidden="true"><div class="zsSplashInner"><img src="assets/on-site-zone-planner-icon.webp" alt=""><div class="zsSplashName"><span class="zone">ZONE</span> <span class="sketch">SKETCH</span></div><div class="zsSplashSub">FIRE &amp; SECURITY FIELD APP</div><div class="zsSplashBy">Designed &amp; built by Will Flood</div></div></div>
-<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero"><div><div class="homeBrandRow"><img class="homeBrandMark" src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch"><div><div class="homeEyebrow">FIRE &amp; SECURITY · FIELD WORKSPACE · BETA</div><h1>Zone Sketch <span class="byWill">by Will</span></h1></div></div><p>Capture the building, survey installed devices, build validated circuits and produce an As-Fit route — all from the same project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Site-ready workspace</strong><small>Local autosave · touch-first controls · offline project data</small></div></div><div class="homeHeading"><div><div class="homeVersion">ZONE SKETCH · v0.62</div><h1>Recent projects</h1></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
+<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero"><div><div class="homeBrandRow"><img class="homeBrandMark" src="assets/on-site-zone-planner-icon.webp" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>Capture the building, survey installed devices, build validated circuits and produce an As-Fit route — all from the same project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Site-ready workspace</strong><small>Local autosave · touch-first controls · offline project data</small></div></div><div class="homeHeading"><div><div class="homeVersion">ZONE SKETCH · v0.62</div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
 
 <section id="circuitBuilder" hidden aria-label="Circuit Builder">
 <header class="cbTop"><div><strong>CIRCUIT BUILDER</strong><small>BY WILL FLOOD · ZONE PLAN + SURVEY → WIRING → AS-FIT</small></div><div class="cbGrow"></div><label class="cbFloorSwitch" for="cbFloorSelect"><span>Floor</span><select id="cbFloorSelect" aria-label="Circuit Builder floor"></select></label><button id="cbSoundToggle" aria-pressed="true" title="Toggle Circuit Builder sounds">Sound on</button><button id="cbBack">Back to plan</button></header>
