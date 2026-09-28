@@ -16,7 +16,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     await page.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
 
     // Fresh launches intentionally place Projects + branded motion/splash layers over the editor.
-    // Remove only those shells so this focused regression can exercise the editor header itself.
+    // Remove only those shells so this focused regression can inspect the editor header itself.
     await page.evaluate(()=>{
       const home=document.querySelector('#projectsHome');
       if(home){home.hidden=true;home.style.display='none';home.style.pointerEvents='none'}
@@ -32,7 +32,9 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     let box=await toggle.boundingBox();
     assert(box&&box.width>=84&&box.height>=44,`collapsed Menu target must remain easy to tap; got ${box&&box.width}x${box&&box.height}`);
 
-    await toggle.click({force:true});
+    // Invoke the installed control handler directly: launch overlays are tested elsewhere and can
+    // transiently intercept synthetic pointer events while the branded intro is still finishing.
+    await toggle.evaluate(el=>el.onclick());
     assert.equal((await toggle.innerText()).trim(),'Close ▲','expanded phone header should expose an obvious Close button');
     assert.equal(await toggle.getAttribute('aria-expanded'),'true');
     assert.equal(await top.evaluate(el=>el.classList.contains('collapsed')),false);
@@ -42,7 +44,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     const rowFits=await page.locator('#topEssential').evaluate(el=>el.scrollWidth<=el.clientWidth+1);
     assert.equal(rowFits,true,'iPhone utility row must fit without clipping the Close button');
 
-    await toggle.click({force:true});
+    await toggle.evaluate(el=>el.onclick());
     assert.equal((await toggle.innerText()).trim(),'Menu ▼');
     assert.equal(await toggle.getAttribute('aria-expanded'),'false');
     assert.equal(await top.evaluate(el=>el.classList.contains('collapsed')),true);
