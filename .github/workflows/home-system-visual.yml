@@ -39,10 +39,11 @@ jobs:
 
       - name: Verify supplied artwork and exact Home order
         run: |
-          test -s assets/home-system-fire.webp
-          test -s assets/home-system-intruder.webp
-          test -s assets/home-system-access-control.webp
-          test -s assets/home-system-cctv.webp
+          printf '%s  %s\n' \
+            5a127602de4fd89ad2652c6b7e7ef02ac4eda0b573ab5b0e55068c85ff25d6d7 assets/home-system-fire.webp \
+            035dc248cc2d0cc1fdecdac1ea2bf5a47a8e3fe1c1f67fbbb16601d1d2bc2a60 assets/home-system-intruder.webp \
+            69d834063f17da0b7faaed01196081cdd85512d8652ec0dccd5874fa6693f258 assets/home-system-access-control.webp \
+            2a7142bc89e458bc157259049d3f6c565b55514f19f4ab8f16e0a3e0bb37af3c assets/home-system-cctv.webp | sha256sum -c -
           cmp -s assets/home-system-fire.webp app/src/main/assets/assets/home-system-fire.webp
           cmp -s assets/home-system-intruder.webp app/src/main/assets/assets/home-system-intruder.webp
           cmp -s assets/home-system-access-control.webp app/src/main/assets/assets/home-system-access-control.webp
@@ -55,9 +56,10 @@ jobs:
           assert positions == sorted(positions), positions
           assert '<b>Fire</b><small>Selected</small>' in s
           assert '<b>Intruder</b><small>Future</small>' in s
-          assert '<b>Access control</b><small>Future</small>' in s
+          assert '<b>Access Control</b><small>Future</small>' in s
           assert '<b>CCTV</b><small>Future</small>' in s
           assert '.homeSystemTile.isFuture img{filter:none!important;opacity:1!important}' in s
+          assert 'aria-current="true"' in s
           PY
 
       - name: Install browser runtimes
@@ -96,7 +98,7 @@ jobs:
             const expected = [
               ['Fire','Selected','home-system-fire.webp'],
               ['Intruder','Future','home-system-intruder.webp'],
-              ['Access control','Future','home-system-access-control.webp'],
+              ['Access Control','Future','home-system-access-control.webp'],
               ['CCTV','Future','home-system-cctv.webp'],
             ];
             for (let i=0; i<expected.length; i++) {
@@ -108,8 +110,13 @@ jobs:
               const src = await img.getAttribute('src');
               if (!src || !src.endsWith(file)) throw new Error(`Tile ${i} artwork mismatch: ${src}`);
               const info = await img.evaluate(el => ({complete:el.complete,w:el.naturalWidth,h:el.naturalHeight,filter:getComputedStyle(el).filter,opacity:getComputedStyle(el).opacity}));
-              if (!info.complete || info.w !== 512 || info.h !== 512) throw new Error(`Tile ${i} image failed: ${JSON.stringify(info)}`);
+              if (!info.complete || info.w !== 96 || info.h !== 96) throw new Error(`Tile ${i} image failed: ${JSON.stringify(info)}`);
               if (info.filter !== 'none' || info.opacity !== '1') throw new Error(`Tile ${i} artwork is being muted: ${JSON.stringify(info)}`);
+            }
+            const futureTiles = page.locator('.homeSystemPreview .homeSystemTile.isFuture');
+            if (await futureTiles.count() !== 3) throw new Error('Expected three Future tiles');
+            for (let i=0; i<3; i++) {
+              if ((await futureTiles.nth(i).getAttribute('aria-disabled')) !== 'true') throw new Error('Future tile is not disabled');
             }
             await page.screenshot({path:'/tmp/home-system-browser-check.png', fullPage:true});
             await browser.close();

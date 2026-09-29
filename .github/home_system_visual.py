@@ -13,9 +13,9 @@ if start < 0 or end < 0:
     raise SystemExit('Existing Home system preview was not found on the latest build.')
 
 preview = '''<div class="homeSystemPreview" aria-label="Zone Sketch system range preview">
-<div class="homeSystemTile homeSystemFire isSelected"><img src="assets/home-system-fire.webp" alt=""><span><b>Fire</b><small>Selected</small></span></div>
+<div class="homeSystemTile homeSystemFire isSelected" aria-current="true"><img src="assets/home-system-fire.webp" alt=""><span><b>Fire</b><small>Selected</small></span></div>
 <div class="homeSystemTile isFuture" aria-disabled="true"><img src="assets/home-system-intruder.webp" alt=""><span><b>Intruder</b><small>Future</small></span></div>
-<div class="homeSystemTile isFuture" aria-disabled="true"><img src="assets/home-system-access-control.webp" alt=""><span><b>Access control</b><small>Future</small></span></div>
+<div class="homeSystemTile isFuture" aria-disabled="true"><img src="assets/home-system-access-control.webp" alt=""><span><b>Access Control</b><small>Future</small></span></div>
 <div class="homeSystemTile isFuture" aria-disabled="true"><img src="assets/home-system-cctv.webp" alt=""><span><b>CCTV</b><small>Future</small></span></div>
 '''
 html = html[:start] + preview + html[end:]
@@ -43,7 +43,7 @@ if any(pos < 0 for pos in positions) or positions != sorted(positions):
     raise SystemExit('Approved Home system assets are missing or out of order.')
 if '<b>Fire</b><small>Selected</small>' not in html:
     raise SystemExit('Fire selected state missing.')
-for label in ('Intruder', 'Access control', 'CCTV'):
+for label in ('Intruder', 'Access Control', 'CCTV'):
     if f'<b>{label}</b><small>Future</small>' not in html:
         raise SystemExit(f'{label} future state missing.')
 if HOME_ACTIONS not in html:
