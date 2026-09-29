@@ -37,15 +37,26 @@ jobs:
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
           grep -q 'Home hero perimeter trace v' index.html
-          grep -q '5.6s linear infinite!important' index.html
           grep -q 'mask-composite:exclude!important' index.html
-          if grep -q 'Home hero perimeter trace v5' index.html; then
+          if grep -q 'Home hero perimeter trace v6' index.html; then
+            grep -q 'zsHeroPerimeterTrailFar' index.html
+            grep -q 'zsHeroPerimeterTrailMid' index.html
+            grep -q 'zsHeroPerimeterTrailNear' index.html
+            grep -q 'zsHeroPerimeterHead' index.html
+            grep -q 'stroke-width:2.1' index.html
+            grep -q 'stroke-width:2.55' index.html
+            grep -q 'stroke-width:2.95' index.html
+            grep -q 'stroke-width:6.2' index.html
+            grep -q 'stroke-dasharray:14 86' index.html
+            grep -q '8.4s linear infinite!important' index.html
+          elif grep -q 'Home hero perimeter trace v5' index.html; then
             grep -q 'zsHeroPerimeterTrailFar' index.html
             grep -q 'zsHeroPerimeterTrailMid' index.html
             grep -q 'zsHeroPerimeterTrailNear' index.html
             grep -q 'zsHeroPerimeterHead' index.html
             grep -q 'stroke-dasharray:12 88' index.html
             grep -q 'stroke-dasharray:.01 99.99' index.html
+            grep -q '5.6s linear infinite!important' index.html
           else
             grep -q 'animation:zsHeroPerimeterRun 5.6s linear infinite!important' index.html
             grep -q 'opacity:.52' index.html
