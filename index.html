@@ -1297,63 +1297,58 @@ body.zsMotionOff .zsMotionItem,body.zsMotionOff .zsMotionItem:before,body.zsMoti
 
 
 /* Home hero perimeter trace v4 — continuous lap around the Home hero only. */
-@property --zsHeroTraceAngle{
-  syntax:'<angle>';
-  inherits:false;
-  initial-value:0deg;
-}
-@keyframes zsHeroPerimeterRun{to{--zsHeroTraceAngle:360deg}}
+@keyframes zsHeroPerimeterRun{to{stroke-dashoffset:-100}}
 
-/* Keep the base hero border clean: remove the old stationary green top accent so
-   the moving perimeter trace is the only bright border animation. */
+/* Keep the base hero border clean: the SVG trace below is the only bright border motion. */
 #projectsHome .homeProductHero:after{
   content:none!important;
   display:none!important;
 }
 
+/* Disable the older conic-gradient pseudo trace. Keep the mask property here so the
+   existing regression guard still proves this override remains in place. */
 #projectsHome .homeProductHero:before{
-  content:''!important;
-  position:absolute!important;
-  inset:0!important;
-  width:auto!important;
-  height:auto!important;
-  border-radius:inherit!important;
-  padding:2px!important;
-  background:conic-gradient(
-    from var(--zsHeroTraceAngle),
-    transparent 0deg 254deg,
-    rgba(0,194,255,.10) 270deg,
-    #73deff 289deg,
-    #c7ff96 310deg,
-    #9bff3f 327deg,
-    transparent 345deg 360deg
-  )!important;
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0)!important;
+  content:none!important;
+  display:none!important;
   -webkit-mask-composite:xor!important;
   mask-composite:exclude!important;
-  transform:none!important;
-  opacity:1!important;
-  box-shadow:none!important;
-  filter:drop-shadow(0 0 5px rgba(155,255,63,.30));
+}
+
+#projectsHome .zsHeroPerimeterSvg{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  overflow:visible!important;
   pointer-events:none!important;
   z-index:4!important;
 }
-
-html body.zsMotionActive #projectsHome .homeProductHero:before{
-  animation:zsHeroPerimeterRun 4.2s linear infinite!important;
-  will-change:background;
+#projectsHome .zsHeroPerimeterTrace{
+  fill:none;
+  stroke:url(#zsHeroTraceGradient);
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-dasharray:18 82;
+  stroke-dashoffset:0;
+  vector-effect:non-scaling-stroke;
+  filter:drop-shadow(0 0 5px rgba(155,255,63,.30));
 }
-body.zsMotionPaused #projectsHome .homeProductHero:before{animation-play-state:paused!important}
-body.zsMotionOff #projectsHome .homeProductHero:before{animation:none!important}
+
+html body.zsMotionActive #projectsHome .zsHeroPerimeterTrace{
+  animation:zsHeroPerimeterRun 4.2s linear infinite!important;
+  will-change:stroke-dashoffset;
+}
+body.zsMotionPaused #projectsHome .zsHeroPerimeterTrace{animation-play-state:paused!important}
+body.zsMotionOff #projectsHome .zsHeroPerimeterTrace{animation:none!important}
 @media(prefers-reduced-motion:reduce){
-  body:not(.zsMotionActive) #projectsHome .homeProductHero:before{animation:none!important}
+  body:not(.zsMotionActive) #projectsHome .zsHeroPerimeterTrace{animation:none!important}
 }
 /* End Home hero perimeter trace v4. */
 </style>
 </head>
 <body>
 <div id="zsSplash" aria-hidden="true"><div class="zsSplashInner"><img src="assets/on-site-zone-planner-icon.webp" alt=""><div class="zsSplashName"><span class="zone">ZONE</span> <span class="sketch">SKETCH</span></div><div class="zsSplashSub">FIRE &amp; SECURITY FIELD APP</div><div class="zsSplashBy">Designed &amp; built by Will Flood</div></div></div>
-<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero brandFx" data-brand-watch><span class="brandSweep" aria-hidden="true"></span><span class="brandOrbit" aria-hidden="true"></span><div><div class="homeBrandRow"><img class="homeMainLogo" src="assets/zone-sketch-complete-house-v2.png" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>From first survey to finished As-Fit. Your whole site, in one project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Ready for your next site</strong><small>Local autosave · touch-first controls · offline project data</small></div><div class="homeSystemPreview" aria-label="Zone Sketch system range preview">
+<section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero brandFx" data-brand-watch><span class="brandSweep" aria-hidden="true"></span><span class="brandOrbit" aria-hidden="true"></span><svg class="zsHeroPerimeterSvg" aria-hidden="true" focusable="false" preserveAspectRatio="none"><defs><linearGradient id="zsHeroTraceGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#73deff"/><stop offset="0.52" stop-color="#c7ff96"/><stop offset="1" stop-color="#9bff3f"/></linearGradient></defs><path class="zsHeroPerimeterTrace" pathLength="100" d=""/></svg><div><div class="homeBrandRow"><img class="homeMainLogo" src="assets/zone-sketch-complete-house-v2.png" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>From first survey to finished As-Fit. Your whole site, in one project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Ready for your next site</strong><small>Local autosave · touch-first controls · offline project data</small></div><div class="homeSystemPreview" aria-label="Zone Sketch system range preview">
 <div class="homeSystemTile homeSystemFire isSelected" aria-current="true"><img src="assets/home-system-fire.webp" alt=""><span><b>Fire</b><small>Selected</small></span></div>
 <div class="homeSystemTile isFuture" aria-disabled="true"><img src="assets/home-system-intruder.webp" alt=""><span><b>Intruder</b><small>Future</small></span></div>
 <div class="homeSystemTile isFuture" aria-disabled="true"><img src="assets/home-system-access-control.webp" alt=""><span><b>Access Control</b><small>Future</small></span></div>
@@ -2268,6 +2263,40 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
  const seen=new WeakSet(),observer='IntersectionObserver' in window?new IntersectionObserver(entries=>{for(const {target,isIntersecting} of entries){target.classList.toggle('zsMotionVisible',isIntersecting);if(target.hasAttribute('data-brand-watch')){target.classList.toggle('brandInView',isIntersecting);for(const child of target.children)if(child.matches('.brandSweep,.brandOrbit'))child.classList.toggle('zsMotionVisible',isIntersecting)}}},{threshold:0}):null;
  function watch(){document.querySelectorAll(selectors).forEach(el=>{if(seen.has(el))return;seen.add(el);el.classList.add('zsMotionItem');if(observer){if(!el.matches('.brandSweep,.brandOrbit'))observer.observe(el)}else{el.classList.add('zsMotionVisible');if(el.hasAttribute('data-brand-watch'))el.classList.add('brandInView')}})}
  watch();const grid=document.getElementById('projectGrid');if(grid)new MutationObserver(watch).observe(grid,{childList:true});
+})();
+</script>
+<script id="zsHeroPerimeterGeometry">
+(()=>{
+  const hero=document.querySelector('#projectsHome .homeProductHero');
+  const svg=hero&&hero.querySelector('.zsHeroPerimeterSvg');
+  const path=svg&&svg.querySelector('.zsHeroPerimeterTrace');
+  const grad=svg&&svg.querySelector('#zsHeroTraceGradient');
+  if(!hero||!svg||!path||!grad)return;
+  const radius=(name,limit)=>Math.min(limit,Math.max(.1,parseFloat(getComputedStyle(hero)[name])||0));
+  const sync=()=>{
+    const box=hero.getBoundingClientRect();
+    const w=Math.max(2,box.width),h=Math.max(2,box.height),i=1.4;
+    const lim=Math.max(.1,Math.min(w,h)/2-i);
+    const rtl=radius('borderTopLeftRadius',lim),rtr=radius('borderTopRightRadius',lim);
+    const rbr=radius('borderBottomRightRadius',lim),rbl=radius('borderBottomLeftRadius',lim);
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+    grad.setAttribute('x2',String(w));grad.setAttribute('y2',String(h));
+    path.setAttribute('d',[
+      `M ${i+rtl} ${i}`,
+      `H ${w-i-rtr}`,
+      `A ${rtr} ${rtr} 0 0 1 ${w-i} ${i+rtr}`,
+      `V ${h-i-rbr}`,
+      `A ${rbr} ${rbr} 0 0 1 ${w-i-rbr} ${h-i}`,
+      `H ${i+rbl}`,
+      `A ${rbl} ${rbl} 0 0 1 ${i} ${h-i-rbl}`,
+      `V ${i+rtl}`,
+      `A ${rtl} ${rtl} 0 0 1 ${i+rtl} ${i}`,
+      'Z'
+    ].join(' '));
+  };
+  sync();
+  if('ResizeObserver' in window){new ResizeObserver(sync).observe(hero)}
+  else{window.addEventListener('resize',sync,{passive:true})}
 })();
 </script>
 </body></html>
