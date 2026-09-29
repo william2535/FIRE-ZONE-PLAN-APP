@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{try{const path=decodeURIComponent((re
   let saved=await record(site);assert.equal(saved.project.systemType,system);
   const symbols=saved.project.floors[0].data.symbols;assert(symbols.some(s=>s.type===first&&s.scope==='survey'),system+' placement');
   if(system!=='fire'){
-   assert.equal(await page.evaluate(type=>{const c=document.createElement('canvas');c.width=c.height=80;drawSymbol(c.getContext('2d'),{x:40,y:40},type,15,'#346fdd');return [...c.getContext('2d').getImageData(0,0,80,80).data].some((v,i)=>i%4===3&&v>0)},first),true,system+' vector rendering');
+   const rgb={security:[52,111,221],cctv:[66,200,239],access:[98,207,129]}[system];assert(await page.locator('#canvas').evaluate((canvas,rgb)=>{const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;for(let i=0;i<data.length;i+=4)if(Math.abs(data[i]-rgb[0])<8&&Math.abs(data[i+1]-rgb[1])<8&&Math.abs(data[i+2]-rgb[2])<8&&data[i+3]>200)return true;return false},rgb),system+' vector rendering');
   }
   await home();await page.reload();await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
   const card=page.locator('.projectCard').filter({has:page.getByRole('heading',{name:site,exact:true})});await card.getByRole('button',{name:'Open',exact:true}).click();await page.locator('#projectsHome').waitFor({state:'hidden'});
