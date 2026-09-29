@@ -14,6 +14,13 @@ CSS = r'''
 }
 @keyframes zsHeroPerimeterRun{to{--zsHeroTraceAngle:360deg}}
 
+/* Keep the base hero border clean: remove the old stationary green top accent so
+   the moving perimeter trace is the only bright border animation. */
+#projectsHome .homeProductHero:after{
+  content:none!important;
+  display:none!important;
+}
+
 #projectsHome .homeProductHero:before{
   content:''!important;
   position:absolute!important;
@@ -66,4 +73,4 @@ else:
     raise SystemExit('index.html: partial Home perimeter marker found')
 
 p.write_text(text, encoding='utf-8')
-print('index.html: Home hero perimeter trace set to a continuous 4.2s lap')
+print('index.html: Home hero border cleaned; continuous 4.2s perimeter trace retained')
