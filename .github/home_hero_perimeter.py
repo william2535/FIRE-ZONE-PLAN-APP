@@ -3,19 +3,21 @@ from pathlib import Path
 p = Path('index.html')
 text = p.read_text(encoding='utf-8')
 
-OLD_START = '/* Home hero perimeter trace v4 — continuous lap around the Home hero only. */'
-OLD_END = '/* End Home hero perimeter trace v4. */'
-START = '/* Home hero perimeter trace v5 — gradient head with a short fading trail. */'
-END = '/* End Home hero perimeter trace v5. */'
+V4_START = '/* Home hero perimeter trace v4 — continuous lap around the Home hero only. */'
+V4_END = '/* End Home hero perimeter trace v4. */'
+V5_START = '/* Home hero perimeter trace v5 — gradient head with a short fading trail. */'
+V5_END = '/* End Home hero perimeter trace v5. */'
+START = '/* Home hero perimeter trace v6 — slower, fuller gradient head with a soft fading trail. */'
+END = '/* End Home hero perimeter trace v6. */'
 CSS = r'''
-/* Home hero perimeter trace v5 — gradient head with a short fading trail. */
-@keyframes zsHeroPerimeterTrailFarRun{to{stroke-dashoffset:-88}}
-@keyframes zsHeroPerimeterTrailMidRun{to{stroke-dashoffset:-92}}
-@keyframes zsHeroPerimeterTrailNearRun{to{stroke-dashoffset:-96}}
+/* Home hero perimeter trace v6 — slower, fuller gradient head with a soft fading trail. */
+@keyframes zsHeroPerimeterTrailFarRun{to{stroke-dashoffset:-86}}
+@keyframes zsHeroPerimeterTrailMidRun{to{stroke-dashoffset:-90}}
+@keyframes zsHeroPerimeterTrailNearRun{to{stroke-dashoffset:-94.5}}
 @keyframes zsHeroPerimeterHeadRun{to{stroke-dashoffset:-100}}
 
-/* Keep the base hero border clean: this travelling head + fading trail is the
-   only bright motion on the Home hero perimeter. */
+/* Keep the card itself calm. The travelling cyan→lime head and its soft tail are
+   the only bright perimeter motion, matching the restrained technical/glass UI. */
 #projectsHome .homeProductHero:after{
   content:none!important;
   display:none!important;
@@ -47,57 +49,62 @@ CSS = r'''
   fill:none;
   stroke:url(#zsHeroTraceGradient);
   stroke-linecap:round;
+  stroke-linejoin:round;
   vector-effect:non-scaling-stroke;
 }
 
-/* Three perfectly synced layers create a soft taper: the further the trail gets
-   from the head, the thinner and more transparent it becomes. Total trail length
-   is 12% of the perimeter, shorter than the previous 18% solid segment. */
+/* The trail is deliberately fuller than v5 so it reads as part of the hero frame,
+   not a hairline. Each layer gets wider/brighter toward the head, while the rear
+   still dissolves softly into the dark border. */
 #projectsHome .zsHeroPerimeterTrailFar{
-  stroke-width:1.25;
-  stroke-dasharray:12 88;
-  stroke-dashoffset:12;
-  opacity:.10;
-  filter:drop-shadow(0 0 2px rgba(115,222,255,.06));
+  stroke-width:2.1;
+  stroke-dasharray:14 86;
+  stroke-dashoffset:14;
+  opacity:.13;
+  filter:drop-shadow(0 0 3px rgba(115,222,255,.08));
 }
 #projectsHome .zsHeroPerimeterTrailMid{
-  stroke-width:1.5;
-  stroke-dasharray:8 92;
-  stroke-dashoffset:8;
-  opacity:.16;
+  stroke-width:2.55;
+  stroke-dasharray:10 90;
+  stroke-dashoffset:10;
+  opacity:.22;
+  filter:drop-shadow(0 0 3px rgba(143,231,202,.07));
 }
 #projectsHome .zsHeroPerimeterTrailNear{
-  stroke-width:1.75;
-  stroke-dasharray:4 96;
-  stroke-dashoffset:4;
-  opacity:.24;
+  stroke-width:2.95;
+  stroke-dasharray:5.5 94.5;
+  stroke-dashoffset:5.5;
+  opacity:.34;
+  filter:drop-shadow(0 0 4px rgba(199,255,150,.09));
 }
 
-/* A tiny rounded dash behaves as the travelling dot. Because it uses the exact
-   same user-space gradient and perimeter path, its colour changes with position
-   and it stays attached to the front of all three trail layers. */
+/* Rounded micro-dash = travelling dot. It shares the same user-space gradient as
+   the tail, so the colour changes naturally as it moves around the hero frame. */
 #projectsHome .zsHeroPerimeterHead{
-  stroke-width:5.2;
+  stroke-width:6.2;
   stroke-dasharray:.01 99.99;
   stroke-dashoffset:0;
-  opacity:.82;
-  filter:drop-shadow(0 0 3px rgba(199,255,150,.20));
+  opacity:.88;
+  filter:
+    drop-shadow(0 0 3px rgba(115,222,255,.18))
+    drop-shadow(0 0 6px rgba(155,255,63,.10));
 }
 
+/* Slower 8.4s lap gives the motion the same measured pace as the rest of the Home UI. */
 html body.zsMotionActive #projectsHome .zsHeroPerimeterTrailFar{
-  animation:zsHeroPerimeterTrailFarRun 5.6s linear infinite!important;
+  animation:zsHeroPerimeterTrailFarRun 8.4s linear infinite!important;
   will-change:stroke-dashoffset;
 }
 html body.zsMotionActive #projectsHome .zsHeroPerimeterTrailMid{
-  animation:zsHeroPerimeterTrailMidRun 5.6s linear infinite!important;
+  animation:zsHeroPerimeterTrailMidRun 8.4s linear infinite!important;
   will-change:stroke-dashoffset;
 }
 html body.zsMotionActive #projectsHome .zsHeroPerimeterTrailNear{
-  animation:zsHeroPerimeterTrailNearRun 5.6s linear infinite!important;
+  animation:zsHeroPerimeterTrailNearRun 8.4s linear infinite!important;
   will-change:stroke-dashoffset;
 }
 html body.zsMotionActive #projectsHome .zsHeroPerimeterHead{
-  animation:zsHeroPerimeterHeadRun 5.6s linear infinite!important;
+  animation:zsHeroPerimeterHeadRun 8.4s linear infinite!important;
   will-change:stroke-dashoffset;
 }
 
@@ -120,7 +127,7 @@ body.zsMotionOff #projectsHome .zsHeroPerimeterHead{
   body:not(.zsMotionActive) #projectsHome .zsHeroPerimeterTrailNear,
   body:not(.zsMotionActive) #projectsHome .zsHeroPerimeterHead{animation:none!important}
 }
-/* End Home hero perimeter trace v5. */
+/* End Home hero perimeter trace v6. */
 '''.strip()
 
 SVG_MARKUP = '''<svg class="zsHeroPerimeterSvg" aria-hidden="true" focusable="false" preserveAspectRatio="none"><defs><linearGradient id="zsHeroTraceGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#73deff"/><stop offset="0.52" stop-color="#c7ff96"/><stop offset="1" stop-color="#9bff3f"/></linearGradient></defs><path class="zsHeroPerimeterTrace zsHeroPerimeterTrailFar" pathLength="100" d=""/><path class="zsHeroPerimeterTrailMid" pathLength="100" d=""/><path class="zsHeroPerimeterTrailNear" pathLength="100" d=""/><path class="zsHeroPerimeterHead" pathLength="100" d=""/></svg>'''
@@ -136,7 +143,7 @@ GEOMETRY_SCRIPT = r'''<script id="zsHeroPerimeterGeometry">
   const radius=(name,limit)=>Math.min(limit,Math.max(.1,parseFloat(getComputedStyle(hero)[name])||0));
   const sync=()=>{
     const box=hero.getBoundingClientRect();
-    const w=Math.max(2,box.width),h=Math.max(2,box.height),i=1.4;
+    const w=Math.max(2,box.width),h=Math.max(2,box.height),i=1.7;
     const lim=Math.max(.1,Math.min(w,h)/2-i);
     const rtl=radius('borderTopLeftRadius',lim),rtr=radius('borderTopRightRadius',lim);
     const rbr=radius('borderBottomRightRadius',lim),rbl=radius('borderBottomLeftRadius',lim);
@@ -162,24 +169,29 @@ GEOMETRY_SCRIPT = r'''<script id="zsHeroPerimeterGeometry">
 })();
 </script>'''
 
-# Upgrade either the old v4 block or an existing v5 block, while remaining idempotent.
-if START in text and END in text:
-    start = text.index(START)
-    end = text.index(END, start) + len(END)
-    text = text[:start] + CSS + text[end:]
-elif OLD_START in text and OLD_END in text:
-    start = text.index(OLD_START)
-    end = text.index(OLD_END, start) + len(OLD_END)
-    text = text[:start] + CSS + text[end:]
-elif START not in text and END not in text and OLD_START not in text and OLD_END not in text:
+# Upgrade v4/v5 or refresh an existing v6 block while remaining idempotent.
+blocks = [
+    (START, END),
+    (V5_START, V5_END),
+    (V4_START, V4_END),
+]
+replaced = False
+for block_start, block_end in blocks:
+    if block_start in text and block_end in text:
+        start = text.index(block_start)
+        end = text.index(block_end, start) + len(block_end)
+        text = text[:start] + CSS + text[end:]
+        replaced = True
+        break
+if not replaced:
+    known_markers = [m for pair in blocks for m in pair]
+    if any(marker in text for marker in known_markers):
+        raise SystemExit('index.html: partial Home perimeter marker found')
     if '</style>' not in text:
         raise SystemExit('index.html: closing style tag not found')
     text = text.replace('</style>', '\n' + CSS + '\n</style>', 1)
-else:
-    raise SystemExit('index.html: partial Home perimeter marker found')
 
-# Always replace the SVG when it already exists so v4 markup upgrades to the
-# separate fading trail layers plus moving head path.
+# Always replace the SVG when it already exists so older markup upgrades cleanly.
 svg_start = text.find('<svg class="zsHeroPerimeterSvg"')
 if svg_start >= 0:
     svg_end = text.find('</svg>', svg_start)
@@ -192,8 +204,7 @@ else:
         raise SystemExit('index.html: Home hero SVG anchor not found')
     text = text.replace(SVG_ANCHOR, SVG_ANCHOR + SVG_MARKUP, 1)
 
-# Replace the geometry script as well so every trail/head path follows the exact
-# same responsive rounded rectangle after rotations and resizes.
+# Replace geometry too so all four paths stay perfectly aligned on resize/rotation.
 script_start = text.find('<script id="zsHeroPerimeterGeometry">')
 if script_start >= 0:
     script_end = text.find('</script>', script_start)
@@ -207,4 +218,4 @@ else:
     text = text.replace('</body>', GEOMETRY_SCRIPT + '\n</body>', 1)
 
 p.write_text(text, encoding='utf-8')
-print('index.html: Home hero now uses a gradient head with a short fading perimeter trail')
+print('index.html: Home hero perimeter slowed and visually integrated with a fuller soft trail')
