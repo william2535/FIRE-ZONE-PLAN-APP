@@ -1252,6 +1252,13 @@ body.zsMotionActive .app>.top:after,body.zsMotionActive #circuitBuilder .cbLandi
 body.zsMotionActive :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:not(.zsMotionVisible),body.zsMotionActive :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:not(.zsMotionVisible):before,body.zsMotionActive :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:not(.zsMotionVisible):after,
 body.zsMotionActive.zsMotionPaused :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem,body.zsMotionActive.zsMotionPaused :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:before,body.zsMotionActive.zsMotionPaused :is(#projectsHome,#circuitBuilder,.app,header,main,.topbar) .zsMotionItem:after{animation-play-state:paused!important}
 body.zsMotionOff .zsMotionItem,body.zsMotionOff .zsMotionItem:before,body.zsMotionOff .zsMotionItem:after{animation:none!important}
+
+/* Compact closed header: editing icons and an accessible reopen arrow only. */
+.app:not(.surveyMode)>.top.collapsed #moveModeTop{display:none}
+.app:not(.surveyMode)>.top.collapsed .topEssential{display:flex;justify-content:flex-end;gap:6px}
+.app:not(.surveyMode)>.top.collapsed .topEssential>button{width:44px;min-width:44px;min-height:44px;flex:0 0 44px;margin:0}
+.app:not(.surveyMode)>.top.collapsed .topEssential #topCollapseBtn{min-width:44px;padding:8px 4px;font-size:0}
+.app:not(.surveyMode)>.top.collapsed #topCollapseBtn:after{content:'▼';font-size:14px}
 </style>
 </head>
 <body>
