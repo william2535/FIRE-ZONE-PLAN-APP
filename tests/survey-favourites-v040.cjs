@@ -21,7 +21,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   await page.waitForFunction(()=>!document.getElementById('homeNew').disabled);
   await page.locator('#homeNew').click();await page.locator('#newProjectName').fill('Favourites test');await page.locator('#newProjectCreate').click();
   await page.locator('#projectsHome').waitFor({state:'hidden'});
-  if(await page.locator('#emptyBlank').isVisible())await page.locator('#emptyBlank').click();
+
   await page.waitForFunction(()=>!document.getElementById('empty').offsetParent);
 
   await openHeader(page);await page.locator('#surveyModeBtn').click();

@@ -28,7 +28,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   // The imported tracing image is an editor aid. This regression verifies that changing its editor visibility does not break the clean export or remove the traced building itself; exact pixel counts vary with export furniture and antialiasing.
   assert(hiddenStats.dark>100,'Building drawing should remain visible after hiding the imported background');
   await page.waitForTimeout(700);await page.reload();await page.locator('#resumeProject').click();await page.waitForFunction(()=>document.getElementById('togglePicture').textContent==='Show picture');
-  assert.equal(await page.locator('#opacity').inputValue(),'25');assert.equal(await page.locator('.zone').count(),1);
+  assert.equal(await page.locator('#opacity').inputValue(),'25');assert.equal(await page.locator('#zones .zone').count(),1);
   await openHeader(page);await page.locator('#togglePicture').click();assert.equal(await page.locator('#opacity').isEnabled(),true);
   // Selected-zone panning must not throw or turn into a rectangle.
   await page.locator('#moveModeTop').click();await drag(await xy(.5,.5),await xy(.55,.55));
