@@ -9,12 +9,13 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
   const toggle=page.locator('#topCollapseBtn'),main=page.locator('#topMain');
   assert.equal(await toggle.getAttribute('aria-expanded'),'false');assert.equal(await main.isVisible(),false,'portrait Menu closed must hide topMain');
   const compact=async()=>{
-   assert.equal(await page.locator('#moveModeTop').isVisible(),false,'Move hides with the menu');
-   assert.deepEqual(await page.locator('#topEssential>button:visible').evaluateAll(els=>els.map(el=>el.id)),['deleteTop','undoTop','redoTop','topCollapseBtn']);
+   assert.equal(await page.locator('#moveModeTop').isVisible(),true,'Move stays available with the menu closed');
+   assert.deepEqual(await page.locator('#topEssential>button:visible').evaluateAll(els=>els.map(el=>el.id)),['moveModeTop','deleteTop','undoTop','redoTop','topCollapseBtn']);
    const b=await toggle.boundingBox();assert.equal(b.width,44);assert(b.height>=44);
    assert.equal(await page.locator('#floorBar').isVisible(),false);
   };
   await compact();
+  const move=page.locator('#moveModeTop'),before=await move.textContent();await move.tap();assert.notEqual(await move.textContent(),before);await move.tap();assert.equal(await move.textContent(),before);assert.equal(await main.isVisible(),false);
   for(let i=0;i<3;i++){
    await toggle.tap();assert.equal(await toggle.getAttribute('aria-expanded'),'true');assert(await main.isVisible());assert(await page.locator('#moveModeTop').isVisible());
    const box=await toggle.boundingBox();assert(box.width>=84&&box.height>=44);assert(box.x>=0&&box.x+box.width<=size[0]+1);

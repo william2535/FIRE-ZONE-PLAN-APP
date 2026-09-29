@@ -36,6 +36,7 @@ jobs:
           node tests/circuit-editor-syntax-v058.cjs
           node tests/projects.cjs
           node tests/iphone-top-menu-v062.cjs
+          node tests/swipe-delete.cjs
       - name: Review Chromium layouts and feedback
         run: node tests/brand-pages.cjs
       - name: Review WebKit layouts and feedback
@@ -44,11 +45,13 @@ jobs:
         run: |
           node tests/brand-pages.cjs
           node tests/iphone-top-menu-v062.cjs
+          node tests/swipe-delete.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: home-tester-brand-previews
           path: |
+            test-results/swipe-delete-*.png
             test-results/brand-*.png
             test-results/iphone-menu-*.png
             test-results/menu-baseline.log
