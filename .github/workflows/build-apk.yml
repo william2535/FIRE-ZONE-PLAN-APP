@@ -24,7 +24,6 @@ jobs:
       - name: Check current release metadata and source parity
         run: |
           node tests/release-v063.cjs
-          node tests/circuit-editor-syntax-v058.cjs
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

@@ -16,6 +16,8 @@ assert(app.includes('id="cbFloorSelect"'),'v0.61 multi-floor Circuit Builder mus
 assert(app.includes('function cbRepairConventionalRefs'),'v0.60 circuit recovery must remain present');
 assert(app.includes('id="newProjectDialog"'),'new system project form must ship');
 assert(app.includes('const SYSTEMS=Object.freeze('),'shared system registry must ship');
+assert(['fire','security','cctv','access'].map(key=>app.indexOf('class="homeSystemTile" data-system="'+key+'"')).every((pos,i,a)=>pos>=0&&(i===0||pos>a[i-1])),'Home system tiles must be enabled and in approved order');
+assert(!app.includes('isFuture')&&!app.includes('<small>Future</small>'),'all Home systems must be enabled');
 assert(app.includes('id="cbBridgeToggle"'),'normal Circuit Builder must expose the Bridge toggle');
 assert(app.includes('function cbBuildBridgeHits'),'normal Circuit Builder must record intentional crossing bridges');
 const gradle=fs.readFileSync('app/build.gradle','utf8');
