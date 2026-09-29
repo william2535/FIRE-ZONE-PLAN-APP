@@ -24,7 +24,7 @@ jobs:
       - name: Verify project modes and existing workspace
         run: |
           python .github/verify_247_protected.py
-          node tests/release-v062.cjs
+          node tests/release-v063.cjs
           node tests/circuit-editor-syntax-v058.cjs
           node tests/system-modes.cjs
           cmp index.html ZoneSketch.html
