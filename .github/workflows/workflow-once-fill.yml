@@ -36,7 +36,7 @@ jobs:
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
-          test "$(git hash-object beta.html)" = "0cda84d2c0907160c63366922330c43586f7b191"
+          test "$(git hash-object beta.html)" = "c8684174f70fa923d34216962ef3beef04933b0e"
           grep -q 'Home workflow one-shot fill — Plan > Survey > Circuits > As-Fit' index.html
           grep -q 'animation:zsWorkflowFillOnce 8s ease-in-out 1 both!important' index.html
           grep -q 'workflowStep:nth-child(2):before{animation-delay:2s!important}' index.html
