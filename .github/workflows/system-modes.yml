@@ -27,6 +27,7 @@ jobs:
           node tests/release-v063.cjs
           node tests/circuit-editor-syntax-v058.cjs
           node tests/system-modes.cjs
+          node tests/system-device-libraries.cjs
           cmp index.html ZoneSketch.html
           cmp index.html Zone-Sketch-by-Will.html
           cmp index.html app/src/main/assets/index.html
