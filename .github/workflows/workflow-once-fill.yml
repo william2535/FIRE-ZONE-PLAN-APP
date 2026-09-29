@@ -1,0 +1,59 @@
+name: Apply Home workflow one-shot fill
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflow_once_fill.py'
+      - '.github/workflows/workflow-once-fill.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Apply one-shot workflow rail fill
+        run: python .github/workflow_once_fill.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Verify behaviour and release safety
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          test "$(git hash-object beta.html)" = "0cda84d2c0907160c63366922330c43586f7b191"
+          grep -q 'Home workflow one-shot fill — Plan > Survey > Circuits > As-Fit' index.html
+          grep -q 'animation:zsWorkflowFillOnce 8s ease-in-out 1 both!important' index.html
+          grep -q 'workflowStep:nth-child(2):before{animation-delay:2s!important}' index.html
+          grep -q 'workflowStep:nth-child(3):before{animation-delay:4s!important}' index.html
+          grep -q 'workflowStep:nth-child(4):before{animation-delay:6s!important}' index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+
+      - name: Commit Home workflow fill
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Home workflow one-shot fill already current.'
+          else
+            git commit -m 'Make Home workflow bars fill once and stay complete'
+            git push origin HEAD:main
+          fi
