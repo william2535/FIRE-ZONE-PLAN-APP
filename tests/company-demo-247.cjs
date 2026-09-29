@@ -20,7 +20,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert(await p.locator('.companyHeroBrand').isVisible());
   const logo=await p.locator('.companyBrandLogo').boundingBox();assert(logo&&logo.width<=80&&logo.height<=58,'header logo must stay compact');
   assert.match(await p.locator('.creatorLine').innerText(),/24\/7 Protection branded demo/i);
-  await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
+  await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Company Demo Test');await p.locator('#newProjectCreate').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
   assert(await p.locator('.companyBrandLogo').isVisible());
   const dbs=await p.evaluate(async()=>indexedDB.databases?await indexedDB.databases():[]);if(dbs.length)assert(dbs.some(d=>d.name==='ZoneSketch-247Protection-v1')&&!dbs.some(d=>d.name==='ZoneSketch-v1'));
   assert.deepEqual(errors,[],'No runtime errors in company demo');

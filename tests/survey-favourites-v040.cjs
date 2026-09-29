@@ -19,7 +19,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
   page.on('dialog',d=>d.accept(d.type()==='prompt'?'Favourites test':undefined));
   await page.goto('http://127.0.0.1:'+server.address().port);
   await page.waitForFunction(()=>!document.getElementById('homeNew').disabled);
-  await page.locator('#homeNew').click();
+  await page.locator('#homeNew').click();await page.locator('#newProjectName').fill('Favourites test');await page.locator('#newProjectCreate').click();
   await page.locator('#projectsHome').waitFor({state:'hidden'});
   if(await page.locator('#emptyBlank').isVisible())await page.locator('#emptyBlank').click();
   await page.waitForFunction(()=>!document.getElementById('empty').offsetParent);

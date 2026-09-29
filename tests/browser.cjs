@@ -11,7 +11,7 @@ const fs=require('fs'), http=require('http'), assert=require('node:assert/strict
   page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept(d.type()==='prompt'?'Test survey':undefined));
   await page.addInitScript(()=>{window.AndroidBridge={sharePng:(data,name)=>{window.exported={data,name}}}});
   const url='http://127.0.0.1:'+server.address().port;
-  await page.goto(url);await page.locator('#homeNew').click();await page.locator('#projectsHome').waitFor({state:'hidden'});await page.waitForTimeout(200);
+  await page.goto(url);await page.locator('#homeNew').click();await page.locator('#newProjectName').fill('Test survey');await page.locator('#newProjectCreate').click();await page.locator('#projectsHome').waitFor({state:'hidden'});await page.waitForTimeout(200);
   const svg='<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500"><rect width="800" height="500" fill="black"/></svg>';
   await page.locator('#file').setInputFiles({name:'plan.svg',mimeType:'image/svg+xml',buffer:Buffer.from(svg)});
   await page.waitForFunction(()=>document.getElementById('empty').hidden);

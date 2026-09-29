@@ -10,7 +10,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  await new Promise(r=>server.once('listening',r));const browser=await chromium.launch({headless:true});
  try{
   const p=await browser.newPage({viewport:{width:1050,height:820}}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Shared grid test':undefined));
-  await p.goto('http://127.0.0.1:'+server.address().port+'/');await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
+  await p.goto('http://127.0.0.1:'+server.address().port+'/');await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Shared grid test');await p.locator('#newProjectCreate').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
   await openHeader(p);await p.locator('#surveyModeBtn').click();
   assert.equal(await p.locator('#surveySnap').isDisabled(),true);assert.match(await p.locator('#surveySnap').innerText(),/Device snap · ON/);assert.match(await p.locator('#surveyMove').innerText(),/Field grid · 100/);
   let state=await p.evaluate(()=>gridProbe.read());assert.equal(state.visible,true);assert.equal(state.snap,true);assert.equal(state.size,100);

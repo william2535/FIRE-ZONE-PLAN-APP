@@ -1,0 +1,33 @@
+name: Four system modes regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'ZoneSketch.html'
+      - 'Zone-Sketch-by-Will.html'
+      - 'app/src/main/assets/index.html'
+      - 'tests/**'
+      - '.github/workflows/system-modes.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser checks
+        run: |
+          npm install --no-save playwright@1.62.1 acorn@8.15.0
+          npx playwright install --with-deps chromium
+      - name: Verify project modes and existing workspace
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          node tests/system-modes.cjs
+          cmp index.html ZoneSketch.html
+          cmp index.html Zone-Sketch-by-Will.html
+          cmp index.html app/src/main/assets/index.html
+          git diff --check

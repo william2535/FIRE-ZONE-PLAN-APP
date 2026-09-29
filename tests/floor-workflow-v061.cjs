@@ -11,7 +11,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     page.on('pageerror',e=>errors.push(e.message));
     page.on('dialog',d=>d.accept(d.type()==='prompt'?'Floor workflow':undefined));
     await page.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
-    await page.locator('#homeNew').click();
+    await page.locator('#homeNew').click();await page.locator('#newProjectName').fill('Floor workflow');await page.locator('#newProjectCreate').click();
     await page.locator('#projectsHome').waitFor({state:'hidden'});
 
     async function addZone(number,name){

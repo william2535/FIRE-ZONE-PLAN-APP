@@ -8,7 +8,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
  const browser=await(process.env.PINEAPPLE_BROWSER==='webkit'?webkit:chromium).launch();
  try{for(const width of [390,1024]){
   const page=await browser.newPage({viewport:{width,height:844},hasTouch:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept(d.type()==='prompt'?'Swipe QA':undefined));
-  await page.goto('http://127.0.0.1:'+server.address().port);await page.locator('#homeNew').click();await page.locator('#projectsHome').waitFor({state:'hidden'});await page.locator('#zsSplash').waitFor({state:'hidden'});
+  await page.goto('http://127.0.0.1:'+server.address().port);await page.locator('#homeNew').click();await page.locator('#newProjectName').fill('Swipe QA');await page.locator('#newProjectCreate').click();await page.locator('#projectsHome').waitFor({state:'hidden'});await page.locator('#zsSplash').waitFor({state:'hidden'});
   const seed=async(survey=false)=>{await page.evaluate(v=>eraseQA.seed(v),survey);await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))};
   const read=()=>page.evaluate(()=>eraseQA.read()),point=(x,y)=>page.evaluate(([x,y])=>eraseQA.point(x,y),[x,y]);
   const swipe=async(y=.5)=>{const a=await point(.1,y),b=await point(.9,y);await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:1});await page.mouse.up()};

@@ -9,7 +9,7 @@ const {openHeader}=require('./header-navigation.cjs');
   const p=await browser.newPage({viewport:{width,height:width===1440?1000:844},reducedMotion:'reduce'});p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Riverside School':undefined));const base='http://127.0.0.1:'+server.address().port;
   await p.goto(base);await p.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await p.locator('#zsSplash').waitFor({state:'hidden'});assert.equal(await p.locator('#projectsHome [data-brand-motion]').count(),0);assert.equal(await p.locator('.homeBrandMark').count(),0,'Respect the Home-only logo removal');
   await motion(p,'.workflowStep','::before','zsBrandFlow');await p.screenshot({path:`test-results/brand-home-empty-${width}.png`});
-  await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(p);
+  await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Riverside School');await p.locator('#newProjectCreate').click();await p.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(p);
   await p.waitForFunction(()=>document.querySelector('#headerHomeBtn img').naturalWidth>0);await motion(p,'.zsHeaderHomeShine','::before','zsHeaderGlossV2');await motion(p,'#favouriteMenuBtn',null,'zsFavouriteShine');
   await p.screenshot({path:`test-results/brand-workspace-${width}.png`});
   if(width===390){

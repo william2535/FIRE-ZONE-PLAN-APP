@@ -26,7 +26,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),pat
     await p.goto('http://127.0.0.1:'+server.address().port,{waitUntil:'load'});
     await p.locator('#homeNew').waitFor({state:'visible'});
     await p.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
-    await p.locator('#homeNew').click();
+    await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Fill only test');await p.locator('#newProjectCreate').click();
     await p.locator('#projectsHome').waitFor({state:'hidden'});
 
     // Create a zone and draw it so the normal app rendering path is exercised.

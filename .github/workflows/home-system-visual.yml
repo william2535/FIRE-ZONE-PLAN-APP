@@ -1,172 +1,29 @@
-name: Integrate supplied Home system artwork
-
+name: Verify approved system artwork
 on:
   push:
     branches: [main]
     paths:
-      - '.github/home_system_visual.py'
+      - 'assets/home-system-*.webp'
+      - 'app/src/main/assets/assets/home-system-*.webp'
       - '.github/workflows/home-system-visual.yml'
-      - 'assets/home-system-fire.webp'
-      - 'assets/home-system-intruder.webp'
-      - 'assets/home-system-access-control.webp'
-      - 'assets/home-system-cctv.webp'
   workflow_dispatch:
-
 permissions:
-  contents: write
-
+  contents: read
 jobs:
-  integrate:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-
-      - name: Apply supplied artwork to Home
-        run: python .github/home_system_visual.py
-
-      - name: Sync web mirrors and Android assets
-        run: |
-          cp index.html ZoneSketch.html
-          cp index.html Zone-Sketch-by-Will.html
-          cp index.html app/src/main/assets/index.html
-          mkdir -p app/src/main/assets/assets
-          cp assets/home-system-fire.webp app/src/main/assets/assets/home-system-fire.webp
-          cp assets/home-system-intruder.webp app/src/main/assets/assets/home-system-intruder.webp
-          cp assets/home-system-access-control.webp app/src/main/assets/assets/home-system-access-control.webp
-          cp assets/home-system-cctv.webp app/src/main/assets/assets/home-system-cctv.webp
-
-      - name: Verify supplied artwork and exact Home order
+      - name: Check approved asset bytes and mirrors
         run: |
           printf '%s  %s\n' \
             5a127602de4fd89ad2652c6b7e7ef02ac4eda0b573ab5b0e55068c85ff25d6d7 assets/home-system-fire.webp \
             035dc248cc2d0cc1fdecdac1ea2bf5a47a8e3fe1c1f67fbbb16601d1d2bc2a60 assets/home-system-intruder.webp \
-            69d834063f17da0b7faaed01196081cdd85512d8652ec0dccd5874fa6693f258 assets/home-system-access-control.webp \
-            2a7142bc89e458bc157259049d3f6c565b55514f19f4ab8f16e0a3e0bb37af3c assets/home-system-cctv.webp | sha256sum -c -
-          cmp -s assets/home-system-fire.webp app/src/main/assets/assets/home-system-fire.webp
-          cmp -s assets/home-system-intruder.webp app/src/main/assets/assets/home-system-intruder.webp
-          cmp -s assets/home-system-access-control.webp app/src/main/assets/assets/home-system-access-control.webp
-          cmp -s assets/home-system-cctv.webp app/src/main/assets/assets/home-system-cctv.webp
-          python - <<'PY'
-          from pathlib import Path
-          s = Path('index.html').read_text(encoding='utf-8')
-          assets = ['home-system-fire.webp','home-system-intruder.webp','home-system-access-control.webp','home-system-cctv.webp']
-          positions = [s.index(x) for x in assets]
-          assert positions == sorted(positions), positions
-          assert '<b>Fire</b><small>Selected</small>' in s
-          assert '<b>Intruder</b><small>Future</small>' in s
-          assert '<b>Access Control</b><small>Future</small>' in s
-          assert '<b>CCTV</b><small>Future</small>' in s
-          assert '.homeSystemTile.isFuture img{filter:none!important;opacity:1!important}' in s
-          assert 'aria-current="true"' in s
-          PY
-
-      - name: Install browser runtimes
+            2a7142bc89e458bc157259049d3f6c565b55514f19f4ab8f16e0a3e0bb37af3c assets/home-system-cctv.webp \
+            69d834063f17da0b7faaed01196081cdd85512d8652ec0dccd5874fa6693f258 assets/home-system-access-control.webp | sha256sum -c -
+          for file in fire intruder cctv access-control; do cmp "assets/home-system-$file.webp" "app/src/main/assets/assets/home-system-$file.webp"; done
+      - name: Browser-check enabled modes
         run: |
           npm install --no-save playwright@1.62.1 acorn@8.15.0
           npx playwright install --with-deps chromium
-
-      - name: Existing regression checks
-        run: |
-          python .github/verify_247_protected.py
-          node tests/release-v062.cjs
-          node tests/circuit-editor-syntax-v058.cjs
-          node tests/run-regressions.cjs
-          grep -q 'class="homeMainLogo"' index.html
-          grep -q 'class="homeSystemPreview"' index.html
-          grep -q '<div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div>' index.html
-          grep -q 'id="cbBridgeToggle"' index.html
-          grep -q 'iOS/iPadOS standalone viewport fill' index.html
-          cmp --silent index.html ZoneSketch.html
-          cmp --silent index.html Zone-Sketch-by-Will.html
-          cmp --silent index.html app/src/main/assets/index.html
-
-      - name: Browser-check Home artwork
-        run: |
-          python -m http.server 4173 >/tmp/zone-sketch-http.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID || true' EXIT
-          node - <<'NODE'
-          const { chromium } = require('playwright');
-          (async () => {
-            const browser = await chromium.launch({headless:true});
-            const page = await browser.newPage({viewport:{width:1180,height:820}});
-            await page.goto('http://127.0.0.1:4173/', {waitUntil:'networkidle'});
-            const tiles = page.locator('.homeSystemPreview .homeSystemTile');
-            if (await tiles.count() !== 4) throw new Error('Expected exactly four Home system tiles');
-            const expected = [
-              ['Fire','Selected','home-system-fire.webp'],
-              ['Intruder','Future','home-system-intruder.webp'],
-              ['Access Control','Future','home-system-access-control.webp'],
-              ['CCTV','Future','home-system-cctv.webp'],
-            ];
-            for (let i=0; i<expected.length; i++) {
-              const tile = tiles.nth(i);
-              const [label,state,file] = expected[i];
-              if ((await tile.locator('b').textContent()).trim() !== label) throw new Error(`Tile ${i} label mismatch`);
-              if ((await tile.locator('small').textContent()).trim() !== state) throw new Error(`Tile ${i} state mismatch`);
-              const img = tile.locator('img');
-              const src = await img.getAttribute('src');
-              if (!src || !src.endsWith(file)) throw new Error(`Tile ${i} artwork mismatch: ${src}`);
-              const info = await img.evaluate(el => ({complete:el.complete,w:el.naturalWidth,h:el.naturalHeight,filter:getComputedStyle(el).filter,opacity:getComputedStyle(el).opacity}));
-              if (!info.complete || info.w !== 96 || info.h !== 96) throw new Error(`Tile ${i} image failed: ${JSON.stringify(info)}`);
-              if (info.filter !== 'none' || info.opacity !== '1') throw new Error(`Tile ${i} artwork is being muted: ${JSON.stringify(info)}`);
-            }
-            const futureTiles = page.locator('.homeSystemPreview .homeSystemTile.isFuture');
-            if (await futureTiles.count() !== 3) throw new Error('Expected three Future tiles');
-            for (let i=0; i<3; i++) {
-              if ((await futureTiles.nth(i).getAttribute('aria-disabled')) !== 'true') throw new Error('Future tile is not disabled');
-            }
-            await page.screenshot({path:'/tmp/home-system-browser-check.png', fullPage:true});
-            await browser.close();
-            console.log('Browser Home artwork check passed.');
-          })().catch(err => { console.error(err); process.exit(1); });
-          NODE
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Install Android SDK packages
-        run: |
-          SDK_MANAGER=$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)
-          "$SDK_MANAGER" 'platforms;android-35' 'build-tools;35.0.0'
-
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11.1'
-
-      - name: Build refreshed v0.62 Android APK
-        run: |
-          gradle --no-daemon assembleDebug
-          mkdir -p downloads
-          cp app/build/outputs/apk/debug/app-debug.apk downloads/Zone-Sketch-by-Will-v0.62.apk
-          sha256sum downloads/Zone-Sketch-by-Will-v0.62.apk > downloads/Zone-Sketch-by-Will-v0.62.apk.sha256
-
-      - name: Final parity check
-        run: |
-          node tests/release-v062.cjs
-          python .github/verify_247_protected.py
-          cmp --silent index.html ZoneSketch.html
-          cmp --silent index.html Zone-Sketch-by-Will.html
-          cmp --silent index.html app/src/main/assets/index.html
-          git diff --check
-
-      - name: Commit tested Home artwork and refreshed APK
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html \
-            app/src/main/assets/assets/home-system-fire.webp \
-            app/src/main/assets/assets/home-system-intruder.webp \
-            app/src/main/assets/assets/home-system-access-control.webp \
-            app/src/main/assets/assets/home-system-cctv.webp \
-            downloads/Zone-Sketch-by-Will-v0.62.apk downloads/Zone-Sketch-by-Will-v0.62.apk.sha256
-          if git diff --cached --quiet; then
-            echo 'Supplied Home artwork and APK already current.'
-          else
-            git commit -m 'Use supplied Home system artwork in web and APK'
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
+          node tests/system-modes.cjs

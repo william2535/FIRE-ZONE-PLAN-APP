@@ -25,7 +25,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   await p.goto(base+'/');
   assert.match(await p.locator('.homeProductHero').innerText(),/Will Flood/i);
   assert.match(await p.locator('.brand').innerText(),/WILL FLOOD/i);
-  await p.locator('#homeNew').click();
+  await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Beta Portal Test');await p.locator('#newProjectCreate').click();
   await p.locator('#projectsHome').waitFor({state:'hidden'});
   await openHeader(p);await p.locator('#projectMenuBtn').click();
   assert(await p.locator('#betaPortalBtn').isVisible());

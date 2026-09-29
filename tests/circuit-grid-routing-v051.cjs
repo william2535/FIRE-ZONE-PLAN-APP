@@ -13,7 +13,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  try{
   const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Grid route test':undefined));
   await p.goto('http://127.0.0.1:'+server.address().port+'/');
-  await p.locator('#homeNew').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
+  await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Grid route test');await p.locator('#newProjectCreate').click();await p.locator('#projectsHome').waitFor({state:'hidden'});
   const xy=async(x,y)=>p.locator('#canvas').evaluate((c,{x,y})=>{const b=c.getBoundingClientRect(),w=3200,h=2000,s=Math.min((b.width-48)/w,(b.height-48)/h);return{x:b.x+b.width/2+(x-.5)*w*s,y:b.y+b.height/2+(y-.5)*h*s}},{x,y});
   const panel={x:.20,y:.40},device={x:.70,y:.40},all=[panel,device];
   await openHeader(p);await p.locator('#surveyModeBtn').click();
