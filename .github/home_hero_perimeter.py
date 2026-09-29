@@ -40,12 +40,13 @@ CSS = r'''
   stroke-linecap:round;
   stroke-dasharray:18 82;
   stroke-dashoffset:0;
+  opacity:.52;
   vector-effect:non-scaling-stroke;
-  filter:drop-shadow(0 0 5px rgba(155,255,63,.30));
+  filter:drop-shadow(0 0 4px rgba(155,255,63,.14));
 }
 
 html body.zsMotionActive #projectsHome .zsHeroPerimeterTrace{
-  animation:zsHeroPerimeterRun 4.2s linear infinite!important;
+  animation:zsHeroPerimeterRun 5.6s linear infinite!important;
   will-change:stroke-dashoffset;
 }
 body.zsMotionPaused #projectsHome .zsHeroPerimeterTrace{animation-play-state:paused!important}
@@ -116,4 +117,4 @@ if 'id="zsHeroPerimeterGeometry"' not in text:
     text = text.replace('</body>', GEOMETRY_SCRIPT + '\n</body>', 1)
 
 p.write_text(text, encoding='utf-8')
-print('index.html: Home perimeter trace now uses constant path speed through corners')
+print('index.html: Home perimeter trace softened and slowed for subtle motion')

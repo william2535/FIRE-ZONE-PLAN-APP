@@ -37,7 +37,9 @@ jobs:
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
           grep -q 'Home hero perimeter trace v4' index.html
-          grep -q 'animation:zsHeroPerimeterRun 4.2s linear infinite!important' index.html
+          grep -q 'animation:zsHeroPerimeterRun 5.6s linear infinite!important' index.html
+          grep -q 'opacity:.52' index.html
+          grep -q 'drop-shadow(0 0 4px rgba(155,255,63,.14))' index.html
           grep -q 'mask-composite:exclude!important' index.html
           grep -q 'assets/home-system-fire.webp' index.html
           grep -q 'assets/home-system-intruder.webp' index.html
@@ -56,6 +58,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'Home perimeter trace already current.'
           else
-            git commit -m 'Speed up Home border trace and run it around hero'
+            git commit -m 'Soften Home hero perimeter motion'
             git push origin HEAD:main
           fi
