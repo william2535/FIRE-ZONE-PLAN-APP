@@ -1,0 +1,61 @@
+name: Apply Home hero perimeter trace
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/home_hero_perimeter.py'
+      - '.github/workflows/home-hero-perimeter.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Apply Home perimeter trace
+        run: python .github/home_hero_perimeter.py
+
+      - name: Sync app mirrors
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify perimeter trace and regressions
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          grep -q 'Home hero perimeter trace v4' index.html
+          grep -q 'animation:zsHeroPerimeterRun 4.2s linear infinite!important' index.html
+          grep -q 'mask-composite:exclude!important' index.html
+          grep -q 'assets/home-system-fire.webp' index.html
+          grep -q 'assets/home-system-intruder.webp' index.html
+          grep -q 'assets/home-system-access-control.webp' index.html
+          grep -q 'assets/home-system-cctv.webp' index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+          git diff --check
+
+      - name: Commit Home perimeter update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Home perimeter trace already current.'
+          else
+            git commit -m 'Speed up Home border trace and run it around hero'
+            git push origin HEAD:main
+          fi
