@@ -6,9 +6,8 @@ text = p.read_text(encoding='utf-8')
 START = '/* Home workflow one-shot fill — Plan > Survey > Circuits > As-Fit. */'
 END = '/* End home workflow one-shot fill. */'
 
-CSS = r'''
-/* Home workflow one-shot fill — Plan > Survey > Circuits > As-Fit.
-   Keep the existing cyan-to-lime rail style and the approved 8s / 2s stagger,
+BODY = r'''
+/* Keep the existing cyan-to-lime rail style and the approved 8s / 2s stagger,
    but run the fill once on load and hold the completed gradient afterwards. */
 @keyframes zsWorkflowFillOnce{
   0%{transform:scaleX(.15);opacity:.22}
@@ -39,7 +38,7 @@ body.zsMotionActive.zsMotionForce #projectsHome .workflowStep:nth-child(4):befor
 body.zsMotionActive.reduceMotion #projectsHome .workflowStep:nth-child(4):before{animation-delay:6s!important}
 '''.strip()
 
-BLOCK = START + '\n' + CSS.split('\n', 1)[1] + '\n' + END
+BLOCK = START + '\n' + BODY + '\n' + END
 
 if START in text:
     start = text.index(START)
