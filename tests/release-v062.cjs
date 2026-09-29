@@ -14,6 +14,8 @@ assert(app.includes("combinedZone:true"),'combined zone drag path must ship');
 assert(app.includes("state.buildMode!==false"),'Build mode ON must remain the backwards-compatible default');
 assert(app.includes('id="cbFloorSelect"'),'v0.61 multi-floor Circuit Builder must remain present');
 assert(app.includes('function cbRepairConventionalRefs'),'v0.60 circuit recovery must remain present');
+assert(app.includes('id="cbBridgeToggle"'),'normal Circuit Builder must expose the Bridge toggle');
+assert(app.includes('function cbBuildBridgeHits'),'normal Circuit Builder must record intentional crossing bridges');
 const gradle=fs.readFileSync('app/build.gradle','utf8');
 assert(/versionCode\s+63\b/.test(gradle),'Android versionCode must be 63');
 assert(/versionName\s+'0\.62'/.test(gradle),'Android versionName must be 0.62');
@@ -31,4 +33,5 @@ assert(launcher.includes('index.html?pineapple=v062&fresh='),'fresh launcher mus
 const regressions=fs.readFileSync('tests/run-regressions.cjs','utf8');
 assert(regressions.includes("'floor-workflow-v061'"),'v0.61 floor regression must remain in the full gate');
 assert(regressions.includes("'build-mode-v062'"),'v0.62 build-mode regression must be in the full gate');
+assert(regressions.includes("'circuit-build-bridge-v062'"),'normal Circuit Builder bridge regression must be in the full gate');
 console.log('PASS v0.62 release metadata, toggleable Zone Plan Build mode, regression parity and Android versioning');
