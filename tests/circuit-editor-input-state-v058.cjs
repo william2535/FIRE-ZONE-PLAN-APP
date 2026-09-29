@@ -9,7 +9,7 @@ function fixture() {
     cbPointers: new Map([[7, {x: 50, y: 50}]]),
     cbEdit: {active: true, mode: 'pencil', stroke: {pointerId: 7, raw: [{x: 50, y: 50}]}, tap: {pointerId: 7, start: {x: 50, y: 50}}},
     cbCircuit: {editDraft: {legs: [{points: [{x: 0, y: 0}, {x: 1, y: 0}]}], pending: {points: [{x: .2, y: 0}, {x: .8, y: 0}]}}},
-    cbUpdateGame() {}, cbDrawBoard() {}, cbCommitDrag() {}, cbEditMoveStroke() {}, uiToast() {},
+    cbUpdateGame() {}, cbBuildBridgeSyncUi() {}, cbDrawBoard() {}, cbCommitDrag() {}, cbEditMoveStroke() {}, uiToast() {},
     cbEditHitSegment: () => ({legIndex: 0, segmentIndex: 0}),
     deletions: 0,
   };
