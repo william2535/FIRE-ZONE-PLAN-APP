@@ -41,7 +41,7 @@ jobs:
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
-          test "$(git hash-object assets/on-site-zone-planner-icon.webp)" = "ee3c6bfb43f147543b6f1851a70f7cfca1e42fda"
+          test "$(git hash-object assets/on-site-zone-planner-icon.webp)" = "4033e887d609b0b708c6d45705e8adf178fcc4387e9d3777f5d4f661b3d0e9b2"
           grep -q 'id="headerHomeBtn"' index.html
           grep -q 'assets/zone-sketch-header-mark.png' index.html
           grep -q "headerHomeBtn').onclick=()=>projectAction(openProjects)" index.html
