@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright');
 const fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
@@ -42,7 +43,7 @@ const fs=require('fs'),http=require('http'),assert=require('node:assert/strict')
     await page.locator('#viewFit').click();
 
     // Survey grid is exact and both beam endpoints should use it when snap is on.
-    await page.locator('#surveyModeBtn').click();
+    await openHeader(page);await page.locator('#surveyModeBtn').click();
     await page.locator('#canvasOptionsBtn').click();
     await page.locator('#surveyGridSize').selectOption('20');
     await page.locator('#surveyGridSize').dispatchEvent('change');

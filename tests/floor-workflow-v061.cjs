@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 
 (async()=>{
@@ -44,7 +45,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     assert.equal(s.floors.find(f=>f.id===groundId).data.activeZoneId,s.zones.find(z=>z.number==='2').id,'selected zone should be stored with the floor');
 
     // Create First floor, give it different zone data, then switch rapidly back and forth.
-    await page.locator('#floorMenuBtn').click();await page.locator('#addFloor').click();await page.locator('#saveFloor').click();
+    await openHeader(page);await page.locator('#floorMenuBtn').click();await page.locator('#addFloor').click();await page.locator('#saveFloor').click();
     await addZone(11,'First offices');
     await drawZoneBox(520,160,760,390);
     s=await saved();
@@ -53,7 +54,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     assert.deepEqual(s.zones.map(z=>z.number),['11']);
     assert.equal(s.shapes.length,1);
 
-    await page.locator('#floorMenuBtn').click();await page.locator('.floorChoice').filter({hasText:'Ground floor'}).click();
+    await openHeader(page);await page.locator('#floorMenuBtn').click();await page.locator('.floorChoice').filter({hasText:'Ground floor'}).click();
     await page.waitForFunction(id=>document.querySelector('#floorSelect').value===id,groundId);
     await page.waitForFunction(()=>[...document.querySelectorAll('#zones .zone b')].map(n=>n.textContent).join('|')==='Zone 1|Zone 2');
     assert.deepEqual(await page.locator('#zones .zone b').allTextContents(),['Zone 1','Zone 2']);
@@ -61,7 +62,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     s=await saved();
     assert.equal(s.shapes.length,1,'Ground floor zone geometry should survive floor switches');
 
-    await page.locator('#floorMenuBtn').click();await page.locator('.floorChoice').filter({hasText:'First floor'}).click();
+    await openHeader(page);await page.locator('#floorMenuBtn').click();await page.locator('.floorChoice').filter({hasText:'First floor'}).click();
     await page.waitForFunction(id=>document.querySelector('#floorSelect').value===id,firstId);
     await page.waitForFunction(()=>[...document.querySelectorAll('#zones .zone b')].map(n=>n.textContent).join('|')==='Zone 11');
     assert.deepEqual(await page.locator('#zones .zone b').allTextContents(),['Zone 11']);
@@ -69,7 +70,7 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
     assert.equal(s.shapes.length,1,'First floor zone geometry should remain isolated and saved');
 
     // Circuit Builder now owns the same floor switch, without leaving the workflow.
-    await page.locator('#circuitModeBtn').click();
+    await openHeader(page);await page.locator('#circuitModeBtn').click();
     await page.locator('#circuitBuilder').waitFor({state:'visible'});
     assert.equal(await page.locator('#cbFloorSelect option').count(),2);
     assert.equal(await page.locator('#cbFloorSelect').inputValue(),firstId);

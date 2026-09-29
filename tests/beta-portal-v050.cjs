@@ -1,3 +1,4 @@
+const {openHeader}=require('./header-navigation.cjs');
 const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),assert=require('node:assert/strict');
 (async()=>{
  const server=http.createServer((q,r)=>{const path=(q.url||'/').split('?')[0],file=path==='/'?'index.html':path.slice(1);try{const data=fs.readFileSync(file);if(file.endsWith('.svg'))r.setHeader('Content-Type','image/svg+xml');else if(file.endsWith('.webmanifest'))r.setHeader('Content-Type','application/manifest+json');else r.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':'text/html');r.end(data)}catch(e){r.statusCode=404;r.end('not found')}}).listen(0,'127.0.0.1');
@@ -26,7 +27,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
   assert.match(await p.locator('.brand').innerText(),/WILL FLOOD/i);
   await p.locator('#homeNew').click();
   await p.locator('#projectsHome').waitFor({state:'hidden'});
-  await p.locator('#projectMenuBtn').click();
+  await openHeader(p);await p.locator('#projectMenuBtn').click();
   assert(await p.locator('#betaPortalBtn').isVisible());
   await p.locator('#appSettingsBtn').click();
   assert.match(await p.locator('.settingsFooter').innerText(),/WILL FLOOD/i);

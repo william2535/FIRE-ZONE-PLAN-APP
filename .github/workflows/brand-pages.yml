@@ -12,24 +12,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install browser tooling
         run: |
           npm install --no-save playwright@1.62.1 acorn
           npx playwright install --with-deps chromium webkit
+      - name: Reproduce original portrait collapse defect
+        run: |
+          cp index.html /tmp/fixed-index.html
+          trap 'cp /tmp/fixed-index.html index.html' EXIT
+          git show 36a02b60a86db4bd889a11159245c4b0fa1df519:index.html > index.html
+          if node tests/iphone-top-menu-v062.cjs > test-results/menu-baseline.log 2>&1; then
+            echo 'Expected original portrait collapse defect was not reproduced'
+            exit 1
+          fi
+          grep -q 'portrait Menu closed must hide topMain' test-results/menu-baseline.log
+          cp /tmp/fixed-index.html index.html
       - name: Verify app and protected build
         run: |
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
           node tests/projects.cjs
+          node tests/iphone-top-menu-v062.cjs
       - name: Review Chromium layouts and feedback
         run: node tests/brand-pages.cjs
       - name: Review WebKit layouts and feedback
         env:
           PINEAPPLE_BROWSER: webkit
-        run: node tests/brand-pages.cjs
+        run: |
+          node tests/brand-pages.cjs
+          node tests/iphone-top-menu-v062.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: home-tester-brand-previews
-          path: test-results/brand-*.png
+          path: |
+            test-results/brand-*.png
+            test-results/iphone-menu-*.png
+            test-results/menu-baseline.log
