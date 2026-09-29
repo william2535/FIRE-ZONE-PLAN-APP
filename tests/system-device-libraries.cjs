@@ -41,6 +41,7 @@ const server=http.createServer((req,res)=>{try{const path=decodeURIComponent((re
  await card.getByRole('button',{name:'Export'}).click();await page.waitForFunction(()=>!!window.shared);
  const backup=await page.evaluate(()=>JSON.parse(atob(window.shared.data.split(',')[1])));assert.equal(backup.project.systemType,'cctv');assert(backup.project.floors[0].data.symbols.some(s=>s.type==='cctvFixed'));
  await page.locator('#projectFile').setInputFiles({name:'library.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await page.locator('#projectsHome').waitFor({state:'hidden'});assert.equal((await page.locator('#editorSystemIdentity').textContent()).trim(),'CCTV');await home();
+ await page.waitForFunction(()=>[...document.querySelectorAll('.projectCard h3')].filter(h=>h.textContent==='Library cctv').length===2);
  assert.equal(await page.locator('.projectCard').filter({has:page.getByRole('heading',{name:'Library cctv',exact:true})}).count(),2);
  assert.deepEqual(errors,[]);console.log('PASS: four isolated palettes, placement, vector rendering, reload, duplicate and backup import/export');
  }finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exit(1)});
