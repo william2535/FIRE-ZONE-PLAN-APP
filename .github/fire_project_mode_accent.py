@@ -3,7 +3,7 @@ from pathlib import Path
 p = Path('index.html')
 text = p.read_text(encoding='utf-8')
 
-START = '/* System-mode project rail v1 — FIRE. */'
+START = '/* System-mode project rail v1 — FIRE.'
 END = '/* End system-mode project rail v1. */'
 CSS = r'''
 /* System-mode project rail v1 — FIRE.
