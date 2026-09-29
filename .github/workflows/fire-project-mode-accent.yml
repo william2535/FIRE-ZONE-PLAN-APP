@@ -1,0 +1,62 @@
+name: Apply Fire project rail accent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/fire_project_mode_accent.py'
+      - '.github/SYSTEM_MODE_ACCENTS.md'
+      - '.github/workflows/fire-project-mode-accent.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Apply Fire system-mode project rail
+        run: python .github/fire_project_mode_accent.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify Fire rail accent and regressions
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          grep -q 'System-mode project rail v1 — FIRE' index.html
+          grep -q 'background:linear-gradient(90deg,#7d1118 0%,#d8232e 28%,#ff3e38 58%,#ff6a3d 80%,#ff9b45 100%)!important' index.html
+          grep -q 'animation:zsFireProjectRail 8.4s ease-in-out infinite alternate!important' index.html
+          grep -q 'Fire.*red to orange gradient' .github/SYSTEM_MODE_ACCENTS.md
+          grep -q 'Intruder.*dark blue' .github/SYSTEM_MODE_ACCENTS.md
+          grep -q 'CCTV.*light blue' .github/SYSTEM_MODE_ACCENTS.md
+          grep -q 'Access Control.*green' .github/SYSTEM_MODE_ACCENTS.md
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+          git diff --check
+
+      - name: Commit Fire mode rail accent
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Fire project rail accent already current.'
+          else
+            git commit -m 'Use Fire red gradient for project card rails'
+            git push origin HEAD:main
+          fi
