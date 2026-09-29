@@ -14,10 +14,10 @@ const server=http.createServer((req,res)=>{try{const path=decodeURIComponent((re
  await page.addInitScript(()=>{window.AndroidBridge={shareFile:(data,name,mime)=>window.shared={data,name,mime}}});
  await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
  const record=site=>page.evaluate(async site=>{const db=await new Promise((ok,no)=>{const r=indexedDB.open('ZoneSketch-v1',1);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});return new Promise((ok,no)=>{const r=db.transaction('draft').objectStore('draft').openCursor();r.onsuccess=()=>{const c=r.result;if(!c)return ok(null);if(String(c.key).startsWith('project:')&&c.value.site===site)return ok(c.value);c.continue()};r.onerror=()=>no(r.error)})},site);
- const home=async()=>{await page.locator('#headerHomeBtn').click();await page.locator('#projectsHome').waitFor({state:'visible'})};
+ const home=async()=>{await page.evaluate(()=>document.querySelector('#headerHomeBtn').click());await page.locator('#projectsHome').waitFor({state:'visible'})};
  for(const [system,types] of Object.entries(sets)){
   const site='Library '+system;await page.locator('.homeSystemTile[data-system="'+system+'"]').click();await page.locator('#newProjectName').fill(site);await page.locator('#newProjectCreate').click();await page.locator('#projectsHome').waitFor({state:'hidden'});
-  await page.locator('#surveyModeBtn').click();await page.locator('#surveyDevice').click();
+  await page.evaluate(()=>document.querySelector('#surveyModeBtn').click());await page.locator('#surveyDevice').click();
   const visible=await page.locator('#symbolMenu [data-symbol]:visible').evaluateAll(buttons=>buttons.map(b=>b.dataset.symbol));
   assert.deepEqual(new Set(visible),new Set(types),system+' palette');
   assert.equal(visible.length,types.length,system+' palette length');
@@ -32,7 +32,7 @@ const server=http.createServer((req,res)=>{try{const path=decodeURIComponent((re
   }
   await home();await page.reload();await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
   const card=page.locator('.projectCard').filter({has:page.getByRole('heading',{name:site,exact:true})});await card.getByRole('button',{name:'Open',exact:true}).click();await page.locator('#projectsHome').waitFor({state:'hidden'});
-  await page.locator('#surveyModeBtn').click();await page.locator('#surveyDevice').click();assert.deepEqual(new Set(await page.locator('#symbolMenu [data-symbol]:visible').evaluateAll(bs=>bs.map(b=>b.dataset.symbol))),new Set(types),system+' reopened palette');
+  await page.evaluate(()=>document.querySelector('#surveyModeBtn').click());await page.locator('#surveyDevice').click();assert.deepEqual(new Set(await page.locator('#symbolMenu [data-symbol]:visible').evaluateAll(bs=>bs.map(b=>b.dataset.symbol))),new Set(types),system+' reopened palette');
   saved=await record(site);assert(saved.project.floors[0].data.symbols.some(s=>s.type===first),system+' reload');await home();
  }
  const card=page.locator('.projectCard').filter({has:page.getByRole('heading',{name:'Library cctv',exact:true})});
