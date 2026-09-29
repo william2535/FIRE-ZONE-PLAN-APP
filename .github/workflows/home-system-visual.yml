@@ -1,0 +1,59 @@
+name: Apply Home system visual preview
+
+on:
+  push:
+    paths:
+      - '.github/home_system_visual.py'
+      - '.github/workflows/home-system-visual.yml'
+      - 'assets/zone-sketch-intruder-icon.svg'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Apply visual-only Home treatment
+        run: python .github/home_system_visual.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify visual-only Home treatment and release safety
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          grep -q 'class="homeMainLogo"' index.html
+          grep -q 'class="homeSystemPreview"' index.html
+          grep -q 'zone-sketch-intruder-icon.svg' index.html
+          grep -q '<div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button></div>' index.html
+          grep -q 'id="cbBridgeToggle"' index.html
+          grep -q 'iOS/iPadOS standalone viewport fill' index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+
+      - name: Commit visual Home update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Home visual treatment already current.'
+          else
+            git commit -m 'Add visual-only Home system preview'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
