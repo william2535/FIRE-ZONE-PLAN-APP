@@ -51,6 +51,7 @@ jobs:
         with:
           name: home-tester-brand-previews
           path: |
+            test-results/swipe-delete-*.png
             test-results/brand-*.png
             test-results/iphone-menu-*.png
             test-results/menu-baseline.log
