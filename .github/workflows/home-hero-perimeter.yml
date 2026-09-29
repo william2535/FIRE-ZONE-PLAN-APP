@@ -36,11 +36,21 @@ jobs:
           python .github/verify_247_protected.py
           node tests/release-v062.cjs
           node tests/circuit-editor-syntax-v058.cjs
-          grep -q 'Home hero perimeter trace v4' index.html
-          grep -q 'animation:zsHeroPerimeterRun 5.6s linear infinite!important' index.html
-          grep -q 'opacity:.52' index.html
-          grep -q 'drop-shadow(0 0 4px rgba(155,255,63,.14))' index.html
+          grep -q 'Home hero perimeter trace v' index.html
+          grep -q '5.6s linear infinite!important' index.html
           grep -q 'mask-composite:exclude!important' index.html
+          if grep -q 'Home hero perimeter trace v5' index.html; then
+            grep -q 'zsHeroPerimeterTrailFar' index.html
+            grep -q 'zsHeroPerimeterTrailMid' index.html
+            grep -q 'zsHeroPerimeterTrailNear' index.html
+            grep -q 'zsHeroPerimeterHead' index.html
+            grep -q 'stroke-dasharray:12 88' index.html
+            grep -q 'stroke-dasharray:.01 99.99' index.html
+          else
+            grep -q 'animation:zsHeroPerimeterRun 5.6s linear infinite!important' index.html
+            grep -q 'opacity:.52' index.html
+            grep -q 'drop-shadow(0 0 4px rgba(155,255,63,.14))' index.html
+          fi
           grep -q 'assets/home-system-fire.webp' index.html
           grep -q 'assets/home-system-intruder.webp' index.html
           grep -q 'assets/home-system-access-control.webp' index.html
@@ -58,6 +68,6 @@ jobs:
           if git diff --cached --quiet; then
             echo 'Home perimeter trace already current.'
           else
-            git commit -m 'Soften Home hero perimeter motion'
+            git commit -m 'Refine Home hero perimeter trail'
             git push origin HEAD:main
           fi
