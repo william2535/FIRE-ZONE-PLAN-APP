@@ -1304,6 +1304,13 @@ body.zsMotionOff .zsMotionItem,body.zsMotionOff .zsMotionItem:before,body.zsMoti
 }
 @keyframes zsHeroPerimeterRun{to{--zsHeroTraceAngle:360deg}}
 
+/* Keep the base hero border clean: remove the old stationary green top accent so
+   the moving perimeter trace is the only bright border animation. */
+#projectsHome .homeProductHero:after{
+  content:none!important;
+  display:none!important;
+}
+
 #projectsHome .homeProductHero:before{
   content:''!important;
   position:absolute!important;
