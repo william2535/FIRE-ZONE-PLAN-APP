@@ -6,25 +6,11 @@ SOURCE = Path('assets/on-site-zone-planner-icon.webp')
 MARK_PNG = Path('assets/zone-sketch-header-mark.png')
 OLD_MARK_SVG = Path('assets/zone-sketch-header-mark.svg')
 
-# Source is the existing approved production icon. RGB is never recoloured or redrawn;
-# we only crop away the surrounding app-icon frame and derive transparency from the
-# original pixels so the house/flame artwork itself remains unchanged.
+# The approved icon is already a transparent, complete-house mark. Preserve its
+# pixels exactly; the header uses the same artwork as the splash, tester hub and
+# launcher rather than deriving a cropped/recoloured approximation.
 img = Image.open(SOURCE).convert('RGBA')
-w, h = img.size
-crop = (round(w * 0.13), round(h * 0.10), round(w * 0.87), round(h * 0.90))
-mark = img.crop(crop)
-pixels = mark.load()
-for y in range(mark.height):
-    for x in range(mark.width):
-        r, g, b, _ = pixels[x, y]
-        v = max(r, g, b)
-        if v <= 62:
-            a = 0
-        elif v >= 158:
-            a = 255
-        else:
-            a = round((v - 62) * 255 / 96)
-        pixels[x, y] = (r, g, b, a)
+mark = img.resize((768, 768), Image.Resampling.LANCZOS)
 MARK_PNG.parent.mkdir(parents=True, exist_ok=True)
 mark.save(MARK_PNG, 'PNG', optimize=True)
 if OLD_MARK_SVG.exists():
@@ -85,8 +71,7 @@ else:
         raise SystemExit('index.html: closing style tag not found')
     text = text.replace('</style>', CSS + '\n</style>', 1)
 
-# Keep the existing Home button behavior, but point it at the transparent cutout made
-# from the exact approved icon pixels.
+# Keep the existing Home button behavior, pointing it at the exact transparent mark.
 text = text.replace('src="assets/zone-sketch-header-mark.svg"', 'src="assets/zone-sketch-header-mark.png"')
 
 if 'id="headerHomeBtn"' not in text:

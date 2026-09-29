@@ -24,7 +24,7 @@ def save_png(im: Image.Image, path: Path) -> None:
 
 def save_webp(im: Image.Image, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    im.save(path, "WEBP", quality=100, method=6)
+    im.save(path, "WEBP", lossless=True, method=6)
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
@@ -35,7 +35,7 @@ def main() -> None:
     source.write_bytes(source_bytes)
 
     with Image.open(source) as opened:
-        primary = opened.convert("RGB")
+        primary = opened.convert("RGBA")
     if primary.size != (312, 312):
         raise SystemExit(f"Unexpected approved primary size {primary.size}; expected 312x312")
 
