@@ -1,0 +1,58 @@
+name: Remove device placement popups
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/remove_device_placement_toast.py'
+      - '.github/workflows/remove-device-placement-toast.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Remove per-device success popups
+        run: python .github/remove_device_placement_toast.py
+
+      - name: Sync app mirrors and Android asset
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install syntax dependency
+        run: npm install --no-save acorn
+
+      - name: Verify popup removal and regressions
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v062.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          grep -Fq "if(surveyMode)surveyPlacementSound('beam')" index.html
+          grep -Fq "if(surveyMode)surveyPlacementSound(symbolStamp)" index.html
+          ! grep -Fq "uiToast('Beam detector added','success')" index.html
+          ! grep -Fq "uiToast((symbolNames[symbolStamp]||'Device')+' added','success')" index.html
+          cmp --silent index.html ZoneSketch.html
+          cmp --silent index.html Zone-Sketch-by-Will.html
+          cmp --silent index.html app/src/main/assets/index.html
+          git diff --check
+
+      - name: Commit synced app files
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo 'Device placement popups already removed.'
+          else
+            git commit -m 'Remove device placement success popups'
+            git push origin HEAD:main
+          fi
