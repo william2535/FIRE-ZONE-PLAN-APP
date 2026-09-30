@@ -1,0 +1,60 @@
+name: System-aware Circuit Builder controllers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/system_circuit_controllers.py'
+      - '.github/system-circuit-controller.cjs'
+      - '.github/workflows/system-circuit-controllers.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply system-aware Circuit Builder controllers
+        run: python .github/system_circuit_controllers.py
+
+      - name: Sync app mirrors
+        run: |
+          cp index.html ZoneSketch.html
+          cp index.html Zone-Sketch-by-Will.html
+          cp index.html app/src/main/assets/index.html
+
+      - name: Install browser checks
+        run: |
+          npm install --no-save playwright@1.62.1 acorn@8.15.0
+          npx playwright install --with-deps chromium
+
+      - name: Verify protected build and regressions
+        run: |
+          python .github/verify_247_protected.py
+          node tests/release-v063.cjs
+          node tests/circuit-editor-syntax-v058.cjs
+          node .github/system-circuit-controller.cjs
+          node tests/phase3-connections.cjs
+          node tests/phase2-system-tools.cjs
+          node tests/system-device-libraries.cjs
+          node tests/system-modes.cjs
+          cmp index.html ZoneSketch.html
+          cmp index.html Zone-Sketch-by-Will.html
+          cmp index.html app/src/main/assets/index.html
+          git diff --check
+
+      - name: Commit generated app mirrors
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html ZoneSketch.html Zone-Sketch-by-Will.html app/src/main/assets/index.html
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+          git commit -m "Use system controllers in Circuit Builder"
+          git push
