@@ -34,7 +34,7 @@ jobs:
       - name: Verify popup removal and regressions
         run: |
           python .github/verify_247_protected.py
-          node tests/release-v062.cjs
+          node tests/release-v063.cjs
           node tests/circuit-editor-syntax-v058.cjs
           grep -Fq "if(surveyMode)surveyPlacementSound('beam')" index.html
           grep -Fq "if(surveyMode)surveyPlacementSound(symbolStamp)" index.html
