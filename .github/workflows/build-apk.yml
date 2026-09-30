@@ -70,6 +70,7 @@ jobs:
               --target "$(git rev-parse HEAD)" \
               --title 'Zone Sketch by Will v0.63' \
               --notes 'Four saved system types: Fire, Security, CCTV and Access Control. All use the shared field workspace. Existing projects open as Fire.'
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: Zone-Sketch-by-Will-APK
