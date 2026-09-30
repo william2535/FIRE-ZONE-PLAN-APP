@@ -6,11 +6,11 @@ text = path.read_text(encoding='utf-8')
 replacements = [
     (
         "if(surveyMode){surveyPlacementSound('beam');uiToast('Beam detector added','success')}",
-        "if(surveyMode)surveyPlacementSound('beam')",
+        "if(surveyMode)surveyPlacementSound('beam');",
     ),
     (
         "if(surveyMode){surveyPlacementSound(symbolStamp);uiToast((symbolNames[symbolStamp]||'Device')+' added','success')}",
-        "if(surveyMode)surveyPlacementSound(symbolStamp)",
+        "if(surveyMode)surveyPlacementSound(symbolStamp);",
     ),
 ]
 
