@@ -38,9 +38,9 @@ const server=http.createServer((req,res)=>{try{const path=decodeURIComponent((re
  }
  const card=page.locator('.projectCard').filter({has:page.getByRole('heading',{name:'Library cctv',exact:true})});
  await card.getByRole('button',{name:'Duplicate'}).click();assert((await record('Library cctv (copy)')).project.floors[0].data.symbols.some(s=>s.type==='cctvFixed'));
- await card.getByRole('button',{name:'Export'}).click();await page.waitForFunction(()=>!!window.shared);
+ await page.evaluate(()=>{window.shared=null});await card.getByRole('button',{name:'Export'}).click();await page.waitForFunction(()=>!!window.shared);
  const backup=await page.evaluate(()=>JSON.parse(atob(window.shared.data.split(',')[1])));assert.equal(backup.project.systemType,'cctv');assert(backup.project.floors[0].data.symbols.some(s=>s.type==='cctvFixed'));
- await page.locator('#projectFile').setInputFiles({name:'library.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await page.locator('#projectsHome').waitFor({state:'hidden'});assert.equal((await page.locator('#editorSystemIdentity').textContent()).trim(),'CCTV');await home();
+ await page.locator('#projectFile').setInputFiles({name:'library.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await page.locator('#projectsHome').waitFor({state:'hidden'});const identity=(await page.locator('#editorSystemIdentity').textContent()).replace(/\s+/g,' ').trim();assert(identity.includes('CCTV'));assert(identity.includes('WORK IN PROGRESS'));await home();
  await page.waitForFunction(()=>[...document.querySelectorAll('.projectCard h3')].filter(h=>h.textContent==='Library cctv').length===2);
  assert.equal(await page.locator('.projectCard').filter({has:page.getByRole('heading',{name:'Library cctv',exact:true})}).count(),2);
  assert.deepEqual(errors,[]);console.log('PASS: four isolated palettes, placement, vector rendering, reload, duplicate and backup import/export');
