@@ -88,3 +88,6 @@ test('sampled drag leaves a busy panel and turns right without a false crossing'
  for(let x=204;x<=260;x+=4)assert.equal(c.cbAppendDrag({x,y:164},400,300,true),true,'right at '+x+' '+JSON.stringify(c.cbDrag.points));
  assert(c.cbDrag.points.at(-1).x>=250);assert.equal(c.cbDrag.blocked,false);
 });
+test('a zero-length legacy panel segment cannot become an unlimited shared exit',()=>{
+ const c=panelFixture();c.other.legs[0].points=[{x:200,y:100},{x:200,y:100},{x:80,y:100}];assert.equal(c.cbPanelExitStems(400,300).length,0);const q=c.cbPairSnapPx({x:200,y:280},{x:200,y:100},400,300,{x:200,y:280});assert.equal(c.cbDrag.pairSnap,false);assert.equal(q.y,280);
+});

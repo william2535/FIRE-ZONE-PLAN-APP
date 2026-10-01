@@ -2501,7 +2501,7 @@ function cbPanelExitStems(w,h){
   if(c.panelId!==cbCircuit.panelId)continue;
   const leg=c.legs?.[0];if(leg?.from!==c.panelId||(leg.points?.length||0)<2)continue;
   const a=cbChallengeMapPointPx(c,leg.points[0],w,h),b=cbChallengeMapPointPx(c,leg.points[1],w,h),axis=cbRouteAxis(a,b);if(!axis||!cbPointClose(a,panel))continue;
-  const length=Math.hypot(b.x-a.x,b.y-a.y),t=Math.min(1,limit/length);out.push({a,b:{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t},axis,limit})
+  const length=Math.hypot(b.x-a.x,b.y-a.y);if(length<1)continue;const t=Math.min(1,limit/length);out.push({a,b:{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t},axis,limit})
  }return out
 }
 function cbPanelExitAllows(s,o,stems){
