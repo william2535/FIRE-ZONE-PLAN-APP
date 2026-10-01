@@ -6,9 +6,9 @@ for(const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)){
  const walk=n=>{if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration')functions.set(n.id.name,match[1].slice(n.start,n.end));for(const value of Object.values(n))if(Array.isArray(value))value.forEach(walk);else if(value&&typeof value==='object')walk(value)};walk(acorn.parse(match[1],{ecmaVersion:'latest'}));
 }
 function fixture(){
- const ctx={Math,Number,Map,Set,console,CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:.72,CB_ROUTE_ARM_CELLS:.28,cbView:{scale:1},cbSelectBounds:null,cbCircuit:{id:'blue',color:'#2675db',type:'conventional',legs:[]},cbDrag:null,cbEdit:null,cbBuildBridge:false,cbPointers:new Map(),cbPinch:null,cbGestureLock:false,cbHover:null,cbBoardPx:p=>({...p}),cbEditCircuitPointPx:(c,p)=>({...p}),cbChallengeMapPointPx:(c,p)=>({...p}),cbFieldGridScreenStep:()=>({x:24,y:24}),cbCircuitIssue:()=>false,cbUpdateGame(){},cbDrawBoard(){},cbClearReward(){}};
+ const ctx={Math,Number,Map,Set,console,clamp:(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),cbSnapPx:p=>({...p}),CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:.72,CB_ROUTE_ARM_CELLS:.28,cbView:{scale:1},cbSelectBounds:null,cbCircuit:{id:'blue',color:'#2675db',type:'conventional',legs:[]},cbDrag:null,cbEdit:null,cbBuildBridge:false,cbPointers:new Map(),cbPinch:null,cbGestureLock:false,cbHover:null,cbBoardPx:p=>({...p}),cbEditCircuitPointPx:(c,p)=>({...p}),cbChallengeMapPointPx:(c,p)=>({...p}),cbFieldGridScreenStep:()=>({x:24,y:24}),cbCircuitIssue:()=>false,cbUpdateGame(){},cbDrawBoard(){},cbClearReward(){}};
  ctx.other={id:'red',color:'#e33a3a',type:'conventional',complete:true,legs:[{points:[{x:40,y:100},{x:340,y:100}]}]};ctx.cbCircuits=()=>[ctx.other,ctx.cbCircuit];ctx.cbChallengeCircuits=()=>[ctx.other];ctx.cbLegSegments=c=>c.legs.flatMap(l=>l.points.slice(1).map((b,i)=>({a:l.points[i],b})));
- vm.createContext(ctx);for(const name of ['cbPairSegmentsPx','cbRouteCellPx','cbPairSnapPx','cbRouteGridStep','cbCollinear','cbSimplify','cbCheckpointDrag','cbCanvasCancel','cbChallengeOwner'])vm.runInContext(functions.get(name),ctx);
+ vm.createContext(ctx);for(const name of ['cbPairSegmentsPx','cbRouteCellPx','cbPairSnapPx','cbRouteGridStep','cbCollinear','cbSimplify','cbCheckpointDrag','cbCanvasCancel','cbChallengeOwner','cbEditCleanStroke','cbEditOrthogonalPush','cbEditDoglegClean','cbPruneRouteNoise','cbRouteAxis'])vm.runInContext(functions.get(name),ctx);
  return ctx;
 }
 const copy=v=>JSON.parse(JSON.stringify(v));
@@ -47,4 +47,12 @@ test('a zero-length paired tail cannot turn its perpendicular connector into a d
 
 test('shared FAP remains the active start node when other coloured circuits are visible',()=>{
  const c=fixture();c.cbCircuit.panelId='p';c.cbCircuit.deviceIds=['b'];c.other.panelId='p';c.other.deviceIds=['a'];assert.equal(c.cbChallengeOwner('p'),c.cbCircuit);assert.equal(c.cbChallengeOwner('a'),c.other);
+});
+
+test('Pencil cleanup uses the same separate lane without leaving a staircase',()=>{
+ const c=fixture(),start={x:40,y:150},end={x:300,y:150},raw=[start,{x:40,y:110},{x:80,y:103},{x:120,y:99},{x:170,y:102},{x:240,y:100},{x:300,y:103},end];
+ const points=copy(c.cbEditCleanStroke(raw,start,end,400,300,80));assert.deepEqual(points[0],start);assert.deepEqual(points.at(-1),end);assert(points.length<=5,JSON.stringify(points));assert(points.every((p,i)=>!i||p.x===points[i-1].x||p.y===points[i-1].y));assert(points.some((p,i)=>i&&p.y===109&&points[i-1].y===109&&Math.abs(p.x-points[i-1].x)>150));
+});
+test('a full lane bank refuses to silently overlap another colour',()=>{
+ const c=fixture(),lanes=Array.from({length:14},(_,i)=>({a:{x:40,y:100+i*9},b:{x:340,y:100+i*9},foreign:true}));c.cbDrag={points:[{x:40,y:100}],routeInput:{x:40,y:100}};const q=c.cbPairSnapPx({x:160,y:102},c.cbDrag.points[0],400,300,{x:160,y:102},c.cbDrag,lanes);assert.equal(c.cbDrag.pairSnap,false);assert.deepEqual(copy(q),{x:160,y:102});
 });
