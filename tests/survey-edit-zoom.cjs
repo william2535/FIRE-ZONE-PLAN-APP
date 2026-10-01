@@ -7,7 +7,7 @@ const {chromium}=require('playwright'),fs=require('fs'),http=require('http'),ass
  try{
  const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept(d.type()==='prompt'?'Survey test':undefined));
- await p.goto('http://127.0.0.1:'+server.address().port);await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Survey test');await p.locator('#newProjectCreate').click();await p.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(p);await p.locator('#surveyModeBtn').click();
+ await p.goto('http://127.0.0.1:'+server.address().port);await p.locator('#homeNew').click();await p.locator('#newProjectName').fill('Survey test');await p.locator('#newProjectCreate').click();await p.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(p);await p.locator('#surveyModeBtn').click();await p.locator('#topCollapseBtn').click();
  const read=()=>p.evaluate(()=>window.surveyTest.read());
  const devicePoint=()=>p.evaluate(()=>{const s=window.surveyTest.read().state.symbols[0],q=window.surveyTest.screen(s),r=document.querySelector('#canvas').getBoundingClientRect();return{x:q.x+r.left,y:q.y+r.top}});
  await p.locator('#surveyDevice').click();await p.locator('#symbolStampScale').fill('0.1');await p.locator('#symbolStampScale').dispatchEvent('input');await p.locator('[data-symbol="smoke"]').click();

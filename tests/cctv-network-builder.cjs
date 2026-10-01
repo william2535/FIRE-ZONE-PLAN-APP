@@ -1,0 +1,29 @@
+const fs=require('node:fs'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium,webkit}=require('playwright');
+const {openHeader}=require('./header-navigation.cjs');
+const source=fs.readFileSync('index.html','utf8'),anchor="document.querySelector('.app').inert=true;\nensureUiState();";
+const hook=`window.networkTest={read:()=>clone(),busy:()=>projectBusy,saveNow,allowed:allowedSymbolTypes,properties:()=>{selection=[{type:'symbols',id:'legacy-camera'}];openProperties()},seed:()=>{state.symbols.push({id:'legacy-camera',type:'cctvFixed',scope:'plan',x:.3,y:.4,reference:'OLD-01',rotation:90});state.shapes.push({id:'existing-area',zone:state.zones[0].id,points:[{x:.1,y:.1},{x:.8,y:.1},{x:.8,y:.8},{x:.1,y:.8}]});changed()},exportText:async()=>{syncFloor();const project=clone(),texts=[],original=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(text,...args){texts.push(text);return original.call(this,text,...args)};try{await renderModeFloorCanvas(project.floors[0],800,'zone',1,project);return texts}finally{CanvasRenderingContext2D.prototype.fillText=original}}};`;
+const html=source.replace(anchor,hook+anchor);assert.notEqual(html,source);
+const server=http.createServer((req,res)=>{try{const file=(req.url||'/').split('?')[0].slice(1)||'index.html';res.end(file==='index.html'?html:fs.readFileSync(file))}catch{res.statusCode=404;res.end()}}).listen(0,'127.0.0.1');
+(async()=>{await new Promise(r=>server.once('listening',r));const browser=await(process.env.BROWSER==='webkit'?webkit:chromium).launch();try{
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:'+server.address().port);await page.locator('#zsSplash').waitFor({state:'detached'});await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
+ const create=async system=>{await page.locator('.homeSystemTile[data-system="'+system+'"]').tap();await page.locator('#newProjectName').fill('Network labels '+system);await page.locator('#newProjectCreate').tap();await page.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(page)};
+ await create('cctv');
+ for(let n=1;n<=3;n++){await page.locator('#sideZoneCreate').tap();assert.equal(await page.locator('#modalTitle').innerText(),'Add network');assert.equal(await page.locator('#zoneNo').inputValue(),String(n));await page.locator('#zoneName').fill(n===1?'Zone office':'Area '+n);await page.locator('#saveZone').tap()}
+ assert.deepEqual(await page.locator('#zones b').allTextContents(),['Network 1','Network 2','Network 3']);
+ assert.equal(await page.locator('#zoneMenuBtn').innerText(),'Network 3');
+ await page.locator('#symbolMenuBtn').tap();assert.deepEqual(await page.locator('#symbolMenu [data-symbol]:visible').evaluateAll(bs=>bs.map(b=>b.dataset.symbol)),['cctvNvr','cctvPoe','cctvSwitch']);
+ await page.locator('#batchDeviceOpen').tap();assert.equal(await page.locator('#batchDeviceRows input').count(),3);await page.locator('#batchDeviceCancel').tap();
+ await page.evaluate(()=>networkTest.seed());const before=await page.evaluate(()=>networkTest.read());
+ await page.evaluate(()=>networkTest.properties());assert.equal(await page.locator('#propSymbolType').inputValue(),'cctvFixed');assert(!(await page.locator('#propSymbolType option[value="cctvFixed"]').evaluate(e=>e.hidden)));await page.locator('#propSave').tap();
+ await page.locator('#surveyModeBtn').tap();assert.equal(await page.locator('#surveyModeBtn').innerText(),'Network builder');
+ await page.locator('#surveyDevice').tap();assert.equal(await page.locator('#symbolMenu [data-symbol]:visible').count(),8);await page.locator('#symbolMenu [data-symbol="cctvFixed"]').tap();
+ await page.locator('#surveyModeBtn').tap();assert.equal(await page.locator('#surveyModeBtn').innerText(),'Survey mode');assert.equal(await page.locator('.draftBadge').textContent(),'NETWORK BUILDER');
+ const after=await page.evaluate(()=>networkTest.read());assert.deepEqual(after.zones,before.zones);assert.deepEqual(after.shapes,before.shapes);assert.equal(after.symbols.find(s=>s.id==='legacy-camera').type,'cctvFixed');
+ const texts=await page.evaluate(()=>networkTest.exportText());assert(texts.includes('NETWORK KEY'));assert(texts.includes('Network 1 — Zone office'),'User descriptions are not renamed');assert(texts.some(t=>t.includes('NETWORK PLAN')));assert(!texts.some(t=>t.includes('fire strategy')));
+ await page.evaluate(()=>networkTest.saveNow());await page.reload();await page.locator('#zsSplash').waitFor({state:'detached'});await page.getByRole('button',{name:'Open',exact:true}).tap();await page.waitForFunction(()=>!networkTest.busy());assert.deepEqual((await page.evaluate(()=>networkTest.read())).zones,before.zones);assert.deepEqual(await page.locator('#zones b').allTextContents(),['Network 1','Network 2','Network 3']);
+ await openHeader(page);await page.locator('#headerHomeBtn').tap();
+ for(const system of ['fire','security','access']){await create(system);assert.equal(await page.locator('#zoneSide h3').textContent(),'Zones');await page.locator('#sideZoneCreate').tap();assert.equal(await page.locator('#modalTitle').innerText(),'Add zone');await page.locator('#cancel').tap();await page.locator('#surveyModeBtn').tap();assert.equal(await page.locator('#surveyModeBtn').innerText(),'Zone plan mode');await page.locator('#headerHomeBtn').tap()}
+ assert.deepEqual(errors,[]);console.log('PASS CCTV network labels, 3 network areas, plan/batch camera exclusion, survey cameras, legacy camera editing, shared geometry, export wording, reload and other-system labels');
+ }finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exit(1)});
