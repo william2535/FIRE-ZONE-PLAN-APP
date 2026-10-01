@@ -1,5 +1,18 @@
 # Circuit Builder continuity brief
 
+## Active pass — 1 October 2026: stable cable lanes and touch recovery
+
+Starting main: `b335f81be4e64ad8ccd8fb27f818bd63ad486595` (wall-mounted MCP/panel placement). Current request is Circuit Builder reliability and neat adjacent cables of different colours.
+
+Reproduced before editing: other-colour circuits were absent from the pairing candidates; changing paired rows created a diagonal; Done trapped valid partial circuits in Edit; cancelling a touch discarded reached devices. The new deterministic suite failed five of six baseline cases. A real 320px phone workflow also exposed a zero-length paired tail whose next extension moved the perpendicular connector into a diagonal.
+
+Repairs: use the existing pairing engine for other-colour routes and Pencil, retain the chosen lane through wobble, step past occupied lanes, preserve orthogonal connectors even after a zero-length tail, checkpoint reached devices on cancel/lost capture, allow Done on a valid partial sequence without claiming completion, check endpoint/device continuity, pan empty space with one finger when zoomed, and give routing/edit controls 44px touch targets. Routes remain ordinary saved leg points; no circuit memberships or old routes are rewritten. Bridge still represents an actual crossing.
+
+New coverage: `tests/circuit-lanes.cjs` and `tests/circuit-field-workflow.cjs` (320/390/412px phones, tablet portrait/landscape and desktop; routing, interruption, resume, partial Edit/Done, pan, endpoints, export, reload, project duplication, backup import, missing devices). Existing cancel stress expectation deliberately changes from discarding reached devices to preserving and resuming them. No other regression expectations are weakened. No protected-demo edits.
+
+Validation checkpoint: syntax, protected-demo and release checks pass; seven deterministic lane/recovery cases pass. Full regression and six-layout browser run are in progress. The first browser backup failure was a fixture error (numeric zone numbers; the real model requires strings), corrected without changing import validation. Next: finish full tests, inspect exported/phone render, synchronize all mirrors, publish and verify Pages plus current CI/WebKit/Android results.
+
+
 ## Active pass — 27 September 2026: mobile editor interruption safety
 
 Development branch: `project-pineapple-v058`. Starting checkpoint: `3fc08209f638d02ddfbde844706d1de39114ba2d`; current live milestone is web v0.58 / packaged Android v0.57.

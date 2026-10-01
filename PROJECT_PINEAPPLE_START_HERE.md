@@ -1,5 +1,7 @@
 # Intruder maps Stage 3 — current main task (1 October 2026)
 
+Current Circuit Builder pass (1 October 2026): see the top checkpoint in `docs/CIRCUIT_BUILDER_CONTINUITY.md` for parallel cable lanes, touch recovery, partial-route editing and validation status.
+
 Base inspected: deployed Stage 2 `adcec1d`. Security zone/device/run links, placed controller assignments, evidence, schedules and proposed-route comparison extend the shared editor and connection engine. See `docs/security-maps-stage3.md` for model, sources, checks and limits. The latest user instruction is Stage 3 only; Stage 4 and final integration are paused. Stop after Stage 3. These instructions supersede the historical tasks below.
 
 # Access Control maps Stage 2 — current main task (1 October 2026)
