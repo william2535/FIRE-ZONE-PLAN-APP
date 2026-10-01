@@ -1,0 +1,41 @@
+# Intruder maps — Stage 3
+
+Continues deployed Stage 2 main `adcec1d`. The existing Security devices, logical zone programming, circuit/run records, connections and shared As-Fit states remain the foundation. No second routing engine, manufacturer programming, fixed EOL values or automatic wiring topology is introduced. Fire Circuit Builder, Home, supplied branding and the protected 24/7 demo remain in place.
+
+## Field workflow
+
+1. Place Security equipment in the shared editor and give it a reference or device name. Security map labels identify the equipment and show `Z` followed by its logical zone number(s). The Security labels layer controls the working view; exports include the labels at export scale.
+2. Open **Security tools → Zone Programming**. Select the primary placed device, zone number, name, area and zone type. Additional devices can belong to the same logical zone. All links use object IDs and floor IDs, not names or zone numbers.
+3. Open **Circuits / Runs**. Select the primary zone and, if needed, additional zones or direct equipment. Keypads, bells, panels, expanders and PSUs can be recorded on a run without inventing a detector zone. Select a placed panel/expander once on the run; linked zone/device schedules inherit it. An explicit zone controller or legacy zone panel description takes precedence for that zone. Legacy panel text remains readable and editable.
+4. Document the real path in **Connections**. Choose endpoints and the run record. Edit cable bends with the same ordered-tap, Save, Undo bend and Cancel controls used in Access Control. Endpoints follow equipment movement; intermediate bends stay at their documented plan positions. Run association on tap-created connections is suggested only when the recorded memberships produce one unambiguous candidate; the engineer can edit it.
+5. Mark the original wiring **Surveyed existing**. **Copy as proposed route** retains that original and creates a separate proposed connection with its own ID and a comparison reference. Change its state to installed or explicitly verified when appropriate. Use the shared Maps & As-Fits filters to compare the routes. Security route colours follow the shared state key; proposed/removed routes also use distinct dash patterns.
+6. Record optional commissioning status, notes and photo/note evidence on devices, zones and runs. Evidence references existing pins, including pins on another floor. Commissioning is not onsite verification. The shared verification action requires an engineer name and explicit confirmation.
+7. Issue an As-Fit revision in **Maps & As-Fits**. Export the drawing, zone/circuit schedules or Security Report, plus the editable project backup. Issued-record CSV contains the Security schedules from that snapshot, independent of subsequent edits.
+
+## Model and compatibility
+
+- Existing `systemConfig.zones[].deviceId` and `runs[].zoneId` remain the primary references. Zones gain optional `deviceFloorId` and `additionalDeviceRefs: [{floorId,deviceId}]`; runs gain optional `additionalZoneIds: string[]` and `deviceRefs: [{floorId,deviceId}]` for direct equipment. Device properties derive the relationships from these records, avoiding duplicated zone/run text on every symbol.
+- Zone/run `controllerId` and `controllerFloorId` refer to an existing placed panel or expander. Existing `panel` strings remain legacy descriptions. Optional `commissioned`, `commissionNotes` and `notes` use the existing field model. Devices retain their existing `systemData` fields.
+- Device/zone/run `securityEvidence: [{floorId,pinId}]` references photo/note pins. Image bytes remain in the normal backup and drawing evidence; CSV uses stable references.
+- A missing floor qualifier on an old primary device link resolves only if the device ID is unique across the project. Ambiguous IDs remain unresolved and visible as prompts; saving other details does not silently choose a floor. Unsupported old select values and missing run/zone options are retained when editing notes.
+- Security zones now participate in the shared record-state/audit machinery as project-level records (`securityZones`, keys `zones/<id>`). Runs retain their existing keys and state model. Linked equipment, controller, cable geometry and evidence changes invalidate working zone/run verification. Device photo-evidence changes also invalidate device verification. The shared state-change history now reads the previous state from the item, correcting an existing audit entry bug that always recorded the previous state as not recorded. Old verified run proofs that do not cover these dependencies require a new check; no migration screen or implied verification is added.
+- Security endpoint deletion retains the cable record and its IDs. A route with a missing endpoint is omitted from the drawing and flagged in schedules. Missing zone/run/controller/evidence references remain available for repair. Removal of a logical record does not remove physical devices or cable records. Issued snapshots stay unchanged.
+- Existing project duplication, autosave/reload and backup import/export retain the added fields and original IDs. Whole-project copies retain copied evidence; they do not independently verify the installation. Backup format remains version 1.
+
+## Documentation prompts
+
+Schedules identify duplicate non-empty zone numbers (including `1` versus `01`), unassigned detection devices, infrastructure without a documented association, missing device/controller/zone/run/evidence/comparison references, zones without a documented run and runs without a cable path. Duplicate numbering is a review prompt because separate panel namespaces may be intentional. A run without a drawn cable may describe a wireless or otherwise documented arrangement. Prompts do not block saving, issue a regulatory verdict or certify the installation.
+
+## Authoritative UK sources checked 1 October 2026
+
+- [BSI — PD 6662:2017](https://knowledge.bsigroup.com/products/scheme-for-the-application-of-european-standards-for-intrusion-and-hold-up-alarm-systems-1): the public catalogue identifies the scheme as current and covers intrusion/hold-up systems with wired and/or wireless interconnections.
+- [BSI — BS 9263:2016](https://knowledge.bsigroup.com/products/intruder-and-hold-up-alarm-systems-commissioning-maintenance-and-remote-support-code-of-practice-1): current catalogue entry describing commissioning, maintenance and remote-support recommendations.
+- [NSI — intruder alarm systems for commercial premises](https://www.nsi.org.uk/your-workplace/intruder-alarm-systems/): distinguishes site needs, insurance requirements, professional installation/maintenance and police-response arrangements. None of those approvals is conferred by this app.
+
+Public authoritative summaries were reviewed, not the paid full standards. These app records and prompts are documentation tools, not claims to implement every standard clause. No insurer grade, police response, certification, resistance value or manufacturer topology is inferred.
+
+## Checks and limitations
+
+`tests/security-maps-stage3.cjs` covers legacy defaults and ambiguous IDs, primary/additional zone-device-run links, inherited controller assignment, infrastructure membership, real evidence controls, shared touch-route editing, retained surveyed/proposed routes, filters, movement and missing endpoints, dependent verification invalidation, issued snapshots, schedule/report/drawing output, reload, project duplication, actual backup export/import, invalid reference validation and five viewport sizes. Existing Stage 1/2 focused tests and the complete regression list remain required. CI adds the Stage 3 WebKit pass.
+
+Cable geometry remains floor-specific. Associations may span floors, but this stage does not create cross-floor cable geometry. Proposed-route copies are an explicit comparison tool, not an automatic design or measured cable survey. Touch checks use Chromium/WebKit emulation rather than physical devices. Local tests use the available Playwright 1.51.1 runtime; GitHub retains pinned Playwright 1.62.1. Snapshots are retained editable-database copies, not signed audit certificates. The existing main-branch workflow rebuilds its v0.63 Android package after tests; no branding/version redesign is included. Stop after Stage 3.

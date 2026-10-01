@@ -1,3 +1,7 @@
+# Intruder maps Stage 3 — current main task (1 October 2026)
+
+Base inspected: deployed Stage 2 `adcec1d`. Security zone/device/run links, placed controller assignments, evidence, schedules and proposed-route comparison extend the shared editor and connection engine. See `docs/security-maps-stage3.md` for model, sources, checks and limits. The latest user instruction is Stage 3 only; Stage 4 and final integration are paused. Stop after Stage 3. These instructions supersede the historical tasks below.
+
 # Access Control maps Stage 2 — current main task (1 October 2026)
 
 Continues deployed Stage 1 `a732727`. Existing doors now carry stable equipment/evidence associations, map guides, cable-route editing and a compact schedule, using the shared editor and record states. See `docs/access-maps-stage2.md` for model, guidance, tests and limitations. This current-main Stage 2 request supersedes historical branch/stage instructions below. Stop after Stage 2.
