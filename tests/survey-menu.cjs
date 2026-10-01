@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{try{const file=(req.url||'/').split('
   await page.locator('#zsSplash').waitFor({state:'detached'});
   await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
   for(const system of ['cctv','security','access','fire']){
-   await page.locator('.homeSystemTile[data-system="'+system+'"]').tap();
+   await page.locator('#homeNew').tap();await page.locator('.newProjectChoice[data-system="'+system+'"]').tap();
    await page.locator('#newProjectName').fill('Survey menu '+system);
    await page.locator('#newProjectCreate').tap();
    await page.locator('#projectsHome').waitFor({state:'hidden'});

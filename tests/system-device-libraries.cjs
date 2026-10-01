@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{try{const path=decodeURIComponent((re
  const record=site=>page.evaluate(async site=>{const db=await new Promise((ok,no)=>{const r=indexedDB.open('ZoneSketch-v1',1);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});return new Promise((ok,no)=>{const r=db.transaction('draft').objectStore('draft').openCursor();r.onsuccess=()=>{const c=r.result;if(!c)return ok(null);if(String(c.key).startsWith('project:')&&c.value.site===site)return ok(c.value);c.continue()};r.onerror=()=>no(r.error)})},site);
  const home=async()=>{await page.evaluate(()=>document.querySelector('#headerHomeBtn').click());await page.locator('#projectsHome').waitFor({state:'visible'})};
  for(const [system,types] of Object.entries(sets)){
-  const site='Library '+system;await page.locator('.homeSystemTile[data-system="'+system+'"]').click();await page.locator('#newProjectName').fill(site);await page.locator('#newProjectCreate').click();await page.locator('#projectsHome').waitFor({state:'hidden'});
+  const site='Library '+system;await page.locator('#homeNew').click();await page.locator('.newProjectChoice[data-system="'+system+'"]').click();await page.locator('#newProjectName').fill(site);await page.locator('#newProjectCreate').click();await page.locator('#projectsHome').waitFor({state:'hidden'});
   await page.evaluate(()=>document.querySelector('#surveyModeBtn').click());await page.locator('#surveyDevice').click();
   const visible=await page.locator('#symbolMenu [data-symbol]:visible').evaluateAll(buttons=>buttons.map(b=>b.dataset.symbol));
   assert.deepEqual(new Set(visible),new Set(types),system+' palette');

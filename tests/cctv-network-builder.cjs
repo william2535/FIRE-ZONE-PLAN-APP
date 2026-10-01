@@ -8,7 +8,7 @@ const server=http.createServer((req,res)=>{try{const file=(req.url||'/').split('
 (async()=>{await new Promise(r=>server.once('listening',r));const browser=await(process.env.BROWSER==='webkit'?webkit:chromium).launch();try{
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:'+server.address().port);await page.locator('#zsSplash').waitFor({state:'detached'});await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);
- const create=async system=>{await page.locator('.homeSystemTile[data-system="'+system+'"]').tap();await page.locator('#newProjectName').fill('Network labels '+system);await page.locator('#newProjectCreate').tap();await page.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(page)};
+ const create=async system=>{await page.locator('#homeNew').tap();await page.locator('.newProjectChoice[data-system="'+system+'"]').tap();await page.locator('#newProjectName').fill('Network labels '+system);await page.locator('#newProjectCreate').tap();await page.locator('#projectsHome').waitFor({state:'hidden'});await openHeader(page)};
  await create('cctv');
  for(let n=1;n<=3;n++){await page.locator('#sideZoneCreate').tap();assert.equal(await page.locator('#modalTitle').innerText(),'Add network');assert.equal(await page.locator('#zoneNo').inputValue(),String(n));await page.locator('#zoneName').fill(n===1?'Zone office':'Area '+n);await page.locator('#saveZone').tap()}
  assert.deepEqual(await page.locator('#zones b').allTextContents(),['Network 1','Network 2','Network 3']);
