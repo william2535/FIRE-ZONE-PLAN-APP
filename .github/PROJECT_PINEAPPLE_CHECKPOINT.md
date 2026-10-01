@@ -1,3 +1,7 @@
+# Maps and As-Fits Stage 1 — current main task
+
+Base inspected: `a017ae3` on `main`. Shared record states, verification evidence, revision history, issued copies and state-aware exports implemented. Four app mirrors synchronized; protected 24/7 demo unchanged. Local validation: 49/49 regression files pass; focused Stage 1 checks pass in Chromium and WebKit, including actual backup import and floor-copy evidence reset. Inline parser, v0.63 release gate and mirror equality pass. Main-branch CI now runs the full suite plus the WebKit Stage 1 test. Deployment evidence belongs to this change’s GitHub Actions/Pages runs. See `docs/maps-asfit-stage1.md`. Current user request ends at Stage 1 and supersedes historical continuation instructions below.
+
 # Project Pineapple — Live Checkpoint
 
 Durable handoff for the ongoing Pineapple work. Update before risky edits and after meaningful CI/results so work can resume immediately after a crash.

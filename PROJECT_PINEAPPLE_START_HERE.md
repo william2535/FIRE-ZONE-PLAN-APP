@@ -1,3 +1,7 @@
+# Current task — Maps and As-Fits Stage 1 (1 October 2026)
+
+The user explicitly selected current `main` for this stage, superseding the historical development-branch instructions below. Stage 1 extends the shared editor with explicit record states, revision history and retained issued snapshots. See `docs/maps-asfit-stage1.md` for usage, model details, UK sources and limitations. Stop after this stage; do not begin subsequent feature stages.
+
 # 🍍 OPERATION PINEAPPLE — START HERE
 
 **If you are resuming this project after a chat reset, tool crash, or time away: start with this file.**

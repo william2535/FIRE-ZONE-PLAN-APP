@@ -20,16 +20,14 @@ jobs:
       - name: Install browser checks
         run: |
           npm install --no-save playwright@1.62.1 acorn@8.15.0
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium webkit
       - name: Verify project modes and existing workspace
         run: |
           python .github/verify_247_protected.py
           node tests/release-v063.cjs
           node tests/circuit-editor-syntax-v058.cjs
-          node tests/phase3-connections.cjs
-          node tests/phase2-system-tools.cjs
-          node tests/system-device-libraries.cjs
-          node tests/system-modes.cjs
+          node tests/run-regressions.cjs
+          BROWSER=webkit node tests/maps-asfit-stage1.cjs
           cmp index.html ZoneSketch.html
           cmp index.html Zone-Sketch-by-Will.html
           cmp index.html app/src/main/assets/index.html
