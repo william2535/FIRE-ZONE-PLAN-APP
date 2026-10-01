@@ -1,4 +1,23 @@
+## 1 October 2026 — shared panel exit correction
+
+The no-crossing rule now permits a short shared tail from the same physical FAP, bounded to two routing cells (at least the panel diameter). Engineers can depart along that tail and peel away; later crossings still require Bridge. Different panels, long overlaps and later route intersections receive no exemption. Normal separate-colour lane snapping resumes beyond the tail. Existing IDs and saved route geometry remain unchanged.
+
+Added four deterministic regressions for the reported down/right departure, blocked left crossing and Bridge, bounded sharing, eight-zone reuse, and sampled dragging (15 lane tests total). The camera-direction test now waits for the properties opening animation before measuring its 44px control; CI previously measured the scaled transition. Full regression and deployment validation are in progress on PR #32.
+
 # Circuit Builder continuity brief
+
+## Active pass — 1 October 2026: stable cable lanes and touch recovery
+
+Starting main: `b335f81be4e64ad8ccd8fb27f818bd63ad486595` (wall-mounted MCP/panel placement). Current request is Circuit Builder reliability and neat adjacent cables of different colours.
+
+Reproduced before editing: other-colour circuits were absent from the pairing candidates; changing paired rows created a diagonal; Done trapped valid partial circuits in Edit; cancelling a touch discarded reached devices. The new deterministic suite failed five of six baseline cases. A real 320px phone workflow also exposed a zero-length paired tail whose next extension moved the perpendicular connector into a diagonal.
+
+Repairs: use the existing pairing engine for other-colour routes and Pencil, retain the chosen lane through wobble, step past occupied lanes, preserve orthogonal connectors even after a zero-length tail, checkpoint reached devices on cancel/lost capture, allow Done on a valid partial sequence without claiming completion, check endpoint/device continuity, pan empty space with one finger when zoomed, and give routing/edit controls 44px touch targets. Routes remain ordinary saved leg points; no circuit memberships or old routes are rewritten. Bridge still represents an actual crossing.
+
+New coverage: `tests/circuit-lanes.cjs` and `tests/circuit-field-workflow.cjs` (320/390/412px phones, tablet portrait/landscape and desktop; routing, interruption, resume, partial Edit/Done, pan, endpoints, export, reload, project duplication, backup import, missing devices). Existing cancel stress expectation deliberately changes from discarding reached devices to preserving and resuming them. The six-layout workflow also reproduces and covers keyboard Undo/Redo selecting the correct edit history and Escape clearing only the transient Pencil/Bin gesture. No other regression expectations are weakened. No protected-demo edits.
+
+Validation checkpoint: syntax, protected-demo and release checks pass; eleven deterministic lane/recovery cases and the six-layout Chromium field workflow pass, including Pencil cleanup and a full lane bank. Full regression and PR #32 Chromium/WebKit/Android checks are in progress. The first browser backup failure was a fixture error (numeric zone numbers; the real model requires strings), corrected without changing import validation. Phone and As-Fit PNG renders have been inspected and mirrors synchronized. Also fixed a pre-existing Home filter test race: one stale card could satisfy a count assertion before its asynchronous identity update. No Home behaviour changed. The legacy return-magnet gate requires numeric raw-coordinate normalization; that compatibility behaviour is retained. The keyboard repair also passes all six Chromium layouts. Final renderer audit reproduced coincident outgoing/return strokes: offset normals depended on segment direction. Canonicalizing their direction keeps reversed twin cables separate in the shared board/export renderer; the new regression fails before the fix and passes after. Next: finish full tests and PR #32 checks, merge to main and verify Pages plus current CI/WebKit/Android results.
+
 
 ## Active pass — 27 September 2026: mobile editor interruption safety
 

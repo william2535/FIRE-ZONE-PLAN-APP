@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{try{const file=(req.url||'/').split('
  for(const [width,height] of [[320,568],[390,844],[412,915],[768,1024],[1280,800]]){
   await page.setViewportSize({width,height});
   for(const [system,name] of [['fire','Fire'],['security','Security'],['cctv','CCTV'],['access','Access Control']]){
-   const tile=page.locator('.homeSystemTile[data-system="'+system+'"]');await tile.tap();await count(1);
+   const tile=page.locator('.homeSystemTile[data-system="'+system+'"]');await tile.tap();await count(1);await page.waitForFunction(name=>document.querySelector('.projectIdentity')?.textContent===name,name);
    assert(await page.locator('#newProjectDialog').isHidden());assert.equal(await tile.getAttribute('aria-pressed'),'true');assert.equal(await page.locator('.homeSystemTile[aria-pressed="true"]').count(),1);
    assert.equal(await page.locator('.projectIdentity').textContent(),name);assert((await page.locator('#homeMessage').innerText()).includes('1 of 4'));
    const box=await tile.boundingBox();assert(box.height>=44&&box.x>=0&&box.x+box.width<=width+1);
@@ -26,7 +26,7 @@ const server=http.createServer((req,res)=>{try{const file=(req.url||'/').split('
  await page.locator('.homeSystemTile[data-system="cctv"]').tap();await count(1);await page.locator('#projectSearch').fill('DEPOT');await count(1);await page.locator('#projectSearch').fill('Legacy');await count(0);assert.match(await page.locator('#homeMessage').textContent(),/No CCTV plans match/);
  await page.locator('#homeShowAll').tap();await count(4);assert.equal(await page.locator('#projectSearch').inputValue(),'');
  // Keyboard and rapid selections obey the final selected system.
- await page.locator('.homeSystemTile[data-system="security"]').focus();await page.keyboard.press('Enter');await count(1);assert.equal(await page.locator('.projectIdentity').textContent(),'Security');
+ await page.locator('.homeSystemTile[data-system="security"]').focus();await page.keyboard.press('Enter');await count(1);await page.waitForFunction(()=>document.querySelector('.projectIdentity')?.textContent==='Security');assert.equal(await page.locator('.projectIdentity').textContent(),'Security');
  await page.evaluate(()=>{for(const type of ['fire','access','security','cctv'])document.querySelector('.homeSystemTile[data-system="'+type+'"]').click()});await count(1);await page.waitForFunction(()=>document.querySelector('.projectIdentity')?.textContent==='CCTV');assert.deepEqual(await records(),before,'Filtering does not rewrite project data');
  await page.locator('#homeNew').tap();assert.equal(await page.locator('.newProjectChoice[aria-pressed="true"]').getAttribute('data-system'),'cctv');await page.locator('#newProjectCancel').tap();await count(1);
  await page.getByRole('button',{name:'Duplicate',exact:true}).tap();await count(2);assert((await page.locator('.projectIdentity').allTextContents()).every(x=>x==='CCTV'));
