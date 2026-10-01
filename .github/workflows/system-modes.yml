@@ -28,6 +28,7 @@ jobs:
           node tests/circuit-editor-syntax-v058.cjs
           node tests/run-regressions.cjs
           BROWSER=webkit node tests/maps-asfit-stage1.cjs
+          BROWSER=webkit node tests/access-maps-stage2.cjs
           cmp index.html ZoneSketch.html
           cmp index.html Zone-Sketch-by-Will.html
           cmp index.html app/src/main/assets/index.html

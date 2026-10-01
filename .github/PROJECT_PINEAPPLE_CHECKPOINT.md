@@ -1,3 +1,7 @@
+# Access Control maps Stage 2 — current main task (1 October 2026)
+
+Continues deployed Stage 1 `a732727`. Existing doors now carry stable equipment/evidence associations, map guides, cable-route editing and a compact schedule, using the shared editor and record states. See `docs/access-maps-stage2.md` for model, guidance, tests and limitations. This current-main Stage 2 request supersedes historical branch/stage instructions below. Stop after Stage 2.
+
 # Maps and As-Fits Stage 1 — current main task
 
 Base inspected: `a017ae3` on `main`. Shared record states, verification evidence, revision history, issued copies and state-aware exports implemented. Four app mirrors synchronized; protected 24/7 demo unchanged. Local validation: 49/49 regression files pass; focused Stage 1 checks pass in Chromium and WebKit, including actual backup import and floor-copy evidence reset. Inline parser, v0.63 release gate and mirror equality pass. Main-branch CI now runs the full suite plus the WebKit Stage 1 test. Deployment evidence belongs to this change’s GitHub Actions/Pages runs. See `docs/maps-asfit-stage1.md`. Current user request ends at Stage 1 and supersedes historical continuation instructions below.
