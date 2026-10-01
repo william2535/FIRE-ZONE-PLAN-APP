@@ -1,3 +1,5 @@
+Latest work: addressable return geometry, consistent drawing/As-Fit rendering and Restore return action. App source checkpoint `06fc5fd`; release evidence and final SHA: [PR #33](https://github.com/william2535/FIRE-ZONE-PLAN-APP/pull/33). See docs/CIRCUIT_BUILDER_CONTINUITY.md for tests and repair instructions.
+
 # Intruder maps Stage 3 — current main task (1 October 2026)
 
 Current Circuit Builder pass (1 October 2026): see the top checkpoint in `docs/CIRCUIT_BUILDER_CONTINUITY.md` for parallel cable lanes, touch recovery, partial-route editing and validation status.

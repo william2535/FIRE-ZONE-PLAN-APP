@@ -1,3 +1,7 @@
+## Current pass — 2 October 2026: addressable return and export consistency
+
+App source checkpoint `06fc5fd`, PR #33, branch `project-pineapple-return-rendering`. Full return geometry is retained; the board, edit selection, drawing and As-Fit use continuous cable lanes. Edit → Restore return → Done repairs a missing or previously shortened return without deleting outgoing legs. All 62 regression files pass locally after correcting two assertions for exact mirrored returns and transient renderer metadata. Four-layout Chromium return workflow, 120-device stress, protected demo and all four HTML mirrors pass. Final remote validation/deployment evidence is maintained in [PR #33](https://github.com/william2535/FIRE-ZONE-PLAN-APP/pull/33). Finish that release; do not resume the historical stage prompts below.
+
 # Intruder maps Stage 3 — current main task (1 October 2026)
 
 Base inspected: deployed Stage 2 `adcec1d`. Security zone/device/run links, placed controller assignments, evidence, schedules and proposed-route comparison extend the shared editor and connection engine. See `docs/security-maps-stage3.md` for model, sources, checks and limits. The latest user instruction is Stage 3 only; Stage 4 and final integration are paused. Stop after Stage 3. These instructions supersede the historical tasks below.
