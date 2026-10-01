@@ -8,7 +8,7 @@ for(const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)){
 function fixture(){
  const ctx={Math,Number,Map,Set,console,clamp:(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),cbSnapPx:p=>({...p}),CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:.72,CB_ROUTE_ARM_CELLS:.28,cbView:{scale:1},cbSelectBounds:null,cbCircuit:{id:'blue',color:'#2675db',type:'conventional',legs:[]},cbDrag:null,cbEdit:null,cbBuildBridge:false,cbPointers:new Map(),cbPinch:null,cbGestureLock:false,cbHover:null,cbBoardPx:p=>({...p}),cbEditCircuitPointPx:(c,p)=>({...p}),cbChallengeMapPointPx:(c,p)=>({...p}),cbFieldGridScreenStep:()=>({x:24,y:24}),cbCircuitIssue:()=>false,cbUpdateGame(){},cbDrawBoard(){},cbClearReward(){}};
  ctx.other={id:'red',color:'#e33a3a',type:'conventional',complete:true,legs:[{points:[{x:40,y:100},{x:340,y:100}]}]};ctx.cbCircuits=()=>[ctx.other,ctx.cbCircuit];ctx.cbChallengeCircuits=()=>[ctx.other];ctx.cbLegSegments=c=>c.legs.flatMap(l=>l.points.slice(1).map((b,i)=>({a:l.points[i],b})));
- vm.createContext(ctx);for(const name of ['cbPairSegmentsPx','cbRouteCellPx','cbPairSnapPx','cbRouteGridStep','cbCollinear','cbSimplify','cbCheckpointDrag','cbCanvasCancel','cbChallengeOwner','cbEditCleanStroke','cbEditOrthogonalPush','cbEditDoglegClean','cbPruneRouteNoise','cbRouteAxis','cbDrawBundled','cbSegKey'])vm.runInContext(functions.get(name),ctx);
+ vm.createContext(ctx);for(const name of ['cbPairSegmentsPx','cbRouteCellPx','cbPairSnapPx','cbRouteGridStep','cbCollinear','cbSimplify','cbCheckpointDrag','cbCanvasCancel','cbChallengeOwner','cbEditCleanStroke','cbEditOrthogonalPush','cbEditDoglegClean','cbPruneRouteNoise','cbRouteAxis','cbDrawBundled','cbBundlePaths','cbSegKey'])vm.runInContext(functions.get(name),ctx);
  return ctx;
 }
 const copy=v=>JSON.parse(JSON.stringify(v));
@@ -60,7 +60,7 @@ test('a full lane bank refuses to silently overlap another colour',()=>{
 test('reversed outgoing/return segments draw on distinct sides in board and export',()=>{
  const c=fixture();for(const [a,b] of [[{x:20,y:100},{x:220,y:100}],[{x:100,y:20},{x:100,y:220}]])for(const scale of [1,3]){
  const drawn=[],ctx={save(){},restore(){},beginPath(){this.path=[]},moveTo(x,y){this.path.push({x,y})},lineTo(x,y){this.path.push({x,y})},stroke(){drawn.push(this.path)}};
- c.cbDrawBundled(ctx,[{a,b,color:'red'},{a:b,b:a,color:'blue'}],p=>({x:p.x*scale,y:p.y*scale}),5,9*scale);assert.equal(Math.hypot(drawn[0][0].x-drawn[1][1].x,drawn[0][0].y-drawn[1][1].y),9*scale,'reversed paths must not land on the same visual lane');
+ c.cbDrawBundled(ctx,[{a,b,color:'red'},{a:b,b:a,color:'blue'}],p=>({x:p.x*scale,y:p.y*scale}),5,9*scale);assert.equal(Math.hypot(drawn[0][1].x-drawn[1].at(-2).x,drawn[0][1].y-drawn[1].at(-2).y),9*scale,'reversed paths must not land on the same visual lane');
  }
 });
 

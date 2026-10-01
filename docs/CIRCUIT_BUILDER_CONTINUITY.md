@@ -1,3 +1,11 @@
+## 2 October 2026 — return leg, persistence and export repair
+
+Incoming report: addressable return sections disappeared; neat live routes changed when reopened or exported. Return capture was applying general route cleanup to the canonical reverse path, and cable rendering only recognized exact whole-segment duplicates with disconnected corner offsets. Ordinary plan output did not use the bundle renderer at all.
+
+Return capture/prefix now retain the complete outgoing geometry in reverse. A shared continuous-path renderer handles partial overlaps, joined corners, stable path order and existing adjacent lanes for the circuit board, edit selection, plan drawing and As-Fit. Edit offers Restore return with Undo/Redo and Done, including a genuinely missing final leg; outgoing legs and device IDs are preserved. Existing custom returns are not silently rebuilt. To repair an older affected return: Edit → Restore return → Done.
+
+New tests: six deterministic geometry regressions plus four-layout browser return workflow covering actual touch capture, reopen, reload, edit targeting, missing-return restoration, drawing/As-Fit output, duplication, backup restore and missing references. Chromium and focused 120-device/gesture stress checks pass locally. Full regression and GitHub Chromium/WebKit/Android validation pending.
+
 ## 1 October 2026 — shared panel exit correction
 
 The no-crossing rule now permits a short shared tail from the same physical FAP, bounded to two routing cells (at least the panel diameter). Engineers can depart along that tail and peel away; later crossings still require Bridge. Different panels, long overlaps and later route intersections receive no exemption. Normal separate-colour lane snapping resumes beyond the tail. Existing IDs and saved route geometry remain unchanged.
