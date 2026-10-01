@@ -284,30 +284,20 @@ body.reduceMotion *,body.reduceMotion *::before,body.reduceMotion *::after{anima
 .zsSplashStage{position:relative;width:min(82vw,400px,calc((100dvh - 180px)*.923));aspect-ratio:706/765;margin:0 auto;isolation:isolate}
 .zsSplashMain{position:absolute;inset:0;display:grid;place-items:center;opacity:0}
 .zsSplashMain img{display:block;width:83%;height:auto}
-.zsSplashPiece{position:absolute;inset:0;transform-origin:50% 50%;clip-path:var(--quarter);will-change:transform,clip-path}
-.zsSplashShard{position:absolute;inset:0;background:url('assets/startup/main-logo.png') center/83% auto no-repeat}
+.zsSplashCanvas{position:absolute;inset:0;width:100%;height:100%}
+.zsSplashPiece{position:absolute;inset:0;opacity:0;transform:translate(var(--x),var(--y)) scale(.5)}
 .zsSplashSystem{position:absolute;inset:0;background-image:url('assets/startup/four-systems.jpg');background-size:200% 200%;background-repeat:no-repeat;opacity:0}
-.zsSplashPiece.fire{--x:-25%;--y:-25%;--pull-x:-9%;--pull-y:-9%;--turn:-4deg;--quarter:polygon(0 0,50% 0,50% 50%,0 50%)}
-.zsSplashPiece.security{--x:25%;--y:-25%;--pull-x:9%;--pull-y:-9%;--turn:4deg;--quarter:polygon(50% 0,100% 0,100% 50%,50% 50%)}
-.zsSplashPiece.access{--x:-25%;--y:25%;--pull-x:-9%;--pull-y:9%;--turn:4deg;--quarter:polygon(0 50%,50% 50%,50% 100%,0 100%)}
-.zsSplashPiece.cctv{--x:25%;--y:25%;--pull-x:9%;--pull-y:9%;--turn:-4deg;--quarter:polygon(50% 50%,100% 50%,100% 100%,50% 100%)}
+.zsSplashPiece.fire{--x:-25%;--y:-25%}.zsSplashPiece.security{--x:25%;--y:-25%}.zsSplashPiece.access{--x:-25%;--y:25%}.zsSplashPiece.cctv{--x:25%;--y:25%}
 .zsSplashSystem.fire{background-position:0 0}.zsSplashSystem.security{background-position:100% 0}.zsSplashSystem.access{background-position:0 100%}.zsSplashSystem.cctv{background-position:100% 100%}
-/* Each original quarter opens into a whole house while its exact final artwork blends in. */
-#zsSplash.play:not(.quiet) .zsSplashPiece{animation:zsIntroMorph 3.8s cubic-bezier(.4,0,.2,1) both;animation-duration:3.8s!important}
-#zsSplash.play:not(.quiet) .zsSplashShard{animation:zsIntroShard 3.8s ease-in-out both;animation-duration:3.8s!important}
-#zsSplash.play:not(.quiet) .zsSplashSystem{animation:zsIntroColour 3.8s ease-in-out both;animation-duration:3.8s!important}
 .zsSplashName{margin-top:10px;font-size:clamp(24px,6vw,36px);font-weight:900;letter-spacing:.03em;color:#effaff}
 .zsSplashSub{margin-top:7px;font-size:10px;font-weight:750;letter-spacing:.12em;color:#a6bdcb}
 .zsSplashBy{margin-top:9px;font-size:11px;color:#8dabbc}
 #zsSplashSkip{position:absolute;right:max(16px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));min-height:44px;min-width:88px;background:#102532;color:#d8e8f0;border:1px solid #2d4757;font-size:13px}
 #zsSplashPlay{position:absolute;left:max(16px,env(safe-area-inset-left));bottom:max(12px,env(safe-area-inset-bottom));min-height:44px;padding:8px 12px;background:#102532;color:#d8e8f0;border:1px solid #2d4757;font-size:13px}
 #zsSplashPlay[hidden]{display:none}
-@keyframes zsIntroMorph{0%,18%{clip-path:var(--quarter);transform:translate(0,0) scale(1) rotate(0)}42%{clip-path:var(--quarter);transform:translate(var(--pull-x),var(--pull-y)) scale(.88) rotate(var(--turn))}78%,100%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transform:translate(var(--x),var(--y)) scale(.5) rotate(0)}}
-@keyframes zsIntroShard{0%,42%{opacity:1}78%,100%{opacity:0}}
-@keyframes zsIntroColour{0%,42%{opacity:0}78%,100%{opacity:1}}
 @keyframes zsIntroFallback{to{visibility:hidden;pointer-events:none}}
-#zsSplash.quiet .zsSplashPiece{clip-path:none;transform:translate(var(--x),var(--y)) scale(.5)}
-#zsSplash.quiet .zsSplashShard{display:none}
+#zsSplash.quiet .zsSplashPiece{opacity:1}
+#zsSplash.quiet .zsSplashCanvas{display:none}
 #zsSplash.quiet .zsSplashMain{opacity:1}
 #zsSplash.quiet.reveal .zsSplashMain,#zsSplash.quiet .zsSplashSystem{transition:opacity .6s ease;transition-duration:.6s!important}
 #zsSplash.quiet.reveal .zsSplashMain{opacity:0}
@@ -1593,7 +1583,7 @@ body:has(#projectsHome:not([hidden])) #recordPlanLegend{display:none}
 </style>
 </head>
 <body>
-<div id="zsSplash" role="region" aria-label="Zone Sketch opening animation"><div class="zsSplashInner"><div class="zsSplashStage" aria-hidden="true"><div class="zsSplashMain"><img src="assets/startup/main-logo.png" width="1254" height="1254" alt="" fetchpriority="high"></div><div class="zsSplashPiece fire"><div class="zsSplashShard"></div><div class="zsSplashSystem fire"></div></div><div class="zsSplashPiece security"><div class="zsSplashShard"></div><div class="zsSplashSystem security"></div></div><div class="zsSplashPiece access"><div class="zsSplashShard"></div><div class="zsSplashSystem access"></div></div><div class="zsSplashPiece cctv"><div class="zsSplashShard"></div><div class="zsSplashSystem cctv"></div></div></div><div class="zsSplashName">ZONE SKETCH</div><div class="zsSplashSub">FIRE · INTRUDER · ACCESS CONTROL · CCTV</div><div class="zsSplashBy">By Will Flood</div></div><button id="zsSplashPlay" type="button" hidden>Play full animation</button><button id="zsSplashSkip" type="button">Skip intro</button></div>
+<div id="zsSplash" role="region" aria-label="Zone Sketch opening animation"><div class="zsSplashInner"><div class="zsSplashStage" aria-hidden="true"><canvas class="zsSplashCanvas"></canvas><div class="zsSplashMain"><img src="assets/startup/main-logo.png" width="1254" height="1254" alt="" fetchpriority="high"></div><div class="zsSplashPiece fire"><div class="zsSplashSystem fire"></div></div><div class="zsSplashPiece security"><div class="zsSplashSystem security"></div></div><div class="zsSplashPiece access"><div class="zsSplashSystem access"></div></div><div class="zsSplashPiece cctv"><div class="zsSplashSystem cctv"></div></div></div><div class="zsSplashName">ZONE SKETCH</div><div class="zsSplashSub">FIRE · INTRUDER · ACCESS CONTROL · CCTV</div><div class="zsSplashBy">By Will Flood</div></div><button id="zsSplashPlay" type="button" hidden>Play full animation</button><button id="zsSplashSkip" type="button">Skip intro</button></div>
 <section id="projectsHome" aria-label="Projects"><div class="homeInner"><div class="homeProductHero brandFx" data-brand-watch><span class="brandSweep" aria-hidden="true"></span><span class="brandOrbit" aria-hidden="true"></span><svg class="zsHeroPerimeterSvg" aria-hidden="true" focusable="false" preserveAspectRatio="none"><defs><linearGradient id="zsHeroTraceGradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#73deff"/><stop offset="0.52" stop-color="#c7ff96"/><stop offset="1" stop-color="#9bff3f"/></linearGradient></defs><path class="zsHeroPerimeterTrace zsHeroPerimeterTrailFar" pathLength="100" d=""/><path class="zsHeroPerimeterTrailMid" pathLength="100" d=""/><path class="zsHeroPerimeterTrailNear" pathLength="100" d=""/><path class="zsHeroPerimeterHead" pathLength="100" d=""/></svg><div><div class="homeBrandRow"><img class="homeMainLogo" src="assets/zone-sketch-complete-house-v2.png" alt="Zone Sketch"><div><div class="homeEyebrow">YOUR FIELD WORKSPACE</div><h1><span>ZONE</span> SKETCH</h1><div class="homeBrandTagline">FIRE &amp; SECURITY FIELD APP</div></div></div><p>From first survey to finished As-Fit. Your whole site, in one project.</p><div class="creatorLine">Designed &amp; built by <strong>Will Flood</strong></div><div class="workflowTrack" aria-label="Project workflow"><div class="workflowStep"><b>01</b>PLAN</div><div class="workflowStep"><b>02</b>SURVEY</div><div class="workflowStep"><b>03</b>CIRCUITS</div><div class="workflowStep"><b>04</b>AS-FIT</div></div></div><div class="homeHeroBadge"><strong>Ready for your next site</strong><small>Local autosave · touch-first controls · offline project data</small></div><div class="homeSystemPreview" aria-label="Zone Sketch system range preview">
 <button type="button" class="homeSystemTile" data-system="fire" aria-label="New Fire project"><img src="assets/home-system-fire.webp" alt=""><span><b>Fire</b><small>New project</small></span></button>
 <button type="button" class="homeSystemTile" data-system="security" aria-label="New Security project"><img src="assets/home-system-intruder.webp" alt=""><span><b>Security</b><small>New project</small></span></button>
@@ -2729,24 +2719,64 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
 </script>
 
 <script>
-/* Decorative startup: original image quarters morph into the supplied system artwork. */
+/* Morph the four original image quarters by interpolating their signed silhouette distances.
+   The shape stays opaque as its boundary reforms; this is not an image-opacity crossfade. */
+function zsCreateHouseMorph(canvas,main,board){
+ const w=176,h=191,W=w*2,H=h*2,range=64,make=(width,height)=>{const c=document.createElement('canvas');c.width=width;c.height=height;return c};
+ const source=make(W,H),target=make(W,H),sx=source.getContext('2d'),tx=target.getContext('2d');
+ sx.drawImage(main,W*.085,(H-W*.83)/2,W*.83,W*.83);tx.drawImage(board,0,0,W,H);
+ const bounds=[[],[]],originals=[source,target],fields=originals.map((original,art)=>{const atlas=make(W,H),ctx=atlas.getContext('2d');for(let q=0;q<4;q++){
+  const ox=q%2*w,oy=Math.floor(q/2)*h,pixels=original.getContext('2d').getImageData(ox,oy,w,h),bytes=pixels.data,n=w*h,mask=new Uint8Array(n);
+  let left=w,top=h,right=0,bottom=0;for(let i=0;i<n;i++){mask[i]=bytes[i*4+3]>16&&Math.max(bytes[i*4],bytes[i*4+1],bytes[i*4+2])>24?1:0;if(mask[i]){left=Math.min(left,i%w);top=Math.min(top,Math.floor(i/w));right=Math.max(right,i%w+1);bottom=Math.max(bottom,Math.floor(i/w)+1)}}bounds[art][q]=[left/w,top/h,right/w,bottom/h];
+  const distance=inside=>{const d=new Float32Array(n),nearest=new Int32Array(n);for(let i=0;i<n;i++){d[i]=mask[i]===inside?0:1e6;nearest[i]=mask[i]===inside?i:-1}
+   const visit=(i,j,cost)=>{if(j<0||j>=n)return;const next=d[j]+cost;if(next<d[i]){d[i]=next;nearest[i]=nearest[j]}};
+   for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;if(x)visit(i,i-1,1);if(y){visit(i,i-w,1);if(x)visit(i,i-w-1,Math.SQRT2);if(x<w-1)visit(i,i-w+1,Math.SQRT2)}}
+   for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;if(x<w-1)visit(i,i+1,1);if(y<h-1){visit(i,i+w,1);if(x)visit(i,i+w-1,Math.SQRT2);if(x<w-1)visit(i,i+w+1,Math.SQRT2)}}return{d,nearest}};
+  const foreground=distance(1),background=distance(0),out=ctx.createImageData(w,h);
+  for(let i=0;i<n;i++){const j=(mask[i]?i:Math.max(0,foreground.nearest[i]))*4,k=i*4;out.data[k]=bytes[j];out.data[k+1]=bytes[j+1];out.data[k+2]=bytes[j+2];const signed=mask[i]?background.d[i]-.5:.5-foreground.d[i];out.data[k+3]=Math.round(127.5+Math.max(-range,Math.min(range,signed))*127.5/range)}ctx.putImageData(out,ox,oy)
+ }return atlas});
+ const smooth=(a,b,v)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t)};
+ const motion=t=>({shape:smooth(.38,.86,t),spread:Math.sin(Math.PI*smooth(.14,.9,t))*.075});
+ const gl=canvas.getContext('webgl',{alpha:false,antialias:true,preserveDrawingBuffer:true});let draw;
+ if(gl){
+  canvas.width=704;canvas.height=764;
+  const shader=(type,code)=>{const s=gl.createShader(type);gl.shaderSource(s,code);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error('Intro shader unavailable');return s};
+  const program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,'precision mediump float;attribute vec2 point;uniform vec2 quadrant;uniform float spread;varying vec2 uv;varying vec2 local;void main(){local=point;uv=(point+quadrant)*.5;vec2 position=(quadrant+.5)*.5+(point-.5)*.5*(1.-spread*1.6)+(quadrant*2.-1.)*spread;gl_Position=vec4(position.x*2.-1.,1.-position.y*2.,0.,1.);}'));
+  gl.attachShader(program,shader(gl.FRAGMENT_SHADER,'precision mediump float;varying vec2 uv;varying vec2 local;uniform vec2 quadrant;uniform vec4 fromBounds;uniform vec4 toBounds;uniform sampler2D original;uniform sampler2D finalArt;uniform sampler2D fromField;uniform sampler2D toField;uniform float shape;vec4 field(sampler2D tex,vec2 p){return texture2D(tex,(clamp(p,vec2(.001),vec2(.999))+quadrant)*.5);}void main(){if(shape<=0.){vec4 c=texture2D(original,uv);gl_FragColor=vec4(c.rgb*c.a,1.);return;}if(shape>=1.){gl_FragColor=vec4(texture2D(finalArt,uv).rgb,1.);return;}vec4 box=mix(fromBounds,toBounds,shape);vec2 size=box.zw-box.xy;vec2 position=(local-box.xy)/size;vec2 asize=fromBounds.zw-fromBounds.xy,bsize=toBounds.zw-toBounds.xy;vec4 a=field(fromField,fromBounds.xy+position*asize),b=field(toField,toBounds.xy+position*bsize);float da=(a.a-.5)*128.*(size.x/asize.x+size.y/asize.y)*.5;float db=(b.a-.5)*128.*(size.x/bsize.x+size.y/bsize.y)*.5;float d=mix(da,db,shape)+sin(shape*3.14159265)*2.;vec2 edge=min(local-box.xy,box.zw-local)*vec2(176.,191.);d=min(d,min(edge.x,edge.y));float coverage=smoothstep(-.65,.65,d);vec3 colour=mix(a.rgb,b.rgb,shape);gl_FragColor=vec4(colour*coverage,1.);}'));
+  gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Intro shader unavailable');gl.useProgram(program);
+  const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,0,1,1,0,1,1]),gl.STATIC_DRAW);const loc=gl.getAttribLocation(program,'point');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  // High-resolution original endpoints retain the supplied artwork's detail.
+  const high=make(704,764);high.getContext('2d').drawImage(main,704*.085,(764-704*.83)/2,704*.83,704*.83);
+  [high,board,...fields].forEach((image,i)=>{gl.activeTexture(gl.TEXTURE0+i);const texture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,texture);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);gl.uniform1i(gl.getUniformLocation(program,['original','finalArt','fromField','toField'][i]),i)});
+  const quadrant=gl.getUniformLocation(program,'quadrant'),spread=gl.getUniformLocation(program,'spread'),shape=gl.getUniformLocation(program,'shape'),fromBounds=gl.getUniformLocation(program,'fromBounds'),toBounds=gl.getUniformLocation(program,'toBounds');
+  draw=t=>{const m=motion(t);gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.uniform1f(spread,m.spread);gl.uniform1f(shape,m.shape);for(let q=0;q<4;q++){gl.uniform2f(quadrant,q%2,Math.floor(q/2));gl.uniform4fv(fromBounds,bounds[0][q]);gl.uniform4fv(toBounds,bounds[1][q]);gl.drawArrays(gl.TRIANGLES,0,6)}};
+ }else{
+  // Same silhouette morph for browsers without WebGL, at a bounded mobile resolution.
+  canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d'),tiles=[0,1,2,3].map(()=>make(w,h)),data=fields.map(f=>f.getContext('2d').getImageData(0,0,W,H).data);
+  draw=t=>{const m=motion(t);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);for(let q=0;q<4;q++){const ox=q%2*w,oy=Math.floor(q/2)*h,tile=tiles[q],c=tile.getContext('2d');if(m.shape===0||m.shape===1){c.clearRect(0,0,w,h);c.drawImage(originals[m.shape],ox,oy,w,h,0,0,w,h)}else{const out=c.createImageData(w,h),a=data[0],b=data[1],A=bounds[0][q],B=bounds[1][q],box=A.map((v,i)=>v*(1-m.shape)+B[i]*m.shape),bw=box[2]-box[0],bh=box[3]-box[1],aw=A[2]-A[0],ah=A[3]-A[1],tw=B[2]-B[0],th=B[3]-B[1];for(let y=0;y<h;y++)for(let x=0;x<w;x++){const u=(x/w-box[0])/bw,v=(y/h-box[1])/bh,ix=(bounds,sw,sh)=>((oy+Math.min(h-1,Math.max(0,Math.round((bounds[1]+v*sh)*h))))*W+ox+Math.min(w-1,Math.max(0,Math.round((bounds[0]+u*sw)*w))))*4,ia=ix(A,aw,ah),ib=ix(B,tw,th),k=(y*w+x)*4,da=(a[ia+3]/255-.5)*128*(bw/aw+bh/ah)*.5,db=(b[ib+3]/255-.5)*128*(bw/tw+bh/th)*.5,edge=Math.min(x-box[0]*w,box[2]*w-x,y-box[1]*h,box[3]*h-y),d=Math.min(edge,da*(1-m.shape)+db*m.shape+Math.sin(m.shape*Math.PI)*2),coverage=smooth(-.65,.65,d);for(let ch=0;ch<3;ch++)out.data[k+ch]=(a[ia+ch]*(1-m.shape)+b[ib+ch]*m.shape)*coverage;out.data[k+3]=255}c.putImageData(out,0,0)}const scale=1-m.spread*1.6;ctx.drawImage(tile,ox+(q%2*2-1)*m.spread*W+w*(1-scale)/2,oy+(Math.floor(q/2)*2-1)*m.spread*H+h*(1-scale)/2,w*scale,h*scale)}};
+ }
+ return t=>{draw(t);canvas.dataset.progress=String(t)};
+}
+
+/* Each original quarter separates and reforms its silhouette into its sub-logo. */
 (()=>{
  const splash=document.getElementById('zsSplash');if(!splash)return;
- const media=window.matchMedia('(prefers-reduced-motion: reduce)'),timers=new Set(),play=document.getElementById('zsSplashPlay');let ended=false,started=false,full=false;
+ const media=window.matchMedia('(prefers-reduced-motion: reduce)'),timers=new Set(),play=document.getElementById('zsSplashPlay');let ended=false,started=false,full=false,render,clock,frame=0;
  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn()},ms);timers.add(id);return id};
  const clear=()=>{for(const id of timers)clearTimeout(id);timers.clear()};
- const finish=(immediate=false)=>{if(ended)return;ended=true;clear();document.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide);media.removeEventListener?.('change',motionChange);const focused=splash.contains(document.activeElement);splash.classList.add('hide');splash.setAttribute('aria-hidden','true');splash.inert=true;if(focused)document.getElementById('homeNew')?.focus();if(immediate)splash.remove();else setTimeout(()=>splash.remove(),240)};
+ const finish=(immediate=false)=>{if(ended)return;ended=true;clear();cancelAnimationFrame(frame);clock?.cancel();document.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide);media.removeEventListener?.('change',motionChange);const focused=splash.contains(document.activeElement);splash.classList.add('hide');splash.setAttribute('aria-hidden','true');splash.inert=true;if(focused)document.getElementById('homeNew')?.focus();if(immediate)splash.remove();else setTimeout(()=>splash.remove(),240)};
  const key=e=>{if(e.key==='Escape')finish(true)},visibility=()=>{if(document.hidden&&started)finish(true)},pagehide=()=>finish(true),motionChange=()=>{if(media.matches&&!full){splash.classList.add('quiet');if(started){play.hidden=false;splash.classList.add('reveal')}}};
  document.getElementById('zsSplashSkip').onclick=()=>finish(true);document.addEventListener('keydown',key,true);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide,{once:true});media.addEventListener?.('change',motionChange);
  let reduced=media.matches;try{full=localStorage.getItem('zoneSketchIntroMotion')==='on';reduced ||=localStorage.getItem('zoneSketchReducedMotion')==='on'}catch{}
  if(reduced&&!full)splash.classList.add('quiet');
- const start=()=>{clear();started=true;splash.classList.add('play');if(splash.classList.contains('quiet')){play.hidden=false;later(()=>splash.classList.add('reveal'),1400)}later(()=>finish(),4600)};
+ const canvas=splash.querySelector('.zsSplashCanvas');
+ const start=()=>{clear();cancelAnimationFrame(frame);clock?.cancel();started=true;splash.classList.add('play');if(splash.classList.contains('quiet')){play.hidden=false;later(()=>splash.classList.add('reveal'),1400)}else{clock=canvas.animate([{opacity:1},{opacity:1}],{duration:3800,fill:'both'});const tick=()=>{if(ended)return;render(Math.min(1,Math.max(0,(clock.currentTime||0)/3800)));frame=requestAnimationFrame(tick)};tick()}later(()=>finish(),4600)};
  play.onclick=()=>{full=true;try{localStorage.setItem('zoneSketchIntroMotion','on')}catch{}play.hidden=true;document.getElementById('zsSplashSkip').focus();splash.style.animation='none';splash.classList.remove('quiet','reveal','play');void splash.offsetWidth;splash.style.animation='';start()};
  // Image loading has its own deadline, separate from the complete visible sequence.
  later(()=>finish(true),8000);
  const main=splash.querySelector('.zsSplashMain img'),board=new Image();board.src='assets/startup/four-systems.jpg';
  const loaded=image=>image.decode?image.decode():new Promise((resolve,reject)=>{if(image.complete)return image.naturalWidth?resolve():reject();image.onload=resolve;image.onerror=reject});
- Promise.all([loaded(main),loaded(board)]).then(()=>{if(!ended)start()}).catch(()=>finish(true));
+ Promise.all([loaded(main),loaded(board)]).then(()=>{if(ended)return;render=zsCreateHouseMorph(canvas,main,board);render(0);start()}).catch(()=>finish(true));
 })();
 </script>
 
