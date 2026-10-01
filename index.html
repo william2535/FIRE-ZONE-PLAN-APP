@@ -2433,21 +2433,26 @@ function cbBundlePaths(segments,map,bundleGap=7){
   if(!path||!close(path.points.at(-1),a)){path={id,color:s.color,points:[a],source:[]};paths.push(path);byId.set(id,path)}
   path.points.push(b);path.source.push(s)
  }
- const runs=paths.map(path=>path.points.slice(1).map((b,i)=>{const a=path.points[i],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);return{a,b,dx,dy,len,nx:-dy/len,ny:dx/len}}));
- const overlap=(a,b)=>{const cross=a.dx*b.dy-a.dy*b.dx;if(Math.abs(cross)>epsilon*a.len*b.len)return false;if(Math.abs((b.a.x-a.a.x)*a.nx+(b.a.y-a.a.y)*a.ny)>epsilon)return false;const t=p=>((p.x-a.a.x)*a.dx+(p.y-a.a.y)*a.dy)/a.len,lo=Math.max(0,Math.min(t(b.a),t(b.b))),hi=Math.min(a.len,Math.max(t(b.a),t(b.b)));return hi-lo>epsilon};
+ const runs=paths.map(path=>path.points.slice(1).map((b,i)=>{const a=path.points[i],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),axis=Math.abs(dy)<epsilon?'h':Math.abs(dx)<epsilon?'v':null;return{a,b,dx,dy,len,nx:-dy/len,ny:dx/len,axis,line:axis==='h'?a.y:a.x,lo:axis==='h'?Math.min(a.x,b.x):Math.min(a.y,b.y),hi:axis==='h'?Math.max(a.x,b.x):Math.max(a.y,b.y)}}));
+ const overlap=(a,b)=>{if(a.axis&&b.axis)return a.axis===b.axis&&Math.abs(a.line-b.line)<epsilon&&Math.min(a.hi,b.hi)-Math.max(a.lo,b.lo)>epsilon;const cross=a.dx*b.dy-a.dy*b.dx;if(Math.abs(cross)>epsilon*a.len*b.len)return false;if(Math.abs((b.a.x-a.a.x)*a.nx+(b.a.y-a.a.y)*a.ny)>epsilon)return false;const t=p=>((p.x-a.a.x)*a.dx+(p.y-a.a.y)*a.dy)/a.len,lo=Math.max(0,Math.min(t(b.a),t(b.b))),hi=Math.min(a.len,Math.max(t(b.a),t(b.b)));return hi-lo>epsilon};
  let gap=bundleGap;
  // Leave enough room for existing separate lanes and short corners at every zoom/export scale.
  for(let pi=0;pi<runs.length;pi++)for(const a of runs[pi]){
   gap=Math.min(gap,a.len*.8);
   for(let qi=0;qi<pi;qi++)for(const b of runs[qi]){
+   if(a.axis&&b.axis){if(a.axis!==b.axis)continue;const distance=Math.abs(a.line-b.line);if(distance>epsilon&&distance*.8<gap&&Math.min(a.hi,b.hi)-Math.max(a.lo,b.lo)>epsilon)gap=distance*.8;continue}
    if(Math.abs(a.dx*b.dy-a.dy*b.dx)>epsilon*a.len*b.len)continue;
    const distance=Math.abs((b.a.x-a.a.x)*a.nx+(b.a.y-a.a.y)*a.ny);if(distance<epsilon)continue;
    const t=p=>((p.x-a.a.x)*a.dx+(p.y-a.a.y)*a.dy)/a.len;
    if(Math.min(a.len,Math.max(t(b.a),t(b.b)))-Math.max(0,Math.min(t(b.a),t(b.b)))>epsilon)gap=Math.min(gap,distance*.8)
   }
  }
+ // Compare overlaps within collinear groups, avoiding a full all-path scan on every touch frame.
+ const matchLists=paths.map(()=>[]),flat=runs.flatMap((edges,pi)=>edges.map(edge=>({...edge,pi}))),link=(a,b)=>{if(a.pi===b.pi||!overlap(a,b))return;const same=a.dx*b.dx+a.dy*b.dy>=0;matchLists[a.pi].push({j:b.pi,same});matchLists[b.pi].push({j:a.pi,same})};
+ for(const axis of ['h','v']){const sorted=flat.filter(e=>e.axis===axis).sort((a,b)=>a.line-b.line);let group=[];const flush=()=>{for(let i=0;i<group.length;i++)for(let j=0;j<i;j++)link(group[i],group[j])};for(const edge of sorted){if(group.length&&Math.abs(edge.line-group[0].line)>=epsilon){flush();group=[]}group.push(edge)}flush()}
+ for(let i=0;i<flat.length;i++)for(let j=0;j<i;j++)if(!flat[i].axis||!flat[j].axis)link(flat[i],flat[j]);
  for(let i=0;i<paths.length;i++){
-  const matches=[];for(let j=0;j<paths.length;j++)if(i!==j)for(const a of runs[i])for(const b of runs[j])if(overlap(a,b))matches.push({j,same:a.dx*b.dx+a.dy*b.dy>=0});
+  const matches=matchLists[i];
   let offset=0;if(matches.length){const occupied=matches.filter(m=>m.j<i).map(m=>paths[m.j].offset*(m.same?1:-1));offset=-gap/2;for(let lane=0;occupied.some(v=>Math.abs(v-offset)<gap*.9)&&lane<paths.length*2;lane++)offset=(lane%2===0?1:-1)*(Math.floor(lane/2)+.5+(lane%2))*gap}
   const path=paths[i],edges=runs[i];path.offset=offset;path.gap=gap;path.bundled=!!matches.length;
   if(!offset){path.drawPoints=path.points;continue}
