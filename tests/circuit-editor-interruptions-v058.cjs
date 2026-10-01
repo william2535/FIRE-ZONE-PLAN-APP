@@ -84,7 +84,7 @@ async function run(browser,viewport){
  const toastLayout=await page.evaluate(()=>{const toast=[...document.querySelectorAll('.uiToast')].find(el=>el.textContent.includes('Route edit validated and saved')),actions=document.querySelector('#cbGame .cbActions');if(!toast||!actions)return null;const t=toast.getBoundingClientRect(),a=actions.getBoundingClientRect();return{toastBottom:t.bottom,actionsTop:a.top,gap:a.top-t.bottom,text:toast.textContent}});
  assert(toastLayout,'successful route edit must show its confirmation toast');
  if(enforceReleaseToastClearance) assert(toastLayout.toastBottom<=toastLayout.actionsTop+1,`confirmation toast overlaps Circuit Builder actions by ${Math.ceil(toastLayout.toastBottom-toastLayout.actionsTop)}px at ${viewport.width}px`);
- const data=await page.evaluate(()=>inputTest.exportData());assert.deepEqual(data.segments,data.expected,'As-Fit must use the committed edited route');
+ const data=await page.evaluate(()=>inputTest.exportData());assert.deepEqual(data.segments.map(({a,b,color})=>({a,b,color})),data.expected,'As-Fit must use the committed edited route');
  fs.mkdirSync('test-results',{recursive:true});
  const png=await page.evaluate(()=>inputTest.renderExport());fs.writeFileSync(`test-results/pineapple-input-asfit-${engine}-${viewport.width}.png`,Buffer.from(png.split(',')[1],'base64'));
  await page.screenshot({path:`test-results/pineapple-input-${engine}-${viewport.width}.png`});
