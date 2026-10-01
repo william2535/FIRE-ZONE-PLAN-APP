@@ -27,6 +27,7 @@ jobs:
           node tests/release-v063.cjs
           node tests/circuit-editor-syntax-v058.cjs
           node tests/run-regressions.cjs
+          BROWSER=webkit node tests/batch-devices.cjs
           BROWSER=webkit node tests/maps-asfit-stage1.cjs
           BROWSER=webkit node tests/access-maps-stage2.cjs
           BROWSER=webkit node tests/security-maps-stage3.cjs
