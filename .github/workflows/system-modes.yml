@@ -27,6 +27,7 @@ jobs:
           node tests/release-v063.cjs
           node tests/circuit-editor-syntax-v058.cjs
           node tests/run-regressions.cjs
+          BROWSER=webkit node tests/wall-mounted-devices.cjs
           BROWSER=webkit node tests/home-system-filter.cjs
           BROWSER=webkit node tests/cctv-network-builder.cjs
           BROWSER=webkit node tests/survey-menu.cjs
