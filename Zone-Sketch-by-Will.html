@@ -278,7 +278,7 @@ body.reduceMotion *,body.reduceMotion *::before,body.reduceMotion *::after{anima
 .homeBrandRow{display:flex;align-items:center;gap:15px;margin-bottom:12px}
 .homeBrandMark{width:78px;height:78px;object-fit:contain;border-radius:18px;box-shadow:0 0 30px rgba(0,194,255,.17)}
 /* The supplied board is displayed in four CSS windows; source artwork is unchanged. */
-#zsSplash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:#000;color:#fff;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));animation:zsIntroFallback 0s 3.5s forwards}
+#zsSplash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:#000;color:#fff;padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));animation:zsIntroFallback 0s 15s forwards}
 #zsSplash.hide{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}
 .zsSplashInner{text-align:center;width:100%;pointer-events:none}
 .zsSplashStage{position:relative;width:min(82vw,400px,calc((100dvh - 180px)*.923));aspect-ratio:706/765;margin:0 auto;isolation:isolate}
@@ -289,8 +289,8 @@ body.reduceMotion *,body.reduceMotion *::before,body.reduceMotion *::after{anima
 .zsSplashSystem.security{--end-x:0%;--end-y:-100%;background-position:100% 0}
 .zsSplashSystem.access{--end-x:-100%;--end-y:0%;background-position:0 100%}
 .zsSplashSystem.cctv{--end-x:0%;--end-y:0%;background-position:100% 100%}
-#zsSplash.play .zsSplashMain{animation:zsIntroMain 1.65s cubic-bezier(.22,.7,.2,1) both}
-#zsSplash.play .zsSplashSystem{animation:zsIntroSplit 1.65s cubic-bezier(.22,.7,.2,1) both}
+#zsSplash.play .zsSplashMain{animation:zsIntroMain 2.8s cubic-bezier(.22,.7,.2,1) both}
+#zsSplash.play .zsSplashSystem{animation:zsIntroSplit 2.8s cubic-bezier(.22,.7,.2,1) both}
 .zsSplashName{margin-top:10px;font-size:clamp(24px,6vw,36px);font-weight:900;letter-spacing:.03em;color:#effaff}
 .zsSplashSub{margin-top:7px;font-size:10px;font-weight:750;letter-spacing:.12em;color:#a6bdcb}
 .zsSplashBy{margin-top:9px;font-size:11px;color:#8dabbc}
@@ -298,6 +298,10 @@ body.reduceMotion *,body.reduceMotion *::before,body.reduceMotion *::after{anima
 @keyframes zsIntroMain{0%,30%{opacity:1;transform:scale(1)}62%,100%{opacity:0;transform:scale(.55)}}
 @keyframes zsIntroSplit{0%,30%{opacity:0;transform:translate(-50%,-50%) scale(.38)}48%{opacity:.8}82%,100%{opacity:1;transform:translate(var(--end-x),var(--end-y)) scale(1)}}
 @keyframes zsIntroFallback{to{visibility:hidden;pointer-events:none}}
+#zsSplash.quiet .zsSplashMain,#zsSplash.quiet .zsSplashSystem{animation:none}
+#zsSplash.quiet .zsSplashSystem{transform:translate(var(--end-x),var(--end-y)) scale(1)}
+#zsSplash.quiet.reveal .zsSplashMain{opacity:0}
+#zsSplash.quiet.reveal .zsSplashSystem{opacity:1}
 @media(prefers-reduced-motion:reduce){#zsSplash.play .zsSplashMain,#zsSplash.play .zsSplashSystem{animation:none}#zsSplash.hide{transition:none}}
 
 @media(max-width:720px){.zsBrandLockup>img{width:34px;height:34px}.homeBrandMark{width:64px;height:64px}.homeBrandRow{gap:11px}.homeProductHero{grid-template-columns:1fr}.homeHeroBadge{justify-self:stretch;width:100%}}
@@ -2715,21 +2719,22 @@ ensureUiState();renderFloors();renderSymbolColors();syncSymbolScale();renderLock
 </script>
 
 <script>
-/* Decorative startup only: data loading runs independently, with an immediate skip and a hard exit. */
+/* Decorative startup: wait for artwork before timing the visible sequence. */
 (()=>{
  const splash=document.getElementById('zsSplash');if(!splash)return;
- const media=window.matchMedia('(prefers-reduced-motion: reduce)'),timers=new Set();let ended=false;
- const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn()},ms);timers.add(id)};
+ const media=window.matchMedia('(prefers-reduced-motion: reduce)'),timers=new Set();let ended=false,started=false;
+ const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);fn()},ms);timers.add(id);return id};
  const finish=(immediate=false)=>{if(ended)return;ended=true;for(const id of timers)clearTimeout(id);timers.clear();document.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide);media.removeEventListener?.('change',motionChange);const focused=splash.contains(document.activeElement);splash.classList.add('hide');splash.setAttribute('aria-hidden','true');splash.inert=true;if(focused)document.getElementById('homeNew')?.focus();if(immediate)splash.remove();else setTimeout(()=>splash.remove(),240)};
- const key=()=>finish(true),visibility=()=>{if(document.hidden)finish(true)},pagehide=()=>finish(true),motionChange=()=>{if(media.matches)finish(true)};
+ const key=()=>finish(true),visibility=()=>{if(document.hidden&&started)finish(true)},pagehide=()=>finish(true),motionChange=()=>{if(media.matches){splash.classList.add('quiet');if(started)splash.classList.add('reveal')}};
  document.getElementById('zsSplashSkip').onclick=()=>finish(true);document.addEventListener('keydown',key,true);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide,{once:true});media.addEventListener?.('change',motionChange);
- let reduced=media.matches;try{reduced ||=localStorage.getItem('zoneSketchReducedMotion')==='on'||localStorage.getItem('zoneSketchBrandMotionMode')==='off'||(!localStorage.getItem('zoneSketchBrandMotionMode')&&localStorage.getItem('zoneSketchBrandMotion')==='off')}catch{}
- // This timer also clears the overlay when an image never finishes loading.
- later(()=>finish(true),3200);
- if(reduced){later(()=>finish(true),120);return}
+ // Home's decorative Motion off preference must not suppress the requested opening sequence.
+ let reduced=media.matches;try{reduced ||=localStorage.getItem('zoneSketchReducedMotion')==='on'}catch{}
+ if(reduced)splash.classList.add('quiet');
+ // Bound asset loading separately; a slow download must not consume the visible sequence.
+ const watchdog=later(()=>finish(true),8000);
  const main=splash.querySelector('.zsSplashMain img'),board=new Image();board.src='assets/startup/four-systems.jpg';
  const loaded=image=>image.decode?image.decode():new Promise((resolve,reject)=>{if(image.complete)return image.naturalWidth?resolve():reject();image.onload=resolve;image.onerror=reject});
- Promise.all([loaded(main),loaded(board)]).then(()=>{if(ended)return;splash.classList.add('play');later(()=>finish(),2150)}).catch(()=>finish(true));
+ Promise.all([loaded(main),loaded(board)]).then(()=>{if(ended)return;clearTimeout(watchdog);timers.delete(watchdog);started=true;splash.classList.add('play');if(splash.classList.contains('quiet'))later(()=>splash.classList.add('reveal'),1400);later(()=>finish(),3800)}).catch(()=>finish(true));
 })();
 </script>
 
