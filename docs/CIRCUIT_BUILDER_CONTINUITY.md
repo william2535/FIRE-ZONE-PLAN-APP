@@ -1,3 +1,9 @@
+## 1 October 2026 — shared panel exit correction
+
+The no-crossing rule now permits a short shared tail from the same physical FAP, bounded to two routing cells (at least the panel diameter). Engineers can depart along that tail and peel away; later crossings still require Bridge. Different panels, long overlaps and later route intersections receive no exemption. Normal separate-colour lane snapping resumes beyond the tail. Existing IDs and saved route geometry remain unchanged.
+
+Added four deterministic regressions for the reported down/right departure, blocked left crossing and Bridge, bounded sharing, eight-zone reuse, and sampled dragging (15 lane tests total). The camera-direction test now waits for the properties opening animation before measuring its 44px control; CI previously measured the scaled transition. Full regression and deployment validation are in progress on PR #32.
+
 # Circuit Builder continuity brief
 
 ## Active pass — 1 October 2026: stable cable lanes and touch recovery

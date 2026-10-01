@@ -2493,9 +2493,36 @@ function cbPruneRouteNoise(points,w,h){let pts=cbSimplify((points||[]).map(q=>({
 function cbGeometryIntent(p,w,h,force=false){if(!cbDrag||!p)return p;if(force){cbDrag.intentPoint={...p};return p}const cell=cbRouteCellPx(w,h),grid=Math.max(8,Math.min(cell.x,cell.y)),prev=cbDrag.intentPoint||cbDrag.routeInput||cbDrag.points?.at(-1)||p,dist=Math.hypot(p.x-prev.x,p.y-prev.y),alpha=dist>grid*2.5?.54:dist>grid*1.35?.43:.32,next={x:prev.x+(p.x-prev.x)*alpha,y:prev.y+(p.y-prev.y)*alpha};if(cbDrag.routeAxis&&!cbDrag.turnAnchor&&cbDrag.points?.length){const last=cbDrag.points.at(-1),axis=cbDrag.routeAxis,perp=axis==='h'?Math.abs(next.y-last.y):Math.abs(next.x-last.x),dead=(axis==='h'?cell.y:cell.x)*.52;if(perp<dead){if(axis==='h')next.y=last.y;else next.x=last.x}}cbDrag.intentPoint=next;return next}
 function cbPointClose(a,b,e=2.25){return Math.hypot(a.x-b.x,a.y-b.y)<=e}
 function cbSegmentConflict(a,b,c,d){const e=2.25,ah=Math.abs(a.y-b.y)<=1.25,av=Math.abs(a.x-b.x)<=1.25,ch=Math.abs(c.y-d.y)<=1.25,cv=Math.abs(c.x-d.x)<=1.25;if(Math.hypot(a.x-b.x,a.y-b.y)<2||Math.hypot(c.x-d.x,c.y-d.y)<2)return false;if(ah&&ch){if(Math.abs(a.y-c.y)>e)return false;const overlap=Math.min(Math.max(a.x,b.x),Math.max(c.x,d.x))-Math.max(Math.min(a.x,b.x),Math.min(c.x,d.x));return overlap>Math.max(12,CB_DEVICE_R)}if(av&&cv){if(Math.abs(a.x-c.x)>e)return false;const overlap=Math.min(Math.max(a.y,b.y),Math.max(c.y,d.y))-Math.max(Math.min(a.y,b.y),Math.min(c.y,d.y));return overlap>Math.max(12,CB_DEVICE_R)}let h1,h2,v1,v2;if(ah&&cv){h1=a;h2=b;v1=c;v2=d}else if(ch&&av){h1=c;h2=d;v1=a;v2=b}else return false;const p={x:v1.x,y:h1.y};if(p.x<Math.min(h1.x,h2.x)-e||p.x>Math.max(h1.x,h2.x)+e||p.y<Math.min(v1.y,v2.y)-e||p.y>Math.max(v1.y,v2.y)+e)return false;const hEnd=cbPointClose(p,h1,e)||cbPointClose(p,h2,e),vEnd=cbPointClose(p,v1,e)||cbPointClose(p,v2,e);return !(hEnd&&vEnd)}
-function cbChallengeObstacleSegmentsPx(w,h){const out=[];if(!cbCircuit||cbCircuit.type!=='conventional')return out;for(const c of cbChallengeCircuits())for(const s of cbLegSegments(c))out.push({a:cbChallengeMapPointPx(c,s.a,w,h),b:cbChallengeMapPointPx(c,s.b,w,h)});for(const leg of [...(cbCircuit.legs||[]),...(cbDrag?.previewLegs||[])]){const pts=leg.points||[];for(let i=1;i<pts.length;i++)out.push({a:cbBoardPx(pts[i-1],w,h),b:cbBoardPx(pts[i],w,h)})}return out}
-function cbChallengePointsBlocked(points,w,h){if(cbCircuit?.type!=='conventional'||!points?.length)return false;const segs=[];for(let i=1;i<points.length;i++)segs.push({a:points[i-1],b:points[i]});const obstacles=cbChallengeObstacleSegmentsPx(w,h);for(const s of segs)for(const o of obstacles)if(cbSegmentConflict(s.a,s.b,o.a,o.b)){if(!(cbBuildBridge&&cbEditSegmentIntersection(s.a,s.b,o.a,o.b)?.type==='cross'))return true;}for(let i=0;i<segs.length;i++)for(let j=0;j<i-1;j++)if(cbSegmentConflict(segs[i].a,segs[i].b,segs[j].a,segs[j].b)){if(!(cbBuildBridge&&cbEditSegmentIntersection(segs[i].a,segs[i].b,segs[j].a,segs[j].b)?.type==='cross'))return true;}return false}
-function cbBuildBridgeHits(points,w,h){if(!cbBuildBridge||cbCircuit?.type!=='conventional'||!points?.length)return[];const segs=[];for(let i=1;i<points.length;i++)segs.push({a:points[i-1],b:points[i],axis:cbRouteAxis(points[i-1],points[i])});const obstacles=cbChallengeObstacleSegmentsPx(w,h),hits=[];for(const s of segs)for(const o of obstacles){const hit=cbEditSegmentIntersection(s.a,s.b,o.a,o.b);if(hit?.type==='cross')hits.push({point:cbPxBoard(hit.point,w,h),axis:s.axis||'h'})}for(let i=0;i<segs.length;i++)for(let j=0;j<i-1;j++){const hit=cbEditSegmentIntersection(segs[i].a,segs[i].b,segs[j].a,segs[j].b);if(hit?.type==='cross')hits.push({point:cbPxBoard(hit.point,w,h),axis:segs[i].axis||'h'})}return hits.filter((hit,i,list)=>list.findIndex(other=>Math.hypot(other.point.x-hit.point.x,other.point.y-hit.point.y)<=.00008)===i)}
+// Shared panel tails may use one short exit before branching into separate cable lanes.
+function cbPanelExitStems(w,h){
+ if(!cbCircuit?.panelId)return[];
+ const panel=cbNodePx(cbCircuit.panelId,w,h),cell=cbRouteCellPx(w,h),limit=Math.max(CB_PANEL_R*2,Math.min(cell.x,cell.y)*2);if(!panel)return[];
+ const out=[];for(const c of cbChallengeCircuits()){
+  if(c.panelId!==cbCircuit.panelId)continue;
+  const leg=c.legs?.[0];if(leg?.from!==c.panelId||(leg.points?.length||0)<2)continue;
+  const a=cbChallengeMapPointPx(c,leg.points[0],w,h),b=cbChallengeMapPointPx(c,leg.points[1],w,h),axis=cbRouteAxis(a,b);if(!axis||!cbPointClose(a,panel))continue;
+  const length=Math.hypot(b.x-a.x,b.y-a.y),t=Math.min(1,limit/length);out.push({a,b:{x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t},axis,limit})
+ }return out
+}
+function cbPanelExitAllows(s,o,stems){
+ // Only the first straight departure from this panel can share a tail. Later turns are ordinary crossings.
+ return stems.some(t=>{
+  const axis=t.axis==='h'?'x':'y',cross=t.axis==='h'?'y':'x',sign=Math.sign(t.b[axis]-t.a[axis]);
+  if(s.panelOrigin&&cbPointClose(s.panelOrigin,t.a)&&cbRouteAxis(s.panelOrigin,s.a)===t.axis&&cbRouteAxis(s.a,s.b)!==t.axis&&cbRouteAxis(o.a,o.b)===t.axis&&Math.abs(o.a[cross]-t.a[cross])<.5&&(s.a[axis]-t.a[axis])*sign>=0&&(s.a[axis]-t.b[axis])*sign<=0)return true;
+  if(!cbPointClose(s.a,t.a)||cbRouteAxis(s.a,s.b)!==t.axis)return false;
+  if((s.b[axis]-t.a[axis])*sign<0)return false;
+  if(cbRouteAxis(o.a,o.b)===t.axis){
+   if(Math.abs(o.a[cross]-t.a[cross])>1.25)return false;
+   const lo=Math.max(Math.min(s.a[axis],s.b[axis]),Math.min(o.a[axis],o.b[axis])),hi=Math.min(Math.max(s.a[axis],s.b[axis]),Math.max(o.a[axis],o.b[axis]));
+   return lo>=Math.min(t.a[axis],t.b[axis])-.5&&hi<=Math.max(t.a[axis],t.b[axis])+.5
+  }
+  // Continuing past the end of the shared tail touches a branch endpoint; it does not cross its interior.
+  return cbPointClose(o.a,t.b,.5)||cbPointClose(o.b,t.b,.5)
+ })
+}
+function cbChallengeObstacleSegmentsPx(w,h){const out=[];if(!cbCircuit||cbCircuit.type!=='conventional')return out;for(const c of cbChallengeCircuits())for(const s of cbLegSegments(c))out.push({a:cbChallengeMapPointPx(c,s.a,w,h),b:cbChallengeMapPointPx(c,s.b,w,h),sharedPanel:c.panelId===cbCircuit.panelId});for(const leg of [...(cbCircuit.legs||[]),...(cbDrag?.previewLegs||[])]){const pts=leg.points||[];for(let i=1;i<pts.length;i++)out.push({a:cbBoardPx(pts[i-1],w,h),b:cbBoardPx(pts[i],w,h)})}return out}
+function cbChallengePointsBlocked(points,w,h){if(cbCircuit?.type!=='conventional'||!points?.length)return false;const segs=[];for(let i=1;i<points.length;i++)segs.push({a:points[i-1],b:points[i],panelOrigin:i===2?points[0]:null});const obstacles=cbChallengeObstacleSegmentsPx(w,h),stems=cbPanelExitStems(w,h);for(const s of segs)for(const o of obstacles)if(cbSegmentConflict(s.a,s.b,o.a,o.b)){if(o.sharedPanel&&cbPanelExitAllows(s,o,stems))continue;if(!(cbBuildBridge&&cbEditSegmentIntersection(s.a,s.b,o.a,o.b)?.type==='cross'))return true;}for(let i=0;i<segs.length;i++)for(let j=0;j<i-1;j++)if(cbSegmentConflict(segs[i].a,segs[i].b,segs[j].a,segs[j].b)){if(!(cbBuildBridge&&cbEditSegmentIntersection(segs[i].a,segs[i].b,segs[j].a,segs[j].b)?.type==='cross'))return true;}return false}
+function cbBuildBridgeHits(points,w,h){if(!cbBuildBridge||cbCircuit?.type!=='conventional'||!points?.length)return[];const segs=[];for(let i=1;i<points.length;i++)segs.push({a:points[i-1],b:points[i],axis:cbRouteAxis(points[i-1],points[i]),panelOrigin:i===2?points[0]:null});const obstacles=cbChallengeObstacleSegmentsPx(w,h),stems=cbPanelExitStems(w,h),hits=[];for(const s of segs)for(const o of obstacles){if(o.sharedPanel&&cbPanelExitAllows(s,o,stems))continue;const hit=cbEditSegmentIntersection(s.a,s.b,o.a,o.b);if(hit?.type==='cross')hits.push({point:cbPxBoard(hit.point,w,h),axis:s.axis||'h'})}for(let i=0;i<segs.length;i++)for(let j=0;j<i-1;j++){const hit=cbEditSegmentIntersection(segs[i].a,segs[i].b,segs[j].a,segs[j].b);if(hit?.type==='cross')hits.push({point:cbPxBoard(hit.point,w,h),axis:segs[i].axis||'h'})}return hits.filter((hit,i,list)=>list.findIndex(other=>Math.hypot(other.point.x-hit.point.x,other.point.y-hit.point.y)<=.00008)===i)}
 function cbMarkBlocked(){if(!cbDrag)return;cbDrag.blocked=true;cbDrag.phase='blocked';const now=Date.now();if(!cbMarkBlocked.last||now-cbMarkBlocked.last>320){cbMarkBlocked.last=now;if(uiHaptics)try{navigator.vibrate?.(18)}catch(e){}}}
 function cbPairSegmentsPx(w,h){
  const out=[],add=(c,legs,foreign=false)=>{for(const leg of legs){const pts=leg.points||[];for(let i=1;i<pts.length;i++){const a=foreign?cbEditCircuitPointPx(c,pts[i-1],w,h):cbBoardPx(pts[i-1],w,h),b=foreign?cbEditCircuitPointPx(c,pts[i],w,h):cbBoardPx(pts[i],w,h);if(Math.hypot(b.x-a.x,b.y-a.y)>28)out.push({a,b,foreign,circuitId:c?.id})}}};
@@ -2525,13 +2552,20 @@ function cbPairSnapPx(q,last,w,h,raw=q,route=cbDrag,segments=null){
  const cell=cbRouteCellPx(w,h),grid=Math.min(cell.x,cell.y),prev=route.routeInput||last,rawX=Number(raw?.x),rawY=Number(raw?.y),rx=Number.isFinite(rawX)?rawX:q.x,ry=Number.isFinite(rawY)?rawY:q.y,dx=rx-prev.x,dy=ry-prev.y,move=Math.hypot(dx,dy);
  let wantH=Math.abs(dx)>=Math.abs(dy);if(move<grid*.24&&route.pairAxis)wantH=route.pairAxis==='h';
  const scale=Math.max(1,cbView.scale),range=Math.max(10,Math.min(42,grid*1.05,CB_PAIR_RANGE*scale)),gap=CB_PAIR_GAP*scale,reach=Math.max(18,grid*.70),runs=segments||cbPairSegmentsPx(w,h);
+ // Hold the shared panel centreline only over its short exit; ordinary pairing takes over after it.
+ if(cbCircuit?.panelId&&route===cbDrag&&route.from===cbCircuit.panelId&&route.points?.length<=2){
+  for(const stem of cbPanelExitStems(w,h)){
+   const axis=stem.axis==='h'?'x':'y',cross=stem.axis==='h'?'y':'x',sign=Math.sign(stem.b[axis]-stem.a[axis]),distance=(q[axis]-stem.a[axis])*sign;
+   if(wantH===(stem.axis==='h')&&distance>=0&&distance<=Math.hypot(stem.b.x-stem.a.x,stem.b.y-stem.a.y)&&Math.abs((cross==='x'?rx:ry)-stem.a[cross])<=range){route.pairSnap=true;route.pairAxis=stem.axis;route.pairLine=stem.a[cross];route.pairBase=stem.a[cross];route.pairSide=null;return{...q,[cross]:stem.a[cross]}}
+  }
+ }
  let best=null;
  for(const s of runs){
   const sx=s.b.x-s.a.x,sy=s.b.y-s.a.y;if(Math.min(Math.abs(sx),Math.abs(sy))>1.25)continue;
   const isH=Math.abs(sx)>=Math.abs(sy),axis=isH?'h':'v',line=isH?s.a.y:s.a.x;if(isH!==wantH)continue;
   const along=isH?q.x:q.y,lo=isH?Math.min(s.a.x,s.b.x):Math.min(s.a.y,s.b.y),hi=isH?Math.max(s.a.x,s.b.x):Math.max(s.a.y,s.b.y),dist=Math.abs((isH?ry:rx)-line);
   if(along<lo-reach||along>hi+reach||dist>range)continue;
-  const retained=route.pairSnap&&route.pairAxis===axis&&Math.abs((route.pairBase??Infinity)-line)<.5,opposite=isH?dx*sx<0:dy*sy<0,score=dist+(opposite?0:grid*.10)-(retained?range*.65:0);
+  const retained=route.pairSnap&&route.pairSide!==null&&route.pairAxis===axis&&Math.abs((route.pairBase??Infinity)-line)<.5,opposite=isH?dx*sx<0:dy*sy<0,score=dist+(opposite?0:grid*.10)-(retained?range*.65:0);
   if(!best||score<best.score)best={s,isH,axis,line,score,retained}
  }
  if(!best){route.pairSnap=false;route.pairAxis=null;route.pairLine=null;route.pairBase=null;return q}

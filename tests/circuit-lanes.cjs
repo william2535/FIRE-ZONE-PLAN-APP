@@ -63,3 +63,28 @@ test('reversed outgoing/return segments draw on distinct sides in board and expo
  c.cbDrawBundled(ctx,[{a,b,color:'red'},{a:b,b:a,color:'blue'}],p=>({x:p.x*scale,y:p.y*scale}),5,9*scale);assert.equal(Math.hypot(drawn[0][0].x-drawn[1][1].x,drawn[0][0].y-drawn[1][1].y),9*scale,'reversed paths must not land on the same visual lane');
  }
 });
+
+function panelFixture(){
+ const c=fixture();c.CB_DEVICE_R=11;c.CB_PANEL_R=16;c.cbCircuit.panelId='p';c.cbNodePx=()=>({x:200,y:100});c.other.panelId='p';c.other.legs=[{from:'p',to:'a',points:[{x:200,y:100},{x:200,y:136},{x:80,y:136},{x:80,y:240}]}];
+ for(const name of ['cbPointClose','cbSegmentConflict','cbPanelExitStems','cbPanelExitAllows','cbChallengeObstacleSegmentsPx','cbChallengePointsBlocked','cbEditSegmentIntersection'])vm.runInContext(functions.get(name),c);
+ c.cbDrag={from:'p',points:[{x:200,y:100}],previewLegs:[],routeInput:{x:200,y:100}};return c;
+}
+test('shared panel exit permits down and right, but left across the blue cable needs a bridge',()=>{
+ const c=panelFixture(),p={x:200,y:100};
+ assert.equal(c.cbChallengePointsBlocked([p,{x:200,y:132}],400,300),false,'shared stem');
+ assert.equal(c.cbChallengePointsBlocked([p,{x:200,y:165},{x:250,y:165}],400,300),false,'continue down and peel right');
+ const left=[p,{x:200,y:165},{x:60,y:165}];assert.equal(c.cbChallengePointsBlocked(left,400,300),true,'left crosses blue vertical cable');c.cbBuildBridge=true;assert.equal(c.cbChallengePointsBlocked(left,400,300),false);
+});
+test('panel sharing is bounded and never exempts an unrelated panel or later crossing',()=>{
+ const c=panelFixture();c.other.legs[0].points=[{x:200,y:100},{x:200,y:280}];assert.equal(c.cbChallengePointsBlocked([{x:200,y:100},{x:200,y:180}],400,300),true,'long overlap is not a panel exit');c.other.panelId='other';assert.equal(c.cbChallengePointsBlocked([{x:200,y:100},{x:200,y:136}],400,300),true,'different panel');
+});
+test('more than four zones can reuse a short shared panel tail without merging IDs',()=>{
+ const c=panelFixture(),others=Array.from({length:8},(_,i)=>({...copy(c.other),id:'zone'+i,color:'#'+i+'23456'}));c.cbCircuits=()=>[...others,c.cbCircuit];c.cbChallengeCircuits=()=>others;
+ const before=JSON.stringify(others),q=c.cbPairSnapPx({x:200,y:130},{x:200,y:100},400,300,{x:201,y:130});assert.deepEqual(copy(q),{x:200,y:130});assert.equal(c.cbChallengePointsBlocked([{x:200,y:100},q,{x:245,y:130}],400,300),false);assert.equal(JSON.stringify(others),before);
+});
+test('sampled drag leaves a busy panel and turns right without a false crossing',()=>{
+ const c=panelFixture();Object.assign(c,{cbReturnPhase:()=>false,uiHaptics:false});for(const name of ['cbAppendDrag','cbGeometryIntent','cbRouteSnapshot','cbRouteRestore','cbMarkBlocked'])vm.runInContext(functions.get(name),c);
+ for(let y=104;y<=164;y+=4)assert.equal(c.cbAppendDrag({x:200,y},400,300,true),true,'down at '+y+' '+JSON.stringify(c.cbDrag.points));
+ for(let x=204;x<=260;x+=4)assert.equal(c.cbAppendDrag({x,y:164},400,300,true),true,'right at '+x+' '+JSON.stringify(c.cbDrag.points));
+ assert(c.cbDrag.points.at(-1).x>=250);assert.equal(c.cbDrag.blocked,false);
+});
