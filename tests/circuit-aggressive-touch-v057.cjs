@@ -32,6 +32,14 @@ const styles={
 };
 function orientation(a,b){const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)<1e-7&&Math.abs(dy)<1e-7)return 'z';return Math.abs(dx)>=Math.abs(dy)?'h':'v'}
 function sign(v){return v>1e-7?1:v<-1e-7?-1:0}
+function assertReturnFidelity(c){
+ const returning=c.legs.at(-1),outgoing=c.legs.slice(0,-1).flatMap(leg=>leg.points||[]),expected=[];
+ for(const p of outgoing)if(!expected.length||Math.hypot(p.x-expected.at(-1).x,p.y-expected.at(-1).y)>1e-8)expected.push(p);
+ expected.reverse();assert.equal(returning.to,c.panelId,'magnetic return must end at the panel');
+ assert.equal(returning.points.length,expected.length,'magnetic return must retain every outgoing bend and device visit');
+ for(let i=0;i<expected.length;i++)assert(Math.hypot(returning.points[i].x-expected[i].x,returning.points[i].y-expected[i].y)<1e-8,'magnetic return must follow the outgoing route exactly');
+ return returning.points.slice(1).filter((p,i)=>Math.hypot(p.x-returning.points[i].x,p.y-returning.points[i].y)<.022).length;
+}
 function metricCircuit(c){
  const legs=c?.legs||[],segments=[];let points=0,corners=0,shortLegs=0,reversals=0,length=0,direct=0;
  for(const leg of legs){const pts=leg.points||[];points+=pts.length;if(pts.length>1){const a=pts[0],b=pts.at(-1);direct+=Math.abs(b.x-a.x)+Math.abs(b.y-a.y)}
@@ -49,7 +57,7 @@ function metricCircuit(c){
  const deviceIds=new Set(c?.deviceIds||[]),captured=new Set((c?.sequence||[]).filter(id=>deviceIds.has(id))).size;
  return{points,segments:segments.length,corners,shortLegs,reversals,intersections,routeLength:+length.toFixed(5),simplifiedEquivalent:+direct.toFixed(5),excessRatio:+(direct?length/direct:1).toFixed(4),devicesCaptured:captured,totalDevices:deviceIds.size,complete:!!c?.complete};
 }
-function aggregate(rows,filter=()=>true){const use=rows.filter(filter),keys=['points','segments','corners','shortLegs','reversals','intersections','routeLength','simplifiedEquivalent'];const out={cases:use.length};for(const k of keys)out[k]=+use.reduce((n,r)=>n+r.metrics[k],0).toFixed(5);out.excessRatio=+(use.reduce((n,r)=>n+r.metrics.excessRatio,0)/Math.max(1,use.length)).toFixed(4);out.devicesCaptured=use.reduce((n,r)=>n+r.metrics.devicesCaptured,0);out.totalDevices=use.reduce((n,r)=>n+r.metrics.totalDevices,0);out.complete=use.filter(r=>r.metrics.complete).length;return out}
+function aggregate(rows,filter=()=>true){const use=rows.filter(filter),keys=['points','segments','corners','shortLegs','mirroredReturnShortLegs','reversals','intersections','routeLength','simplifiedEquivalent'];const out={cases:use.length};for(const k of keys)out[k]=+use.reduce((n,r)=>n+(r.metrics[k]||0),0).toFixed(5);out.excessRatio=+(use.reduce((n,r)=>n+r.metrics.excessRatio,0)/Math.max(1,use.length)).toFixed(4);out.devicesCaptured=use.reduce((n,r)=>n+r.metrics.devicesCaptured,0);out.totalDevices=use.reduce((n,r)=>n+r.metrics.totalDevices,0);out.complete=use.filter(r=>r.metrics.complete).length;return out}
 function tracePoints(a,b,style,legIndex){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,ux=dx/L,uy=dy/L;return style.fractions.map((f,i)=>{const lateral=style.noise[(i+legIndex)%style.noise.length],along=style.cross[(i*2+legIndex)%style.cross.length];return{x:a.x+dx*f+nx*lateral+ux*along,y:a.y+dy*f+ny*lateral+uy*along}})}
 
 (async()=>{
@@ -68,7 +76,7 @@ function tracePoints(a,b,style,legIndex){const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypo
     const target=await node(id);for(const pt of tracePoints(current,target,style,legIndex)){await fire('pointermove',1,pt);samples++}current=tracePoints(current,target,style,legIndex).at(-1)
    }
    const panel=await node('panel');const returnStyle=traceName==='clean'?styles.clean:traceName==='rough'?styles.rough:styles.abusive;for(const pt of tracePoints(current,panel,returnStyle,8)){await fire('pointermove',1,pt);samples++}await fire('pointermove',1,panel);samples++;await fire('pointerup',1,panel);await page.waitForTimeout(30);
-   const read=await page.evaluate(()=>cbAggressiveTest.read()),metrics=metricCircuit(read.c);rows.push({viewport:viewport.name,width:viewport.width,height:viewport.height,trace:traceName,zoom:style.zoom,samples,routingState:read.state,metrics});
+   const read=await page.evaluate(()=>cbAggressiveTest.read()),metrics=metricCircuit(read.c);if(phase==='after')metrics.mirroredReturnShortLegs=assertReturnFidelity(read.c);rows.push({viewport:viewport.name,width:viewport.width,height:viewport.height,trace:traceName,zoom:style.zoom,samples,routingState:read.state,metrics});
    await page.close();
   }}
  }finally{await browser.close();server.close()}
@@ -90,7 +98,9 @@ assert.equal(report.noisy.intersections,0,'Smart Route must not self-intersect u
 assert(report.noisy.points<=240,`too many noisy route points: ${report.noisy.points}`);
 assert(report.noisy.segments<=170,`too many noisy cable segments: ${report.noisy.segments}`);
 assert(report.noisy.corners<=75,`too many noisy corners: ${report.noisy.corners}`);
-assert(report.noisy.shortLegs<=30,`too many noisy short legs: ${report.noisy.shortLegs}`);
+// An exact return repeats legitimate short lane-change bends. Assert exact return
+// fidelity above, then count each short bend once for the input-noise budget.
+assert(report.noisy.shortLegs-report.noisy.mirroredReturnShortLegs<=30,`too many noisy short legs: ${report.noisy.shortLegs-report.noisy.mirroredReturnShortLegs}`);
 assert(report.noisy.reversals<=25,`too many noisy immediate reversals: ${report.noisy.reversals}`);
 assert(report.noisy.excessRatio<=1.52,`noisy route excess ratio regressed: ${report.noisy.excessRatio}`);
 assert.equal(report.clean.intersections,0,'clean traces must not self-intersect');
