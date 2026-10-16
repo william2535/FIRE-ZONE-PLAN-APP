@@ -13,16 +13,20 @@ import java.io.FileNotFoundException;
 public final class DraftProvider extends ContentProvider {
     private File draft(Uri uri) throws FileNotFoundException {
         String path = uri.getPath();
-        if (path == null || !path.startsWith("/export/")) throw new FileNotFoundException("Unknown file");
+        if (path == null || !(path.startsWith("/export/") || path.startsWith("/capture/"))) throw new FileNotFoundException("Unknown file");
         String name = uri.getLastPathSegment();
         if (name == null || !name.matches("[a-zA-Z0-9._-]+") || name.contains("..")) throw new FileNotFoundException("Invalid file");
-        File file = new File(new File(getContext().getCacheDir(), "exports"), name);
+        File file = new File(new File(getContext().getCacheDir(), path.startsWith("/capture/") ? "captures" : "exports"), name);
         if (!file.isFile()) throw new FileNotFoundException("No export yet");
         return file;
     }
     @Override public boolean onCreate() { return true; }
-    @Override public String getType(Uri uri) { String p = uri.getPath(); return p != null && p.endsWith(".pdf") ? "application/pdf" : p != null && p.endsWith(".json") ? "application/json" : "image/png"; }
+    @Override public String getType(Uri uri) { String p = uri.getPath(); return p != null && p.startsWith("/capture/") ? "image/jpeg" : p != null && p.endsWith(".pdf") ? "application/pdf" : p != null && p.endsWith(".json") ? "application/json" : "image/png"; }
     @Override public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+        if (uri.getPath() != null && uri.getPath().startsWith("/capture/")) {
+            if (!java.util.Arrays.asList("r", "w", "wt", "rw", "rwt").contains(mode)) throw new FileNotFoundException("Unsupported mode");
+            return ParcelFileDescriptor.open(draft(uri), ParcelFileDescriptor.parseMode(mode));
+        }
         if (!"r".equals(mode)) throw new FileNotFoundException("Read only");
         return ParcelFileDescriptor.open(draft(uri), ParcelFileDescriptor.MODE_READ_ONLY);
     }

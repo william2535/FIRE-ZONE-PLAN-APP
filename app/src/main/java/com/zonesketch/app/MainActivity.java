@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 public final class MainActivity extends Activity {
     private static final int PICK_IMAGE = 10;
     private ValueCallback<Uri[]> imageCallback;
+    private Uri cameraOutput;
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -36,14 +37,34 @@ public final class MainActivity extends Activity {
             @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                 if (imageCallback != null) imageCallback.onReceiveValue(null);
                 imageCallback = callback;
-                Intent pick = new Intent(Intent.ACTION_GET_CONTENT);
-                pick.addCategory(Intent.CATEGORY_OPENABLE);
+                cameraOutput = null;
                 String[] accepted = params.getAcceptTypes();
-                boolean json = false;
-                for (String type : accepted) if (type.contains("json")) json = true;
-                pick.setType(json ? "*/*" : "image/*");
-                try { startActivityForResult(Intent.createChooser(pick, "Choose image or project"), PICK_IMAGE); }
-                catch (Exception e) { imageCallback.onReceiveValue(null); imageCallback = null; Toast.makeText(MainActivity.this, "No image picker available", Toast.LENGTH_LONG).show(); }
+                boolean json = false, pdf = false;
+                for (String type : accepted) { if (type.contains("json")) json = true; if (type.contains("pdf")) pdf = true; }
+                try {
+                    if (params.isCaptureEnabled() && !json && !pdf) {
+                        File folder = new File(getCacheDir(), "captures");
+                        if (!folder.isDirectory() && !folder.mkdirs()) throw new IllegalStateException("Camera folder unavailable");
+                        File[] oldPhotos = folder.listFiles();
+                        if (oldPhotos != null) for (File old : oldPhotos) if (System.currentTimeMillis() - old.lastModified() > 86400000L) old.delete();
+                        File photo = File.createTempFile("device_", ".jpg", folder);
+                        cameraOutput = Uri.parse("content://com.zonesketch.app.share/capture/" + photo.getName());
+                        Intent camera = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                        camera.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, cameraOutput);
+                        camera.setClipData(ClipData.newRawUri("Device photo", cameraOutput));
+                        camera.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        startActivityForResult(camera, PICK_IMAGE);
+                    } else {
+                        Intent pick = new Intent(Intent.ACTION_GET_CONTENT);
+                        pick.addCategory(Intent.CATEGORY_OPENABLE);
+                        pick.setType(json || pdf ? "*/*" : "image/*");
+                        if (pdf && !json) pick.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "application/pdf"});
+                        startActivityForResult(Intent.createChooser(pick, "Choose image or project"), PICK_IMAGE);
+                    }
+                } catch (Exception e) {
+                    imageCallback.onReceiveValue(null); imageCallback = null; cameraOutput = null;
+                    Toast.makeText(MainActivity.this, "Could not open camera or file picker. Try Choose photo instead.", Toast.LENGTH_LONG).show();
+                }
                 return true;
             }
         });
@@ -59,7 +80,9 @@ public final class MainActivity extends Activity {
     @Override protected void onActivityResult(int code, int result, Intent data) {
         super.onActivityResult(code, result, data);
         if (code == PICK_IMAGE && imageCallback != null) {
-            Uri uri = result == RESULT_OK && data != null ? data.getData() : null;
+            Uri uri = result == RESULT_OK ? (cameraOutput != null ? cameraOutput : data != null ? data.getData() : null) : null;
+            if (cameraOutput != null) revokeUriPermission(cameraOutput, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            cameraOutput = null;
             imageCallback.onReceiveValue(uri == null ? null : new Uri[]{uri});
             imageCallback = null;
         }
