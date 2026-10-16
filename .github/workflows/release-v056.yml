@@ -1,15 +1,6 @@
 name: Release Zone Sketch v0.56 Magnetic Loop Return
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/fix_v056_return_magnet.py'
-      - '.github/fix_v056_return_magnet_v2.py'
-      - 'tests/circuit-return-magnet-v056.cjs'
-      - 'tests/run-regressions.cjs'
-      - '.github/verify_247_protected.py'
-      - '.github/workflows/release-v056.yml'
 permissions:
   contents: write
 env:

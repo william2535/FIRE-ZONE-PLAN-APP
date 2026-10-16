@@ -1,12 +1,6 @@
 name: Release Zone Sketch v0.51 Grid Routing
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/fix_v051_circuit_grid.py'
-      - 'tests/circuit-grid-routing-v051.cjs'
-      - 'tests/run-regressions.cjs'
 permissions:
   contents: write
 env:

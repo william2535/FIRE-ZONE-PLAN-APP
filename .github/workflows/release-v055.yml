@@ -1,22 +1,6 @@
 name: Release Zone Sketch v0.55 Shared Grid + Smooth Routing
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/fix_v055_shared_survey_grid.py'
-      - '.github/fix_v055_grid_undo.py'
-      - '.github/fix_v055_smooth_routing.py'
-      - '.github/verify_247_protected.py'
-      - 'tests/run-regressions.cjs'
-      - 'tests/circuit-survey-grid-v055.cjs'
-      - 'tests/circuit-smooth-routing-v055.cjs'
-      - 'tests/survey-mode.cjs'
-      - 'tests/circuit-builder-v047.cjs'
-      - 'tests/circuit-grid-routing-v051.cjs'
-      - 'tests/circuit-retrace-v053.cjs'
-      - 'tests/circuit-zone-game-v054.cjs'
-      - '.github/workflows/release-v055.yml'
 permissions:
   contents: write
 env:
