@@ -1,13 +1,6 @@
 name: Release Zone Sketch v0.54 Zone Challenge
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/fix_v054_zone_challenge.py'
-      - '.github/fix_v054_backref_repair.py'
-      - 'tests/circuit-zone-game-v054.cjs'
-      - '.github/workflows/release-v054.yml'
 permissions:
   contents: write
 env:
