@@ -13,6 +13,18 @@ Additional work reuses the editor in three stages:
 3. **Circuit builder** — choose connection points, highlight the additional
    devices, then draw the section using the existing routing and editing tools.
 
+Use **Building layout → Existing cable** to draw reference cable lines. Drag
+each straight section, then start the next at its end to make a bend. These
+belong to the existing installation, remain separate from the added circuit and
+device quantities, and can be selected as connection or break points in Circuit
+builder. They are saved with their floor and retained in backups. Moving or
+deleting a referenced line requires checking the affected circuit again.
+
+Fire Survey / Add devices shows the building and devices without cable routes,
+existing cable references or circuit connection markers. The same separation
+applies to Survey exports. Building layout and As fit retain the existing cable
+references, and As fit shows the added route and its actual connections.
+
 ## Connection setup
 
 **Choose connection points** opens **Choose last device / cable joint location**.
@@ -48,6 +60,8 @@ Undo removes this unfinished tail before removing a completed leg.
 - Project `fireWorkType`: `fresh` or `additional`; absent means Fresh install.
 - Floor `cableJoints`: stable IDs and plan coordinates, optionally attached to a
   circuit/leg/segment with an interpolation position.
+- Floor `existingCables`: reference paths with stable IDs and plan coordinates.
+  A joint can reference an existing cable ID, segment and interpolation position.
 - Floor `additionalSetup`: in-progress endpoint references and device selection.
 - Additional circuits: explicit `startRef` and `returnRef`, selected device IDs,
   ordinary route legs, edit drafts and optional `routeDraft` for an unfinished
@@ -67,6 +81,8 @@ remain available, using the Additional work stage names.
 
 New browser checks are included in `tests/run-regressions.cjs`:
 
+- `existing-cable-reference.cjs`: reference drawing and editing, cable-hosted
+  endpoints, deliberate returns, clean Survey output and saved attachments.
 - `additional-work-ui.cjs`: Fire selector, phone layout, zone-free building
   editing, Survey placement, work-type persistence and legacy behaviour.
 - `additional-work-routing.cjs`: ordinary endpoint routing and circuit editing.
