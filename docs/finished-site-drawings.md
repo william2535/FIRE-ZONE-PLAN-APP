@@ -1,36 +1,41 @@
-# Finished site drawings
+# Completed steps and saved drawings
 
-As fit drawings no longer include bridge humps. Bridge still permits intentional
-cable crossings in the circuit editor, and its metadata remains saved.
+Every Home project card has **Show completed steps**, including Fire, Additional
+work, CCTV, Intruder and Access Control sites. The viewer shows three paper
+cards together at the top of the screen:
 
-After **Complete circuits → As-Fit**, reopening As fit mode (including after a
-reload or floor switch) opens the saved drawing directly. **← Circuits** returns
-to the route controls, where **View As fit drawing** reopens it without generating
-another record. An incomplete route, open edit, changed device position, or
-changed circuit set prevents a stale drawing from opening as finished.
+- The plan or Building layout **for customer**.
+- Survey or Add devices **for engineer**.
+- As fit **for record**.
 
-On Home, **View finished drawings** appears on a fire project when every floor has:
+Opening the viewer starts with one paper in the middle. It separates into the
+three cards above; tap an available card to open its full drawing beneath them.
+The cards remain together on portrait phones. Enlarge provides a scrollable
+close view, and Fit drawing returns to the fitted view. Reduced-motion settings
+show the final cards immediately.
 
-- Zone areas for its recorded zones.
-- Surveyed field devices.
-- A saved As fit covering the current, complete circuits without open edits or
-  changed device positions.
+Availability is determined separately for each floor and step. Fresh Fire's
+customer drawing requires zone areas; Additional work and the other disciplines
+use the building or imported plan. Additional work may also document only an
+existing cable reference. The engineer drawing requires surveyed devices (or
+configured Access doors). A step without drawing data stays visible and says
+**Not completed** instead of presenting a blank finished drawing.
 
-Zones and Survey do not have explicit completion flags, so the button uses this
-existing drawing data. The existing confirmation allowing an As fit with
-unassigned surveyed devices is preserved.
+Fire's record drawing uses the saved As-fit and its current route validation.
+Incomplete or edited routes and changed endpoint positions do not open as a
+finished record. For CCTV, Intruder and Access Control, the record card opens the
+latest issued As-fit snapshot for the selected floor, with its saved revision.
+It does not turn the working drawing into an issued record.
 
-The button opens a read-only viewer with a floor selector and three drawings:
+The existing saved As-fit preview remains available when reopening As-fit mode,
+without pressing Complete circuits again. As-fit drawings omit bridge editing
+humps and other temporary controls.
 
-- **Zones - for customer**
-- **Survey - for engineer**
-- **As fit - for record**
+Viewing drawings does not change the active project, floor, device references,
+verification states or issue history. Closing or changing floors cancels pending
+animation and rendering, and releases preview canvases.
 
-Each drawing can be enlarged. Viewing a site's drawings does not switch the
-active project or modify its contents. The As fit uses the same rendering as the
-circuit preview and PNG export. Completion does not change item verification or
-issued-record history.
-
-Focused checks: `node tests/asfit-saved-preview.cjs` and
-`node tests/finished-project-drawings.cjs`. Both are included in the regression
-runner.
+Focused checks: `tests/finished-project-drawings.cjs` and
+`tests/asfit-saved-preview.cjs`. The completed-steps checks cover Chromium and
+WebKit on phone viewports, all disciplines, partial completion, animation,
+read-only viewing, issued snapshots, zoom and reopening.

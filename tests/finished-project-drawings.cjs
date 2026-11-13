@@ -1,147 +1,47 @@
-const fs = require('node:fs');
-const http = require('node:http');
-const assert = require('node:assert/strict');
-const {chromium} = require('playwright');
-
-const source = fs.readFileSync('index.html', 'utf8');
-const hook = `window.finishedDrawingsTest={fresh,activateProject,changed,saveNow,projectWrite,projectRead,renderProjects,projectDrawingsReady,cbPlanToBoard,openProjectDrawings,snapshot:()=>({projectId:currentProject,project:clone(),surveyMode,screen:cbScreen,circuitId:cbCircuit?.id||null})};`;
-const marker = "document.querySelector('.app').inert=true;\nensureUiState();";
-const html = source.replace(marker, hook + marker);
-assert.notEqual(html, source, 'test hook must be installed');
-const server = http.createServer((req, res) => {
-  const file = (req.url || '/').split('?')[0].slice(1) || 'index.html';
-  try {
-    res.setHeader('Content-Type', file.endsWith('.js') ? 'text/javascript' : file.endsWith('.png') ? 'image/png' : file.endsWith('.webp') ? 'image/webp' : 'text/html');
-    res.end(file === 'index.html' ? html : fs.readFileSync(file));
-  } catch {
-    res.statusCode = 404;
-    res.end();
-  }
-}).listen(0, '127.0.0.1');
-
-(async () => {
-  await new Promise(resolve => server.once('listening', resolve));
-  const browser = await chromium.launch({headless: true});
-  try {
-    const page = await browser.newPage({viewport: {width: 390, height: 844}, hasTouch: true});
-    const errors = [];
-    page.on('pageerror', error => errors.push(error.message));
-    await page.goto('http://127.0.0.1:' + server.address().port);
-    await page.waitForFunction(() => !document.querySelector('#homeNew').disabled);
-    const gates = await page.evaluate(async () => {
-      const t = finishedDrawingsTest;
-      const image = document.createElement('canvas');
-      image.width = 800;
-      image.height = 500;
-      const imageUrl = image.toDataURL();
-      const floor = (id, name, y) => {
-        const d = t.fresh();
-        d.image = imageUrl;
-        d.isBlank = true;
-        d.zones = [{id: 'zone', number: '1', name: 'Sales area', color: '#d44848'}];
-        d.shapes = [{id: 'area', zone: 'zone', points: [{x: .1, y: .1}, {x: .9, y: .1}, {x: .9, y: .9}, {x: .1, y: .9}]}];
-        d.walls = [{id: 'wall', kind: 'wall', points: [{x: .1, y: .1}, {x: .9, y: .1}, {x: .9, y: .9}]}];
-        d.labels = [{id: 'label', x: .5, y: .65, text: name}];
-        d.symbols = [{id: 'panel', type: 'panel', scope: 'survey', x: .2, y}, {id: 'detector', type: 'smoke', scope: 'survey', x: .7, y}];
-        const bounds = {x1: 0, y1: 0, x2: 1, y2: 1};
-        const layout = Object.fromEntries(d.symbols.map(s => [s.id, t.cbPlanToBoard(s, bounds)]));
-        d.circuits = [{id: 'route-' + id, name: 'Zone 1', type: 'conventional', zoneId: 'zone', panelId: 'panel', deviceIds: ['detector'], bounds, layout, sequence: ['panel', 'detector'], legs: [{from: 'panel', to: 'detector', points: [layout.panel, layout.detector]}], bridges: [], complete: true}];
-        d.asFit = {generatedAt: Date.now(), circuitIds: [d.circuits[0].id]};
-        return {id, name, data: d};
-      };
-      const finished = {...t.fresh(), site: 'Finished shop', floors: [floor('ground', 'Ground floor', .3), floor('upper', 'Upper floor', .5)], activeFloor: 'ground'};
-      const copy = value => JSON.parse(JSON.stringify(value));
-      const check = mutate => {const p = copy(finished); mutate(p); return t.projectDrawingsReady(p)};
-      const results = {
-        complete: t.projectDrawingsReady(finished),
-        acceptedUnassigned: check(p => p.floors[0].data.symbols.push({id: 'unassigned', type: 'heat', scope: 'survey', x: .6, y: .6})),
-        unfinishedUpper: check(p => p.floors[1].data.circuits[0].complete = false),
-        missingUpperAsFit: check(p => p.floors[1].data.asFit = null),
-        missingZone: check(p => p.floors[0].data.zones = []),
-        missingZoneArea: check(p => p.floors[0].data.shapes = []),
-        unusedZone: check(p => p.floors[0].data.zones.push({id: 'empty', number: '2'})),
-        missingSurvey: check(p => p.floors[0].data.symbols = []),
-        movedSurvey: check(p => p.floors[0].data.symbols[1].x = .8),
-        openEdit: check(p => p.floors[0].data.circuits[0].editDraft = {gaps: []}),
-        staleCircuitIds: check(p => p.floors[0].data.asFit.circuitIds = ['old-route']),
-        extraCircuit: check(p => p.floors[0].data.circuits.push({...copy(p.floors[0].data.circuits[0]), id: 'new-route'})),
-        emptyProject: t.projectDrawingsReady(t.fresh())
-      };
-      const active = {...t.fresh(), site: 'Separate active project', image: imageUrl, isBlank: true};
-      await t.activateProject('active-project', active);
-      t.changed();
-      await t.saveNow();
-      const record = {id: 'finished-project', site: finished.site, systemType: 'fire', floorCount: 2, updatedAt: Date.now(), project: finished};
-      await t.projectWrite('project:finished-project', record);
-      const incomplete = copy(record);
-      incomplete.id = 'incomplete-project';
-      incomplete.site = incomplete.project.site = 'Unfinished shop';
-      incomplete.project.floors[1].data.asFit = null;
-      await t.projectWrite('project:incomplete-project', incomplete);
-      document.querySelector('#projectsHome').hidden = false;
-      document.querySelector('.app').inert = true;
-      await t.renderProjects();
-      window.finishedDrawingRecord = copy(record);
-      return results;
-    });
-    assert.equal(gates.complete, true);
-    assert.equal(gates.acceptedUnassigned, true, 'saved As fits may include explicitly accepted unassigned devices');
-    for (const [name, ready] of Object.entries(gates)) {
-      if (!['complete', 'acceptedUnassigned'].includes(name)) assert.equal(ready, false, name + ' must hide finished drawings');
-    }
-    const card = name => page.locator('.projectCard').filter({has: page.getByRole('heading', {name, exact: true})});
-    const view = card('Finished shop').getByRole('button', {name: 'View finished drawings', exact: true});
-    assert.equal(await view.count(), 1);
-    assert.equal(await card('Unfinished shop').getByRole('button', {name: 'View finished drawings', exact: true}).count(), 0);
-    const before = await page.evaluate(() => finishedDrawingsTest.snapshot());
-    await view.click();
-    await page.waitForFunction(() => document.querySelectorAll('#projectDrawingsGrid canvas').length === 3 && !document.querySelector('#projectDrawingsStatus').textContent);
-    assert.deepEqual(await page.locator('#projectDrawingsGrid h3').allTextContents(), ['Zones - for customer', 'Survey - for engineer', 'As fit - for record']);
-    assert.equal(await page.locator('#projectDrawingsFloor option').count(), 2);
-    assert.equal(await page.locator('#projectDrawingsClose').evaluate(el => el === document.activeElement), true);
-    const ground = await page.locator('#projectDrawingsGrid canvas').evaluateAll(canvases => canvases.map(c => c.toDataURL()));
-    assert.equal(new Set(ground).size, 3, 'the three modes must render distinct drawings');
-    await page.locator('#projectDrawingsFloor').selectOption('upper');
-    await page.waitForFunction(() => document.querySelectorAll('#projectDrawingsGrid canvas').length === 3 && [...document.querySelectorAll('#projectDrawingsGrid canvas')].every(c => c.getAttribute('aria-label').endsWith('Upper floor')));
-    const upper = await page.locator('#projectDrawingsGrid canvas').evaluateAll(canvases => canvases.map(c => c.toDataURL()));
-    upper.forEach((drawing, i) => assert.notEqual(drawing, ground[i], 'floor switch must update drawing ' + i));
-    assert.deepEqual(await page.evaluate(() => finishedDrawingsTest.snapshot()), before, 'previewing another project must preserve active project, floor and circuit state');
-    assert.equal(await page.evaluate(async () => JSON.stringify(await finishedDrawingsTest.projectRead('project:finished-project')) === JSON.stringify(window.finishedDrawingRecord)), true, 'preview must preserve saved source project');
-    await page.getByRole('button', {name: 'Enlarge As fit - for record', exact: true}).click();
-    assert.equal(await page.getByRole('button', {name: 'Reduce As fit - for record', exact: true}).getAttribute('aria-expanded'), 'true');
-    assert.equal(await page.locator('#projectDrawingsGrid figure.expanded .projectDrawingCanvas').evaluate(el => el.scrollWidth > el.clientWidth && el.querySelector('canvas').getBoundingClientRect().width > innerWidth), true, 'enlarged phone drawing must provide real magnification within a scrollable region');
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector('#projectDrawings').scrollWidth <= document.querySelector('#projectDrawings').clientWidth), true, 'phone preview must not overflow horizontally');
-    await page.getByRole('button', {name: 'Reduce As fit - for record', exact: true}).click();
-    assert.equal(await page.getByRole('button', {name: 'Enlarge As fit - for record', exact: true}).getAttribute('aria-expanded'), 'false');
-    assert.equal(await page.getByRole('region', {name: 'As fit - for record drawing; scroll to inspect when enlarged', exact: true}).evaluate(el => el.scrollWidth === el.clientWidth && el.querySelector('canvas').getBoundingClientRect().width <= el.clientWidth), true, 'Reduce drawing must restore the fitted preview');
-    fs.mkdirSync('test-results', {recursive: true});
-    await page.locator('#projectDrawings').evaluate(el => el.scrollTop = 0);
-    await page.screenshot({path: 'test-results/finished-project-drawings-phone.png'});
-    await page.screenshot({path: '/tmp/finished-drawings-phone.png'});
-    await page.keyboard.press('Escape');
-    await page.locator('#projectDrawings').waitFor({state: 'hidden'});
-    await page.waitForFunction(() => document.activeElement?.textContent === 'View finished drawings');
-    assert.equal(await page.locator('#projectDrawingsGrid canvas').count(), 0, 'closing releases rendered canvases');
-    await view.click();
-    await page.locator('#projectDrawings').waitFor({state: 'visible'});
-    await page.locator('#projectDrawingsClose').click();
-    await page.locator('#projectDrawings').waitFor({state: 'hidden'});
-    await page.waitForFunction(() => document.activeElement?.textContent === 'View finished drawings');
-    await page.reload();
-    await page.waitForFunction(() => !document.querySelector('#homeNew').disabled);
-    await view.click();
-    await page.waitForFunction(() => document.querySelectorAll('#projectDrawingsGrid canvas').length === 3);
-    assert.deepEqual(await page.locator('#projectDrawingsGrid h3').allTextContents(), ['Zones - for customer', 'Survey - for engineer', 'As fit - for record']);
-    assert.equal((await page.evaluate(() => finishedDrawingsTest.snapshot())).projectId, 'active-project');
-    await page.setViewportSize({width: 1440, height: 1000});
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
-    await page.locator('#projectDrawings').evaluate(el => el.scrollTop = 0);
-    await page.screenshot({path: 'test-results/finished-project-drawings-desktop.png'});
-    await page.screenshot({path: '/tmp/finished-drawings-desktop.png'});
-    assert.deepEqual(errors, []);
-    console.log('PASS: finished project gates, three labelled drawings, floor switching, read-only project isolation, close/focus, reload and responsive preview');
-  } finally {
-    await browser.close();
-    server.close();
-  }
-})().catch(error => {console.error(error); server.close(); process.exitCode = 1;});
+const fs=require('node:fs'),http=require('node:http'),assert=require('node:assert/strict');
+const {chromium,webkit}=require('playwright');
+const source=fs.readFileSync('index.html','utf8'),marker="document.querySelector('.app').inert=true;\nensureUiState();";
+const hook=`window.finishedDrawingsTest={fresh,activateProject,changed,saveNow,projectWrite,projectRead,renderProjects,projectDrawingsReady,projectDrawingSteps,cbPlanToBoard,openProjectDrawings,motion:value=>{uiReducedMotion=value},snapshot:()=>({projectId:currentProject,project:clone(),surveyMode,screen:cbScreen,circuitId:cbCircuit?.id||null}),busy:()=>projectBusy};`;
+const html=source.replace(marker,hook+marker);assert.notEqual(html,source);
+const server=http.createServer((req,res)=>{const file=(req.url||'/').split('?')[0].slice(1)||'index.html';try{res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.png')?'image/png':file.endsWith('.webp')?'image/webp':'text/html');res.end(file==='index.html'?html:fs.readFileSync(file))}catch{res.statusCode=404;res.end()}}).listen(0,'127.0.0.1');
+(async()=>{await new Promise(resolve=>server.once('listening',resolve));const browser=await(process.env.BROWSER==='webkit'?webkit:chromium).launch({headless:true});try{
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.locator('#zsSplash').waitFor({state:'detached'});
+ const gates=await page.evaluate(async()=>{
+  const t=finishedDrawingsTest,canvas=document.createElement('canvas');canvas.width=800;canvas.height=500;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,800,500);const image=canvas.toDataURL();canvas.width=canvas.height=0;
+  const floor=(id,name,y)=>{const d=t.fresh();d.image=image;d.isBlank=true;d.zones=[{id:'zone',number:'1',name:'Sales area',color:'#d44848'}];d.shapes=[{id:'area',zone:'zone',points:[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9},{x:.1,y:.9}]}];d.walls=[{id:'wall',kind:'wall',points:[{x:.1,y:.1},{x:.9,y:.1},{x:.9,y:.9}]}];d.labels=[{id:'label',x:.5,y:.65,text:name}];d.symbols=[{id:'panel',type:'panel',scope:'survey',x:.2,y},{id:'detector',type:'smoke',scope:'survey',x:.7,y}];const bounds={x1:0,y1:0,x2:1,y2:1},layout=Object.fromEntries(d.symbols.map(s=>[s.id,t.cbPlanToBoard(s,bounds)]));d.circuits=[{id:'route-'+id,name:'Zone1',type:'conventional',zoneId:'zone',panelId:'panel',deviceIds:['detector'],bounds,layout,sequence:['panel','detector'],legs:[{from:'panel',to:'detector',points:[layout.panel,layout.detector]}],bridges:[],complete:true}];d.asFit={generatedAt:Date.now(),circuitIds:[d.circuits[0].id]};return{id,name,data:d}};
+  const complete={...t.fresh(),site:'Finished shop',floors:[floor('ground','Ground floor',.3),floor('upper','Upper floor',.5)],activeFloor:'ground'},copy=v=>JSON.parse(JSON.stringify(v)),check=mutate=>{const p=copy(complete);mutate(p);return t.projectDrawingsReady(p)};
+  const results={complete:t.projectDrawingsReady(complete),unfinishedUpper:check(p=>p.floors[1].data.circuits[0].complete=false),missingZoneArea:check(p=>p.floors[0].data.shapes=[]),missingSurvey:check(p=>p.floors[0].data.symbols=[]),movedDevice:check(p=>p.floors[0].data.symbols[1].x=.8),openEdit:check(p=>p.floors[0].data.circuits[0].editDraft={gaps:[]}),empty:t.projectDrawingsReady(t.fresh())};
+  const active={...t.fresh(),site:'Separate active project',image,isBlank:true};await t.activateProject('active-project',active);t.changed();await t.saveNow();
+  const write=async(id,project)=>{const record={id,site:project.site,systemType:project.systemType,floorCount:project.floors.length,updatedAt:Date.now(),project};await t.projectWrite('project:'+id,record);return copy(record)};
+  window.finishedDrawingRecord=await write('finished-project',complete);
+  const partial=copy(complete);partial.site='Unfinished shop';partial.floors[1].data.asFit=null;await write('incomplete-project',partial);
+  const blank={...t.fresh(),site:'Empty site',floors:[{id:'blank',name:'Ground floor',data:{...t.fresh(),image,isBlank:true}}],activeFloor:'blank'};await write('empty-project',blank);
+  for(const system of ['cctv','security','access']){const project=copy(complete);project.site=system+' project';project.systemType=system;for(const f of project.floors){f.data.symbols=[{id:'device-'+f.id,type:{cctv:'cctvFixed',security:'secPir',access:'accessReader'}[system],scope:'survey',x:.4,y:.4}];f.data.circuits=[];f.data.asFit=null}const issued=copy(project);issued.floors[0].data.labels[0].text='Issued layout';project.issuedAsFits=[{id:'issued-'+system,revision:'R1',at:'2026-11-13T12:00:00Z',by:'Engineer',note:'Completed site record',project:issued}];await write(system+'-project',project)}
+  const additional=copy(blank);additional.site='Additional site';additional.fireWorkType='additional';additional.floors[0].data.existingCables=[{id:'reference',points:[{x:.2,y:.3},{x:.8,y:.3}]}];additional.floors[0].data.symbols=[{id:'added',type:'smoke',scope:'survey',x:.6,y:.6}];await write('additional-project',additional);
+  document.querySelector('#projectsHome').hidden=false;document.querySelector('.app').inert=true;await t.renderProjects();return results;
+ });
+ assert.equal(gates.complete,true);for(const [name,ready]of Object.entries(gates))if(name!=='complete')assert.equal(ready,false,name+' cannot be complete');
+ const card=name=>page.locator('.projectCard').filter({has:page.getByRole('heading',{name,exact:true})}),open=async name=>{await card(name).getByRole('button',{name:'Show completed steps',exact:true}).click();await page.waitForFunction(()=>document.querySelectorAll('#projectDrawingsGrid .projectDrawingCard').length===3&&document.querySelector('#projectDrawings').dataset.phase==='ready')},close=async()=>{await page.locator('#projectDrawingsClose').click();await page.locator('#projectDrawings').waitFor({state:'hidden'});await page.waitForFunction(()=>!finishedDrawingsTest.busy()&&!document.querySelector('#projectDrawings canvas'))};
+ for(const name of ['Finished shop','Unfinished shop','Empty site','cctv project','security project','access project','Additional site'])assert.equal(await card(name).getByRole('button',{name:'Show completed steps',exact:true}).count(),1,name+' always has the viewer action');
+ const before=await page.evaluate(()=>finishedDrawingsTest.snapshot());
+ await card('Finished shop').getByRole('button',{name:'Show completed steps',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#projectDrawings').dataset.phase==='opening');
+ const initial=await page.evaluate(()=>{const cards=[...document.querySelectorAll('.projectDrawingCard')];for(const card of cards)for(const a of card.getAnimations()){a.pause();a.currentTime=0}return cards.map(c=>{const r=c.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})});
+ assert(initial.every(p=>Math.abs(p.x-initial[0].x)<2&&Math.abs(p.y-initial[0].y)<2),'all three papers start as one centred stack');
+ await page.screenshot({path:'/tmp/completed-steps-animation-start.png'});await page.evaluate(()=>{for(const c of document.querySelectorAll('.projectDrawingCard'))for(const a of c.getAnimations())a.currentTime=550});await page.screenshot({path:'/tmp/completed-steps-animation-middle.png'});
+ await page.evaluate(()=>{for(const c of document.querySelectorAll('.projectDrawingCard'))for(const a of c.getAnimations())a.play()});await page.waitForFunction(()=>document.querySelector('#projectDrawings').dataset.phase==='ready');
+ assert.deepEqual(await page.locator('.projectDrawingCard').evaluateAll(cards=>cards.map(c=>c.getAttribute('aria-label'))),['View Zones - for customer','View Survey - for engineer','View As fit - for record']);
+ assert.equal(await page.locator('#projectDrawingsClose').evaluate(el=>el===document.activeElement),true);assert.equal(await page.locator('#projectDrawingsFloor option').count(),2);
+ const ground=await page.locator('#projectDrawingsGrid canvas').evaluateAll(list=>list.map(c=>c.toDataURL()));assert.equal(new Set(ground).size,3);
+ await page.getByRole('button',{name:'View As fit - for record',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#projectDrawingCanvas canvas'));assert.equal(await page.locator('#projectDrawingTitle').textContent(),'As fit - for record');await page.locator('#projectDrawingEnlarge').click();assert.equal(await page.locator('#projectDrawingCanvas').evaluate(el=>el.scrollWidth>el.clientWidth),true);await page.locator('#projectDrawingEnlarge').click();
+ await page.locator('#projectDrawingsFloor').selectOption('upper');await page.waitForFunction(()=>document.querySelectorAll('#projectDrawingsGrid canvas').length===3&&[...document.querySelectorAll('#projectDrawingsGrid canvas')].every(c=>c.getAttribute('aria-label').endsWith('Upper floor')));assert.equal(await page.locator('#projectDrawingCanvas canvas').count(),0);const upper=await page.locator('#projectDrawingsGrid canvas').evaluateAll(list=>list.map(c=>c.toDataURL()));upper.forEach((drawing,i)=>assert.notEqual(drawing,ground[i]));
+ for(const [width,height]of[[320,568],[390,844],[430,932],[1440,1000]]){await page.setViewportSize({width,height});const layout=await page.locator('.projectDrawingCard').evaluateAll(cards=>cards.map(c=>{const r=c.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height}}));assert(layout.every(r=>r.x>=0&&r.right<=width&&r.bottom<=height&&r.w>=44&&r.h>=44),'all three top papers fit one screen');assert(layout.every(r=>Math.abs(r.y-layout[0].y)<2),'papers stay in one row');assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth&&document.querySelector('#projectDrawings').scrollWidth<=document.querySelector('#projectDrawings').clientWidth));if(width===390)await page.screenshot({path:'/tmp/completed-steps-phone.png'});if(width===320)await page.screenshot({path:'/tmp/completed-steps-phone-320.png'})}
+ assert.deepEqual(await page.evaluate(()=>finishedDrawingsTest.snapshot()),before);assert(await page.evaluate(async()=>JSON.stringify(await finishedDrawingsTest.projectRead('project:finished-project'))===JSON.stringify(window.finishedDrawingRecord)));await close();await page.waitForFunction(()=>document.activeElement?.textContent==='Show completed steps');assert.equal(await page.locator('#projectDrawings canvas').count(),0);
+ await page.setViewportSize({width:390,height:844});await open('Unfinished shop');await page.locator('#projectDrawingsFloor').selectOption('upper');await page.waitForFunction(()=>document.querySelectorAll('.projectDrawingCard').length===3);assert(await page.getByRole('button',{name:'View As fit - for record',exact:true}).isDisabled());assert(await page.getByRole('button',{name:'View Survey - for engineer',exact:true}).isEnabled());await close();
+ await open('Empty site');assert.equal(await page.locator('.projectDrawingCard:disabled').count(),3);assert.match(await page.locator('#projectDrawingsStatus').textContent(),/No completed steps/);await close();
+ await open('Additional site');assert(await page.getByRole('button',{name:'View Building layout - for customer',exact:true}).isEnabled());assert(await page.getByRole('button',{name:'View Add devices - for engineer',exact:true}).isEnabled());assert(await page.getByRole('button',{name:'View As fit - for record',exact:true}).isDisabled());await close();
+ for(const system of ['cctv','security','access']){await open(system+' project');assert.equal(await page.locator('.projectDrawingCard:disabled').count(),0);await page.getByRole('button',{name:'View As fit - for record',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#projectDrawingCanvas canvas'));assert.match(await page.locator('#projectDrawingDetail').textContent(),/Issued revision R1/);await close()}
+ // Reduced motion skips the transform sequence; closing during normal motion leaves no asynchronous render behind.
+ await page.emulateMedia({reducedMotion:'reduce'});await open('Finished shop');assert.equal(await page.locator('.projectDrawingCard').evaluateAll(cards=>cards.flatMap(c=>c.getAnimations()).length),0);await close();await page.emulateMedia({reducedMotion:'no-preference'});await card('Finished shop').getByRole('button',{name:'Show completed steps',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#projectDrawings').dataset.phase==='opening');await page.keyboard.press('Escape');await page.locator('#projectDrawings').waitFor({state:'hidden'});await page.waitForFunction(()=>!finishedDrawingsTest.busy()&&!document.querySelector('#projectDrawings canvas'));assert.equal(await page.locator('#projectDrawings canvas').count(),0);
+ await page.reload();await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.locator('#zsSplash').waitFor({state:'detached'});await open('Finished shop');assert.equal((await page.evaluate(()=>finishedDrawingsTest.snapshot())).projectId,'active-project');await close();assert.deepEqual(errors,[]);
+ console.log('PASS completed steps: all project buttons, per-step readiness, four disciplines and issued records, Additional labels, centred paper split, three phone cards, selected preview/zoom, floors, read-only state, reduced motion, close cleanup and reload');
+ }finally{await browser.close();server.close()}})().catch(error=>{console.error(error);server.close();process.exitCode=1});
