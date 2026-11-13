@@ -19,7 +19,7 @@ const source=[
  fn('cbRouteGridStep','cbAppendDrag')
 ].join('\n');
 const ctx={console,Math,Number,CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:.72,CB_ROUTE_ARM_CELLS:.28,CB_ROUTE_SAMPLE_CELLS:.30,cbView:{scale:1},cbCircuit:{type:'conventional',bounds:null,legs:[]},cbSelectBounds:null,cbDrag:null,cbBoardPx:p=>({...p}),cbFieldGridScreenStep:()=>({x:24,y:24})};
-vm.createContext(ctx);vm.runInContext(source,ctx);
+vm.createContext(ctx);vm.runInContext(fn('cbStartId','cbReturnId'),ctx);vm.runInContext(source,ctx);
 const clone=v=>JSON.parse(JSON.stringify(v));
 
 // Minor finger wobble must not create bends. The horizontal cable should simply follow the
