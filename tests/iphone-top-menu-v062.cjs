@@ -5,7 +5,11 @@ const {chromium,webkit}=require('playwright'),fs=require('fs'),http=require('htt
  try{for(const size of [[320,568],[375,812],[390,844],[430,932]]){
   const context=await browser.newContext({viewport:{width:size[0],height:size[1]},isMobile:true,hasTouch:true,deviceScaleFactor:2});const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept(d.type()==='prompt'?'Portrait menu QA':undefined));
-  await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.locator('#zsSplash').waitFor({state:'hidden'});await page.locator('#homeNew').tap();await page.locator('#projectsHome').waitFor({state:'hidden'});
+  await page.goto('http://127.0.0.1:'+server.address().port);await page.waitForFunction(()=>!document.querySelector('#homeNew').disabled);await page.locator('#zsSplash').waitFor({state:'hidden'});await page.locator('#homeNew').tap();
+  // Current builds use the New project dialog; the historical collapse-defect
+  // reproduction in brand-pages.yml still uses the prompt handled above.
+  if(await page.locator('#newProjectDialog').count()){await page.locator('#newProjectName').fill('Portrait menu QA');await page.locator('#newProjectCreate').tap()}
+  await page.locator('#projectsHome').waitFor({state:'hidden'});
   const toggle=page.locator('#topCollapseBtn'),main=page.locator('#topMain');
   assert.equal(await toggle.getAttribute('aria-expanded'),'false');assert.equal(await main.isVisible(),false,'portrait Menu closed must hide topMain');
   const compact=async()=>{

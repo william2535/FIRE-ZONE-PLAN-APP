@@ -4,7 +4,7 @@ const http=require('node:http');
 const assert=require('node:assert/strict');
 const sets={
  fire:['panel','repeater','mcp','smoke','heat','sounder','beacon','beam','io'],
- security:['secPir','secDualTech','secDoorContact','secPanic','secKeypad','secBell','secExpander','secPsu','secPanel'],
+ security:['secPir','secDualTech','sec360','secDoorContact','secPanic','secKeypad','secBell','secExpander','secPsu','secPanel'],
  cctv:['cctvFixed','cctvDome','cctvTurret','cctvPtz','cctvAnpr','cctvNvr','cctvPoe','cctvSwitch'],
  access:['accessReader','accessKeypad','accessMaglock','accessStrike','accessRte','accessBreakGlass','accessDoorContact','accessAcu','accessPsu']
 };
