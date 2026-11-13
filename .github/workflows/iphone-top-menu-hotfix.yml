@@ -48,7 +48,7 @@ jobs:
 
       - name: Re-run release and syntax safety checks
         run: |
-          node tests/release-v062.cjs
+          node tests/release-v064.cjs
           node tests/circuit-editor-syntax-v058.cjs
           cmp --silent index.html ZoneSketch.html
           cmp --silent index.html Zone-Sketch-by-Will.html
