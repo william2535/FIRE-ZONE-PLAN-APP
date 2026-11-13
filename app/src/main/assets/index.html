@@ -1576,6 +1576,13 @@ body:has(#projectsHome:not([hidden])) #recordPlanLegend{display:none}
 /* Field shortcuts and device evidence */
 .keybindSection{margin-top:16px;border:1px solid #ccdce7;border-radius:12px;padding:12px}.keybindSection input[type="checkbox"]{display:inline-block;width:auto;min-height:0;margin:0 8px 0 0;vertical-align:middle}.keybindSection summary{font-weight:800;cursor:pointer;padding:6px}.keybindSection p,.devicePhotoHelp{font-size:12px;line-height:1.6;color:#53687a}.keybindRow{display:grid;grid-template-columns:minmax(0,1fr) 120px;align-items:center;gap:12px;margin:8px 0}.keybindRow label{margin:0}.keybindRow select{width:100%;min-height:44px}.keybindStatus{min-height:20px;font-size:12px;color:#8f341b}.devicePhotos{margin:16px 0;padding-top:14px;border-top:1px solid #c8d8e3}.devicePhotos h3{font-size:15px;margin:0 0 10px}.devicePhotoActions{display:flex;gap:8px;flex-wrap:wrap}.devicePhotoActions button{min-height:44px}.devicePhotoCard{margin:14px 0;padding:10px;border:1px solid #ccdce7;border-radius:12px;background:#f5f8fa}.devicePhotoCard img{display:block;width:100%;max-height:250px;object-fit:contain;background:#e5edf3;border-radius:8px}.devicePhotoCard input{width:100%;margin:8px 0;min-height:44px}.devicePhotoCard button{min-height:44px}.devicePhotoStatus{font-size:12px;line-height:1.6;color:#425d70}.devicePhotos[hidden]{display:none}
 .roomLabelSizeLine{grid-template-columns:70px minmax(0,1fr) 48px}.roomLabelSizeLine input[type=range]{min-height:44px;min-width:0}#applyRoomLabelSize{width:100%;white-space:normal;margin:4px 0 6px}
+#projectsHome .homeUpdateFooter{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:28px;padding:20px 0 4px;border-top:1px solid var(--home-line)}
+#projectsHome .homeUpdateFooter strong{color:var(--home-ink);font-size:14px}
+#projectsHome .homeUpdateFooter p{max-width:560px;margin:7px 0 0;color:var(--home-muted);font-size:12px;line-height:1.6}
+#projectsHome #homeUpdate{display:inline-flex;align-items:center;justify-content:center;gap:10px;flex:none;min-height:48px;padding:12px 20px;border-color:#3b8199;border-radius:4px 14px 4px 14px;background:linear-gradient(135deg,#103243,#091e2b);box-shadow:inset 0 -2px var(--home-lime);font-weight:750}
+#projectsHome #homeUpdate svg{color:var(--home-cyan);flex:none}
+#projectsHome #homeUpdate:hover:not(:disabled){border-color:var(--home-cyan);background:#123346}
+@media(max-width:520px){#projectsHome .homeUpdateFooter{align-items:stretch;flex-direction:column;gap:14px}#projectsHome #homeUpdate{width:100%}}
 </style>
 </head>
 <body>
@@ -1585,7 +1592,7 @@ body:has(#projectsHome:not([hidden])) #recordPlanLegend{display:none}
 <button type="button" class="homeSystemTile" data-system="security" aria-label="Show Security projects" aria-pressed="false"><img src="assets/home-system-intruder.webp" alt=""><span><b>Security</b><small>View projects</small></span></button>
 <button type="button" class="homeSystemTile" data-system="cctv" aria-label="Show CCTV projects" aria-pressed="false"><img src="assets/home-system-cctv.webp" alt=""><span><b>CCTV</b><small>View projects</small></span></button>
 <button type="button" class="homeSystemTile" data-system="access" aria-label="Show Access Control projects" aria-pressed="false"><img src="assets/home-system-access-control.webp" alt=""><span><b>Access Control</b><small>View projects</small></span></button>
-</div></div><div class="homeHeading"><div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button><button id="homeShowAll" type="button" aria-pressed="true">Show all</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p></div></section>
+</div></div><div class="homeHeading"><div><h2>Recent projects</h2></div><button id="resumeProject" hidden>Back to drawing</button></div><p class="homeIntro">Start a new survey or continue exactly where you left off.</p><div class="homeActions"><button id="homeNew" class="primary" disabled>Make a new plan</button><button id="homeImport" disabled>Import backup</button><button id="homeShowAll" type="button" aria-pressed="true">Show all</button></div><input id="projectSearch" class="homeSearch" type="search" placeholder="Search projects…" aria-label="Search projects"><p id="homeMessage" role="status">Loading saved projects…</p><div id="projectGrid" class="projectGrid"></div><p class="homeIntro">Editable backups preserve every floor, device, photo and circuit so a project can move between devices.</p><footer class="homeUpdateFooter"><div><strong>Keep Zone Sketch up to date</strong><p id="homeUpdateStatus" role="status" aria-live="polite">Load the latest web version. Your saved projects stay on this device.</p></div><button id="homeUpdate" type="button" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17"/></svg><span id="homeUpdateLabel">Update now</span></button></footer></div></section>
 <div id="newProjectDialog" role="dialog" aria-modal="true" aria-labelledby="newProjectTitle" hidden><form id="newProjectPanel"><div class="newProjectHead"><div><div class="newProjectEyebrow">ZONE SKETCH · NEW SITE</div><h2 id="newProjectTitle">New project</h2><p>Choose a system. Your full sketch workspace opens next.</p></div><button type="button" id="newProjectClose" class="newProjectClose" aria-label="Close new project">×</button></div><label for="newProjectName">Project / site name</label><input id="newProjectName" placeholder="Site / building name" maxlength="500" required autocomplete="off"><div class="newProjectSystemTitle" id="newProjectSystemTitle">Choose system</div><div class="newProjectChoices" role="group" aria-labelledby="newProjectSystemTitle"></div><div class="newProjectActions"><button type="button" id="newProjectCancel">Cancel</button><button type="submit" id="newProjectCreate" class="newProjectCreate" disabled>Create Fire Project</button></div></form></div>
 
 <section id="circuitBuilder" hidden aria-label="As-fit mode">
@@ -1844,7 +1851,7 @@ $('wallSize').oninput=e=>{state.wallWidth=Number(e.target.value);syncWallSize();
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open('ZoneSketch-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('draft');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 async function load(){
  try{db=await openDB();const legacy=await projectRead('state');const active=await projectRead('activeProject');
- const records=await projectList();projectsReady=true;
+ const records=await projectList();projectsReady=true;$('homeUpdate').disabled=false;
  if(active&&records.some(r=>r.id===active)){currentProject=active;state=(await projectRead('project:'+active)).project}
  else if(legacy&&!records.length){currentProject=uid();state={...fresh(),...legacy};ensureUiState();normalizeWalls();ensureIds();syncFloor();projectDirty=true;if(!await saveNow())throw Error('Migration could not be saved')}
  if(currentProject){await activateProject(currentProject,state);if(projectDirty)await saveNow()}
@@ -2192,6 +2199,32 @@ async function projectAction(fn){if(projectBusy||!projectsReady)return;projectBu
 async function saveBeforeLeaving(){if(await saveNow())return true;alert('Your latest changes could not be saved. Export an editable backup before leaving this drawing.');return false}
 async function activateProject(id,next){clearTimeout(saveTimer);restoringProject=true;try{currentProject=id;state=JSON.parse(JSON.stringify(next));const needsSystemMigration=state.systemType===undefined;state.systemType=systemFor(state.systemType).key;ensureFloors();undo=[];redo=[];$('site').value=state.site||'';await showFloor(state.activeFloor);recordResetBaseline();symbolColor=state.systemType==='fire'?'#172333':systemFor(state.systemType).accent;renderSymbolColors();setSurveyMode(false);syncEditorSystem();projectDirty=needsSystemMigration;editRevision++;await projectWrite('activeProject',id);saveStatus('Saved on device');updateButtons()}finally{restoringProject=false}}
 function hideProjects(){$('projectsHome').hidden=true;document.querySelector('.app').inert=false;draw();$('surveyModeBtn').focus()}
+async function updateAppNow(){
+ const button=$('homeUpdate'),label=$('homeUpdateLabel'),status=$('homeUpdateStatus'),home=document.querySelector('#projectsHome .homeInner');
+ if(projectBusy||!projectsReady||button.disabled)return;
+ projectBusy=true;button.disabled=true;button.setAttribute('aria-busy','true');home.inert=true;label.textContent='Updating…';
+ let timer;
+ try{
+  status.textContent='Saving your work…';
+  if(!await saveNow())throw Error('Your changes could not be saved. Export an editable backup before updating.');
+  if(location.protocol==='file:'){status.textContent='Opening the download page. Install the latest Android app to update this version.';openBetaPortal();return}
+  if(!['https:','http:'].includes(location.protocol))throw Error('Open the hosted web app to update Zone Sketch.');
+  status.textContent='Checking the latest web version…';
+  const target=new URL('index.html',location.href);target.searchParams.set('fresh',String(Date.now()));
+  const controller=new AbortController();timer=setTimeout(()=>controller.abort(),15000);
+  const response=await fetch(target.href,{cache:'no-store',credentials:'same-origin',redirect:'error',signal:controller.signal});
+  if(!response.ok)throw Error('The update is unavailable right now. Please try again.');
+  const html=await response.text();
+  if(!html.includes('id="projectsHome"')||!html.includes('id="canvas"'))throw Error('The update could not be verified. Please try again later.');
+  status.textContent='Opening the latest version…';
+  location.replace(target.href);
+ }catch(error){
+  status.textContent=error.name==='AbortError'?'The update timed out. Check your connection and try again.':error instanceof TypeError?'Could not reach the update. Check your connection and try again.':error.message||'Could not update right now. Please try again.';
+ }finally{
+  clearTimeout(timer);home.inert=false;projectBusy=false;button.disabled=false;button.removeAttribute('aria-busy');label.textContent='Update now';
+ }
+}
+$('homeUpdate').onclick=updateAppNow;
 async function openProjects(){if(!await saveBeforeLeaving())return;closeToolMenus();$('projectsHome').hidden=false;document.querySelector('.app').inert=true;$('projectSearch').value='';await renderProjects();$('homeNew').focus()}
 let newProjectSystem='fire',newProjectReturnFocus=null,homeSystemFilter='all',projectRenderRequest=0;
 function syncHomeSystemFilter(){document.querySelectorAll('.homeSystemTile').forEach(tile=>{const selected=tile.dataset.system===homeSystemFilter;tile.classList.toggle('isSelected',selected);tile.setAttribute('aria-pressed',String(selected))});$('homeShowAll').setAttribute('aria-pressed',String(homeSystemFilter==='all'));$('homeShowAll').classList.toggle('active',homeSystemFilter==='all')}
