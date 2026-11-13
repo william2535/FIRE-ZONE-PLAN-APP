@@ -10,9 +10,12 @@ cards together at the top of the screen:
 
 Opening the viewer starts with one paper in the middle. It separates into the
 three cards above; tap an available card to open its full drawing beneath them.
-The cards remain together on portrait phones. Enlarge provides a scrollable
-close view, and Fit drawing returns to the fitted view. Reduced-motion settings
-show the final cards immediately.
+The cards remain together on portrait phones. A zoom bar beneath the selected
+drawing lets you drag from **100%** (Fit) to **500%**. Use **−** and **+** for small
+adjustments, scroll or pan around the enlarged paper, and tap **Fit** to see the
+whole drawing again. Resizing the screen keeps the current zoom and inspected
+area; choosing another step or floor resets to Fit. Reduced-motion settings show
+the final cards immediately.
 
 Availability is determined separately for each floor and step. Fresh Fire's
 customer drawing requires zone areas; Additional work and the other disciplines
@@ -38,4 +41,5 @@ animation and rendering, and releases preview canvases.
 Focused checks: `tests/finished-project-drawings.cjs` and
 `tests/asfit-saved-preview.cjs`. The completed-steps checks cover Chromium and
 WebKit on phone viewports, all disciplines, partial completion, animation,
-read-only viewing, issued snapshots, zoom and reopening.
+read-only viewing, issued snapshots, real zoom-bar gestures, phone resizing,
+Fit/reset behaviour and reopening.
