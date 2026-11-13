@@ -7,7 +7,7 @@ assert.match(html,/function cbReturnPhase\(/);
 assert.match(html,/function cbReturnGuidePx\(/);
 assert.match(html,/function cbAppendReturnDrag\(/);
 assert.match(html,/⇄ RETURN MAGNET · FOLLOW CABLE/);
-assert.match(html,/backNeeded\?'Return to FAP':'Complete circuit'/);
+// Verify the Fresh install labels below using the production UI function.
 assert.match(html,/id===current&&!returning/);
 assert.match(html,/returning\?cbReturnGuidePx\(w,h\):cbDrag\.points\.slice\(\)/);
 assert.match(html,/Math\.max\(8,Math\.min\(12,8\*Math\.sqrt\(Math\.max\(1,cbView\.scale\)\)\)\)/);
@@ -15,6 +15,8 @@ assert.match(html,/rawX=Number\(raw\?\.x\).*Number\.isFinite\(rawX\)/);
 
 function fn(name,next){const re=new RegExp(`function ${name}\\([\\s\\S]*?(?=\\nfunction ${next})`),m=html.match(re);assert(m,`Could not extract ${name}`);return m[0]}
 const source=[
+ fn('cbStartId','cbReturnId'),
+ fn('cbReturnId','cbCircuitNodeIds'),
  fn('cbCollinear','cbSimplify'),
  fn('cbSimplify','cbPointClose'),
  fn('cbPointClose','cbSegmentConflict'),
@@ -34,6 +36,11 @@ const ctx={
  ]}
 };
 vm.createContext(ctx);vm.runInContext(source,ctx);
+const elements=new Map();
+Object.assign(ctx,{cbScreen:'game',cbEdit:null,cbBuildBridgeSyncUi(){},cbDrawBoard(){},cbGameCounts:()=>({total:2,done:2,ready:false}),$:id=>{if(!elements.has(id))elements.set(id,{textContent:'',style:{},classList:{toggle(){}},setAttribute(){},querySelector:()=>({textContent:''})});return elements.get(id)}});
+vm.runInContext(fn('cbUpdateGame','cbPointInCanvas'),ctx);
+ctx.cbUpdateGame();
+assert.equal(ctx.$('cbComplete').textContent,'Return to FAP','Fresh install must retain its panel-return wording');
 assert.equal(ctx.cbReturnPhase(),true,'all devices reached without panel return must enter return phase');
 const guide=JSON.parse(JSON.stringify(ctx.cbReturnGuidePx(400,300)));
 assert.deepEqual(guide,[{x:220,y:100},{x:120,y:100},{x:120,y:40},{x:20,y:40}], 'return guide must be the exact outgoing route reversed back to the FAP');
@@ -41,6 +48,8 @@ const {total}=ctx.cbReturnMetrics(guide);assert.equal(total,260);
 const prefix=JSON.parse(JSON.stringify(ctx.cbReturnPrefixPx(guide,150)));
 assert.deepEqual(prefix,[{x:220,y:100},{x:120,y:100},{x:120,y:50}], 'partial magnetic return must stay on the canonical outgoing geometry and never invent a freehand dogleg');
 ctx.cbCircuit.sequence.push('p');
+ctx.cbUpdateGame();
+assert.equal(ctx.$('cbComplete').textContent,'Complete circuit','Fresh install must offer completion once back at its panel');
 assert.equal(ctx.cbReturnPhase(),false,'return phase must end once the loop closes at the panel');
 
 console.log('PASS: v0.56 addressable return is canonical, magnetic, visibly paired and has correct return-to-FAP UI state');

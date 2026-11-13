@@ -3,9 +3,16 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const {test} = require('node:test');
 const source = fs.readFileSync('index.html', 'utf8');
+const acorn = require('acorn'), functions = new Map();
+for (const match of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+  if (!match[1].trim()) continue;
+  const walk = node => {if (!node || typeof node !== 'object') return; if (node.type === 'FunctionDeclaration') functions.set(node.id.name, match[1].slice(node.start, node.end)); for (const value of Object.values(node)) if (Array.isArray(value)) value.forEach(walk); else if (value && typeof value === 'object') walk(value)};
+  walk(acorn.parse(match[1], {ecmaVersion: 'latest'}));
+}
 function fixture() {
   const sandbox = {
     cbDrag: null, cbHover: null, cbPinch: null, cbGestureLock: false,
+    cbCableHold: null, cbCableHoldFrame: 0, cbCableHoldConsumed: null, $: () => null, cancelAnimationFrame() {},
     cbPointers: new Map([[7, {x: 50, y: 50}]]),
     cbEdit: {active: true, mode: 'pencil', stroke: {pointerId: 7, raw: [{x: 50, y: 50}]}, tap: {pointerId: 7, start: {x: 50, y: 50}}},
     cbCircuit: {editDraft: {legs: [{points: [{x: 0, y: 0}, {x: 1, y: 0}]}], pending: {points: [{x: .2, y: 0}, {x: .8, y: 0}]}}},
@@ -15,8 +22,8 @@ function fixture() {
   };
   sandbox.cbEditDeleteSegment = () => sandbox.deletions++;
   vm.createContext(sandbox);
-  for (const name of ['cbCheckpointDrag', 'cbEditPointerMove', 'cbEditPointerUp']) {
-    const line = source.split('\n').find(line => line.startsWith(`function ${name}(`));
+  for (const name of ['cbStartId', 'cbReturnId', 'cbCircuitNodeIds', 'cbPoint', 'cbCancelCableHold', 'cbSaveAdditionalTail', 'cbCheckpointDrag', 'cbEditPointerMove', 'cbEditPointerUp']) {
+    const line = functions.get(name);
     assert(line, `Missing production function ${name}`);
     vm.runInContext(line, sandbox);
   }

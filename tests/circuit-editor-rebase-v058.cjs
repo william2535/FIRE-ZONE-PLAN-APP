@@ -13,7 +13,7 @@ function production(names, extra={}) {
     ...extra,
   };
   vm.createContext(sandbox);
-  for (const name of names) {
+  for (const name of ['cbStartId','cbReturnId','cbCircuitNodeIds',...names]) {
     const line = source.split('\n').find(line => line.startsWith(`function ${name}(`));
     assert(line, `Missing production function ${name}`);
     vm.runInContext(line, sandbox);

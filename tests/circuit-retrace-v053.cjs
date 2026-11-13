@@ -13,7 +13,7 @@ const source=smooth?[
 ].join('\n');
 
 const ctx={console,Math,Number,CB_PAIR_RANGE:24,CB_PAIR_GAP:9,CB_ROUTE_GRID:24,CB_ROUTE_TURN_CELLS:smooth?.72:1.45,CB_ROUTE_ARM_CELLS:.28,CB_ROUTE_SAMPLE_CELLS:.30,cbView:{scale:1},cbCircuit:{type:'conventional',bounds:null,legs:[]},cbDrag:null,cbBoardPx:p=>({...p}),cbSelectBounds:null,cbFieldGridScreenStep:()=>({x:24,y:24})};
-vm.createContext(ctx);vm.runInContext(source,ctx);
+vm.createContext(ctx);vm.runInContext(fn('cbStartId','cbReturnId'),ctx);vm.runInContext(source,ctx);
 
 // Simulate the exact field case: a completed horizontal leg ends at a detector, then the
 // engineer keeps holding and runs backwards over the same physical route.

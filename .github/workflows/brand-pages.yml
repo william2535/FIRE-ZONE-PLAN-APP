@@ -32,7 +32,7 @@ jobs:
       - name: Verify app and protected build
         run: |
           python .github/verify_247_protected.py
-          node tests/release-v062.cjs
+          node tests/release-v064.cjs
           node tests/circuit-editor-syntax-v058.cjs
           node tests/projects.cjs
           node tests/iphone-top-menu-v062.cjs
