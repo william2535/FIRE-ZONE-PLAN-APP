@@ -4,6 +4,8 @@
 
 # Zone Sketch by Will — site draft for the office
 
+**Public web/APK beta access is closing. Google Play testing remains separate and open to its existing testers.** See [the closure record](docs/PUBLIC-BETA-CLOSURE.md) for hosted routes, preserved source and the remaining public-repository access limitation. Historical build/download instructions below are source history, not an invitation to the closed public beta.
+
 
 A small offline Android app for walking a site and marking fire-alarm zone areas on a floor-plan image. It is a **working draft for an office CAD redraw**, not a finished customer chart or a substitute for checking the current fire strategy.
 

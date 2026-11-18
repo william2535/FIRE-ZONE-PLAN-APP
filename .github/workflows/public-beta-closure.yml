@@ -1,0 +1,30 @@
+name: Verify public beta closure
+on:
+  push:
+    branches: [main, close/public-beta]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Check source closure and protected company demo
+        run: |
+          python3 tests/public-beta-closure.py
+          python3 .github/verify_247_protected.py
+          node tests/release-v064.cjs
+      - name: Build the same Jekyll publication used by branch-based Pages
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697
+        with:
+          source: ./
+          destination: ./_site
+      - name: Verify actual published-file selection
+        run: python3 tests/public-beta-closure.py --site _site
+
+# Verification only. Does not change Google Play tracks, upload APKs or deploy Pages.

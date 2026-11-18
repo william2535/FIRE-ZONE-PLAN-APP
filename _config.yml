@@ -1,0 +1,17 @@
+{
+  "title": "Zone Sketch",
+  "description": "Public beta access has closed. Google Play testing is separate.",
+  "url": "https://william2535.github.io",
+  "baseurl": "/FIRE-ZONE-PLAN-APP",
+  "exclude": [
+    "*"
+  ],
+  "include": [
+    "public-closure",
+    "privacy.html",
+    "terms.html",
+    "247-protection-demo.html",
+    "company-demos",
+    "vendor"
+  ]
+}
