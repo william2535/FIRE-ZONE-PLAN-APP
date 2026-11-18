@@ -7,8 +7,14 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAY = 'https://play.google.com/store/apps/details?id=com.zonesketch.app'
-ALLOWED = {'public-closure', 'privacy.html', 'terms.html', '247-protection-demo.html', 'company-demos', 'vendor'}
 ROUTES = {'index.html', 'beta.html', 'download.html', 'ZoneSketch.html', 'Zone-Sketch-by-Will.html', '404.html'} | {f'web-v0{v}.html' for v in range(58, 65)}
+PROTECTED_TEMPLATES = {
+    'protected-demo.html': ('company-demos/247-protection/index.html', 'index.html'),
+    'protected-logo.svg': ('company-demos/247-protection/logo.svg', 'logo.svg'),
+    'protected-manifest.webmanifest': ('company-demos/247-protection/manifest.webmanifest', 'manifest.webmanifest'),
+}
+CLOSED_NAMES = {'closed-' + name + '.html' for name in ['home', 'beta', 'download', 'zone-sketch', 'zone-sketch-by-will', 'not-found']} | {f'closed-web-v0{v}.html' for v in range(58, 65)}
+ALLOWED = {'public-closure', 'privacy.html', 'terms.html', '247-protection-demo.html', 'vendor', 'pdf.min.js', 'pdf.worker.min.js'} | CLOSED_NAMES | set(PROTECTED_TEMPLATES)
 
 
 def check(site=None):
@@ -17,17 +23,21 @@ def check(site=None):
     assert set(config['include']) == ALLOWED, 'Only the reviewed closure/privacy/protected-demo resources may publish'
     assert not (ROOT / '.nojekyll').exists(), '.nojekyll would bypass the exclusion policy'
     assert config['baseurl'] == '/FIRE-ZONE-PLAN-APP'
-    # Jekyll 3 EntryFilter checks explicit include before exclude; a directory entry
-    # includes its descendants. Keep public application/download paths outside it.
+    assert config['includes_dir'] == 'company-demos/247-protection'
+    assert {p.name for p in (ROOT / 'public-closure').iterdir()} == CLOSED_NAMES | set(PROTECTED_TEMPLATES)
+    # Jekyll 3.10 checks includes against a bare entry basename, not its full
+    # directory-relative path. Listing a directory does NOT allow its children.
+    # In particular, allowing index.html would expose the original root app.
+    # Unique template basenames keep the default-deny filter effective.
     for forbidden in ['index.html', 'beta.html', 'download.html', 'ZoneSketch.html',
                       'Zone-Sketch-by-Will.html', 'web-v064.html',
                       'downloads/Zone-Sketch-by-Will-v0.64.apk',
                       'app/src/main/assets/index.html', 'node_modules/anything.js',
                       'tests/browser.cjs', 'docs/source.md', 'scripts/source.py']:
-        assert not any(fnmatch.fnmatchcase(forbidden, item) or forbidden.startswith(item + '/')
+        assert not any(fnmatch.fnmatchcase(Path(forbidden).name, item) or Path(forbidden).name.startswith(item)
                        for item in ALLOWED), forbidden
     found = set()
-    for page in (ROOT / 'public-closure').glob('*.html'):
+    for page in (ROOT / 'public-closure').glob('closed-*.html'):
         text = page.read_text()
         match = re.match(r'---\nlayout: null\npermalink: /([^\n]+)\n---\n', text)
         assert match, page
@@ -37,6 +47,9 @@ def check(site=None):
         assert '<script' not in text.lower() and '<iframe' not in text.lower(), page
         assert not re.search(r'href=[\"\'][^\"\']*(?:\.apk|web-v\d+\.html|/index\.html)', text), page
     assert found == ROUTES, (found, ROUTES)
+    for name, (route, source) in PROTECTED_TEMPLATES.items():
+        expected = f'---\nlayout: null\npermalink: /{route}\n---\n{{% include {source} %}}'
+        assert (ROOT / 'public-closure' / name).read_text() == expected, name
     workflow = (ROOT / '.github/workflows/build-apk.yml').read_text()
     assert workflow.count("vars.ZONE_SKETCH_PUBLIC_BETA == 'enabled'") == 2, 'Public release and installable artifact both require deliberate opt-in'
     assert 'python3 tests/public-beta-closure.py' in workflow

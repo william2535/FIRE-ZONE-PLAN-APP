@@ -5,6 +5,7 @@ Prepared 18 November 2026, from Zone Sketch source `e658e60b824b9f04f972ef64c46e
 ## What this change does
 
 - Uses the existing branch-based GitHub Pages Jekyll publication with a default-deny file selection. Retiring `.nojekyll` is necessary so `_config.yml` is honoured.
+- Jekyll 3.10 matches included entry basenames, not nested paths. Closure templates therefore use unique `closed-*` names with public permalinks; do not add `index.html` or other original app basenames to the include list. Three small include templates publish the unchanged protected company demo and its two assets at their existing paths. The output check compares these with the original bytes.
 - Publishes closed notices at the home, beta, download, named app aliases, seven old version launchers and the 404 page. These notices link to `https://play.google.com/store/apps/details?id=com.zonesketch.app` and do not promise public listing availability. An anonymous UK request returned 404 during preparation; existing tester access may differ.
 - Excludes native/web app source, direct APK mirrors, tests, scripts and repository tooling from the Pages site. The actual source and APK files remain intact in Git.
 - Stops automatic public release APK publication and installable Actions artifact publication unless the owner deliberately sets repository variable `ZONE_SKETCH_PUBLIC_BETA` to `enabled`. It does not change Google Play tracks, testers or releases.

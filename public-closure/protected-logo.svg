@@ -1,0 +1,5 @@
+---
+layout: null
+permalink: /company-demos/247-protection/logo.svg
+---
+{% include logo.svg %}

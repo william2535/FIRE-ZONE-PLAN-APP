@@ -8,10 +8,28 @@
   ],
   "include": [
     "public-closure",
+    "closed-beta.html",
+    "closed-download.html",
+    "closed-home.html",
+    "closed-not-found.html",
+    "closed-web-v058.html",
+    "closed-web-v059.html",
+    "closed-web-v060.html",
+    "closed-web-v061.html",
+    "closed-web-v062.html",
+    "closed-web-v063.html",
+    "closed-web-v064.html",
+    "closed-zone-sketch-by-will.html",
+    "closed-zone-sketch.html",
+    "protected-demo.html",
+    "protected-logo.svg",
+    "protected-manifest.webmanifest",
     "privacy.html",
     "terms.html",
     "247-protection-demo.html",
-    "company-demos",
-    "vendor"
-  ]
+    "vendor",
+    "pdf.min.js",
+    "pdf.worker.min.js"
+  ],
+  "includes_dir": "company-demos/247-protection"
 }
